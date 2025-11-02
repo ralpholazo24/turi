@@ -1,8 +1,11 @@
 import { AppData, Group, GroupActivity, Member, Task } from '@/types';
 import { getRandomAvatarColor } from '@/utils/member-avatar';
+import { cancelAllTaskNotifications, cancelTaskNotification, rescheduleGroupNotifications, scheduleTaskNotification } from '@/utils/notification-service';
 import { isSoloMode } from '@/utils/solo-mode';
 import { loadData, saveData } from '@/utils/storage';
+import * as Notifications from 'expo-notifications';
 import { create } from 'zustand';
+import { useNotificationStore } from './use-notification-store';
 
 // Helper function to get week number for weekly task validation
 function getWeekNumber(date: Date): number {
@@ -46,6 +49,30 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const data = await loadData();
       set({ groups: data.groups, isLoading: false });
+      
+      // Ensure notification store is initialized before reading its state
+      const notificationStore = useNotificationStore.getState();
+      if (notificationStore.isLoading) {
+        // Initialize notification store if not already initialized
+        await notificationStore.initializeNotifications();
+      }
+      
+      // Reschedule all notifications on app initialization
+      const { notificationsEnabled, reminderMinutes } = useNotificationStore.getState();
+      if (notificationsEnabled && data.groups.length > 0) {
+        // Cancel all existing notifications first to avoid duplicates
+        const allNotifications = await Notifications.getAllScheduledNotificationsAsync();
+        for (const notification of allNotifications) {
+          if (notification.content.data?.type === 'task_reminder') {
+            await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+          }
+        }
+        
+        // Reschedule notifications for all groups
+        for (const group of data.groups) {
+          await rescheduleGroupNotifications(group, reminderMinutes);
+        }
+      }
     } catch (error) {
       console.error('Error initializing app:', error);
       set({ isLoading: false });
@@ -99,6 +126,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   
   deleteGroup: async (groupId: string) => {
+    // Cancel all notifications for this group before deleting
+    await cancelAllTaskNotifications(groupId);
+    
     set((state) => ({
       groups: state.groups.filter((group) => group.id !== groupId),
     }));
@@ -176,23 +206,39 @@ export const useAppStore = create<AppState>((set, get) => ({
       },
     };
     
-    set((state) => ({
-      groups: state.groups.map((group) =>
-        group.id === groupId
-          ? {
-              ...group,
-              members: group.members.filter((member) => member.id !== memberId),
-              tasks: group.tasks.map((task) => ({
-                ...task,
-                memberIds: task.memberIds.filter((id) => id !== memberId),
-              })),
-              activities: [...(group.activities || []), activity],
-            }
-          : group
-      ),
-    }));
+    const updatedGroup = get().groups.map((group) =>
+      group.id === groupId
+        ? {
+            ...group,
+            members: group.members.filter((member) => member.id !== memberId),
+            tasks: group.tasks.map((task) => ({
+              ...task,
+              memberIds: task.memberIds.filter((id) => id !== memberId),
+            })),
+            activities: [...(group.activities || []), activity],
+          }
+        : group
+    ).find((g) => g.id === groupId);
+    
+    set({
+      groups: updatedGroup
+        ? get().groups.map((group) =>
+            group.id === groupId
+              ? updatedGroup
+              : group
+          )
+        : get().groups,
+    });
     
     await get().persist();
+    
+    // Reschedule notifications for all tasks in the group (in case assignments changed)
+    if (updatedGroup) {
+      const { notificationsEnabled, reminderMinutes } = useNotificationStore.getState();
+      if (notificationsEnabled) {
+        await rescheduleGroupNotifications(updatedGroup, reminderMinutes);
+      }
+    }
   },
   
   addTask: async (groupId: string, taskData: Omit<Task, 'id'>) => {
@@ -231,22 +277,44 @@ export const useAppStore = create<AppState>((set, get) => ({
       },
     };
     
-    set((state) => ({
-      groups: state.groups.map((group) =>
-        group.id === groupId
-          ? {
-              ...group,
-              tasks: [...group.tasks, newTask],
-              activities: [...(group.activities || []), activity],
-            }
-          : group
-      ),
-    }));
+    const updatedGroup = get().groups.map((group) =>
+      group.id === groupId
+        ? {
+            ...group,
+            tasks: [...group.tasks, newTask],
+            activities: [...(group.activities || []), activity],
+          }
+        : group
+    ).find((g) => g.id === groupId);
+    
+    set({
+      groups: updatedGroup
+        ? get().groups.map((group) =>
+            group.id === groupId
+              ? updatedGroup
+              : group
+          )
+        : get().groups,
+    });
     
     await get().persist();
+    
+    // Schedule notification if enabled
+    if (updatedGroup) {
+      const { notificationsEnabled, reminderMinutes } = useNotificationStore.getState();
+      if (notificationsEnabled) {
+        await scheduleTaskNotification(newTask, updatedGroup, reminderMinutes);
+      }
+    }
   },
   
   updateTask: async (groupId: string, taskId: string, updates: Partial<Task>) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+    
+    // Cancel old notification before updating
+    await cancelTaskNotification(taskId);
+    
     set((state) => ({
       groups: state.groups.map((group) =>
         group.id === groupId
@@ -261,11 +329,24 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
     
     await get().persist();
+    
+    // Schedule new notification if enabled
+    const updatedGroup = get().groups.find((g) => g.id === groupId);
+    const updatedTask = updatedGroup?.tasks.find((t) => t.id === taskId);
+    if (updatedGroup && updatedTask) {
+      const { notificationsEnabled, reminderMinutes } = useNotificationStore.getState();
+      if (notificationsEnabled) {
+        await scheduleTaskNotification(updatedTask, updatedGroup, reminderMinutes);
+      }
+    }
   },
   
   deleteTask: async (groupId: string, taskId: string) => {
     const group = get().groups.find((g) => g.id === groupId);
     if (!group) return;
+    
+    // Cancel notification before deleting
+    await cancelTaskNotification(taskId);
     
     const task = group.tasks.find((t) => t.id === taskId);
     const nowISO = new Date().toISOString();
@@ -403,6 +484,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
     
     await get().persist();
+    
+    // Cancel old notification and reschedule for next occurrence
+    await cancelTaskNotification(taskId);
+    const updatedGroup = get().groups.find((g) => g.id === groupId);
+    const updatedTask = updatedGroup?.tasks.find((t) => t.id === taskId);
+    if (updatedGroup && updatedTask) {
+      const { notificationsEnabled, reminderMinutes } = useNotificationStore.getState();
+      if (notificationsEnabled) {
+        await scheduleTaskNotification(updatedTask, updatedGroup, reminderMinutes);
+      }
+    }
   },
   
   skipTurn: async (groupId: string, taskId: string) => {
@@ -473,6 +565,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
     
     await get().persist();
+    
+    // Reschedule notification since assignment changed
+    await cancelTaskNotification(taskId);
+    const updatedGroup = get().groups.find((g) => g.id === groupId);
+    const updatedTask = updatedGroup?.tasks.find((t) => t.id === taskId);
+    if (updatedGroup && updatedTask) {
+      const { notificationsEnabled, reminderMinutes } = useNotificationStore.getState();
+      if (notificationsEnabled) {
+        await scheduleTaskNotification(updatedTask, updatedGroup, reminderMinutes);
+      }
+    }
   },
 }));
 

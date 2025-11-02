@@ -29,7 +29,6 @@ Version 1 (MVP) focuses on **local-only functionality** with **no accounts or cl
 
 - User accounts / authentication.
 - Cloud sync or real-time updates.
-- Push notifications.
 - Analytics / detailed reporting.
 
 ---
@@ -208,27 +207,60 @@ CurrentTurn = Alice
 
 - Dark mode toggle (persists across app restarts).
 - Activity link (navigates to Activity Feed).
+- Notification preferences:
+  - Toggle notifications on/off (with permission handling)
+  - Reminder time setting (5 min, 10 min, 15 min, 30 min, 1 hour, 2 hours before task)
+  - Shows permission status if denied
 - Placeholder sections for future features:
   - Account management
-  - Preferences (Notifications, App Language)
+  - Preferences (App Language)
   - Support (Help & FAQ, Contact Support, About App)
+
+### 10. **Notifications**
+
+- Local notifications scheduled automatically for tasks with due dates/times.
+- Notifications sent X minutes before task is due (configurable reminder time).
+- Notification content:
+  - Title: Task name with bell emoji
+  - Body: Assigned member's name + schedule information
+  - Includes task and group IDs for navigation
+- Smart scheduling:
+  - Only schedules for tasks that haven't been completed in the current period
+  - Skips tasks with no assigned members
+  - Automatically reschedules after task completion
+  - Cancels notifications when tasks/groups are deleted
+- Notification management:
+  - Automatically scheduled when tasks are created/updated
+  - Automatically cancelled when tasks are deleted
+  - Rescheduled when tasks are completed (for next occurrence)
+  - Rescheduled when member assignments change (skip turn, member deletion)
+  - All notifications rescheduled on app initialization
+  - Respects notification toggle preference
+- Default behavior:
+  - Tasks without scheduled time default to 9:00 AM
+  - Daily tasks: Notification at scheduled time (or 9 AM) minus reminder minutes
+  - Weekly tasks: Notification on scheduled day at scheduled time minus reminder minutes
+  - Monthly tasks: Notification on scheduled week/day at scheduled time minus reminder minutes
 
 ---
 
 ## 🧠 User Stories
 
-| #   | As a... | I want to...          | So that I can...                             |
-| --- | ------- | --------------------- | -------------------------------------------- |
-| 1   | User    | Create a group        | Organize shared tasks with my friends/family |
-| 2   | User    | Add members           | Define who participates in tasks             |
-| 3   | User    | Add a new task        | Track who's responsible next                 |
-| 4   | User    | View who's turn it is | Know who should do the task today            |
-| 5   | User    | Mark a task as done   | Automatically move turn to the next person   |
-| 6   | User    | Get positive feedback | Stay motivated to keep using the app         |
-| 7   | User    | View activity feed    | See all completed and skipped tasks          |
-| 8   | User    | Use solo mode         | Manage tasks when I'm the only member        |
-| 9   | User    | Adjust app settings   | Customize my experience (dark mode, etc.)    |
-| 10  | User    | See overdue tasks     | Know which tasks need attention              |
+| #   | As a... | I want to...           | So that I can...                               |
+| --- | ------- | ---------------------- | ---------------------------------------------- |
+| 1   | User    | Create a group         | Organize shared tasks with my friends/family   |
+| 2   | User    | Add members            | Define who participates in tasks               |
+| 3   | User    | Add a new task         | Track who's responsible next                   |
+| 4   | User    | View who's turn it is  | Know who should do the task today              |
+| 5   | User    | Mark a task as done    | Automatically move turn to the next person     |
+| 6   | User    | Get positive feedback  | Stay motivated to keep using the app           |
+| 7   | User    | View activity feed     | See all completed and skipped tasks            |
+| 8   | User    | Use solo mode          | Manage tasks when I'm the only member          |
+| 9   | User    | Adjust app settings    | Customize my experience (dark mode, etc.)      |
+| 10  | User    | See overdue tasks      | Know which tasks need attention                |
+| 11  | User    | Enable notifications   | Get reminded before tasks are due              |
+| 12  | User    | Set reminder time      | Choose how early I want to be notified         |
+| 13  | User    | Receive task reminders | Know when it's my turn even when app is closed |
 
 ---
 
@@ -291,7 +323,11 @@ CurrentTurn = Alice
 - **Components:**
   - Header with back button
   - ACCOUNT section (Activity link)
-  - PREFERENCES section (Notifications placeholder, Dark Mode toggle, App Language placeholder)
+  - PREFERENCES section:
+    - Notifications toggle (with permission status indicator)
+    - Reminder time selector (shown when notifications enabled)
+    - Dark Mode toggle
+    - App Language placeholder
   - SUPPORT section (Help & FAQ placeholder, Contact Support placeholder, About App placeholder)
 
 ### 7. **Activity Feed Screen**
@@ -330,6 +366,7 @@ CurrentTurn = Alice
 - **Icons:** Lucide React Native
 - **Gradients:** expo-linear-gradient
 - **Time Picker:** @react-native-community/datetimepicker
+- **Notifications:** expo-notifications
 - **Gestures:** react-native-gesture-handler
 - **Safe Area:** react-native-safe-area-context
 
@@ -357,17 +394,34 @@ CurrentTurn = Alice
 - [ ] FAB buttons respect safe area insets.
 - [ ] Skip history is tracked correctly.
 - [ ] Activity tracking works for all action types.
+- [ ] Notification toggle works and persists preference.
+- [ ] Notification permission request works correctly.
+- [ ] Reminder time setting works and persists.
+- [ ] Notifications are scheduled when tasks are created.
+- [ ] Notifications are cancelled when tasks are deleted.
+- [ ] Notifications are rescheduled when tasks are completed.
+- [ ] Notifications are rescheduled when tasks are updated.
+- [ ] Notifications are cancelled when groups are deleted.
+- [ ] Notifications are rescheduled when members are deleted.
+- [ ] Notifications are rescheduled when turn is skipped.
+- [ ] Notifications are not sent for completed tasks.
+- [ ] Notifications are not sent for tasks with no assigned members.
+- [ ] Notifications are rescheduled on app initialization.
+- [ ] Notification content displays correct member name and schedule.
+- [ ] Default time (9 AM) is used for tasks without scheduled time.
 
 ---
 
 ## 🚀 Future Versions (Post-v1 Ideas)
 
 - Login and cloud sync (Firebase or Supabase).
-- Push notifications for due tasks.
+- Push notifications (cloud-based, cross-device sync).
 - Custom rotation order.
 - Task history and stats.
 - Shared links to invite members.
 - Themes and advanced gamification (badges, levels, XP system).
+- Notification sounds customization.
+- Multiple reminder times per task.
 
 ---
 
@@ -414,4 +468,34 @@ CurrentTurn = Alice
 5. Settings Screen
 6. Activity Feed Screen
 7. Solo Mode Implementation
-8. UI Polish & Safety (bounds checking, safe area insets, overdue indicators)
+8. Notification System (scheduling, preferences, management)
+9. UI Polish & Safety (bounds checking, safe area insets, overdue indicators)
+
+### Notification Implementation
+
+- **Notification Store:** Zustand store for notification preferences (enabled/disabled, reminder minutes).
+- **Notification Service:** Utility functions for scheduling, cancelling, and rescheduling notifications.
+- **Notification Scheduling Logic:**
+  - Calculates next due date based on task frequency and schedule
+  - Schedules notification X minutes before due date (configurable)
+  - Defaults to 9:00 AM for tasks without scheduled time
+  - Skips scheduling if task is already completed for the period
+  - Skips scheduling if task has no assigned members
+- **Notification Lifecycle:**
+  - Created: Scheduled when task is created (if notifications enabled)
+  - Updated: Cancelled and rescheduled when task is updated
+  - Completed: Cancelled and rescheduled for next occurrence
+  - Deleted: Cancelled when task is deleted
+  - Group Deleted: All group notifications cancelled
+  - Member Deleted: All group notifications rescheduled
+  - Skip Turn: Notification rescheduled with new assignee
+  - App Init: All notifications rescheduled on app start
+- **Notification Preferences:**
+  - Stored in AsyncStorage
+  - Default reminder time: 15 minutes
+  - Reminder time options: 5, 10, 15, 30, 60, 120 minutes
+  - Changing reminder time reschedules all notifications
+- **Permission Handling:**
+  - Requests permission when enabling notifications
+  - Shows permission status in settings
+  - Gracefully handles permission denial

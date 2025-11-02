@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, TouchableOpacity, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { useAppStore } from '@/store/use-app-store';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useNotifications } from '@/hooks/use-notifications';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 
 export default function SettingsScreen() {
-  const { groups } = useAppStore();
   const { themePreference, updateThemePreference } = useColorScheme();
+  const { notificationsEnabled, permissionStatus } = useNotifications();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
@@ -22,8 +22,6 @@ export default function SettingsScreen() {
   const iconColor = useThemeColor({}, 'icon');
 
   const BackIcon = APP_ICONS.back;
-  const UsersIcon = APP_ICONS.users;
-  const LockIcon = LucideIcons.Lock;
   const BellIcon = LucideIcons.Bell;
   const MoonIcon = LucideIcons.Moon;
   const GlobeIcon = LucideIcons.Globe;
@@ -85,7 +83,7 @@ export default function SettingsScreen() {
           
           <TouchableOpacity
             style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
-            onPress={() => handleSettingPress('Notifications')}
+            onPress={() => router.push('/notifications')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
@@ -93,7 +91,15 @@ export default function SettingsScreen() {
               </View>
               <ThemedText style={styles.settingText}>Notifications</ThemedText>
             </View>
-            <LucideIcons.ChevronRight size={20} color={iconColor} />
+            <View style={styles.settingRight}>
+              {permissionStatus === 'denied' && (
+                <ThemedText style={styles.settingValue}>Permission required</ThemedText>
+              )}
+              {notificationsEnabled && permissionStatus !== 'denied' && (
+                <ThemedText style={styles.settingValue}>Enabled</ThemedText>
+              )}
+              <LucideIcons.ChevronRight size={20} color={iconColor} />
+            </View>
           </TouchableOpacity>
 
           <View style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}>
@@ -238,9 +244,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
+  settingTextContainer: {
+    flex: 1,
+  },
   settingText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  settingSubtext: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginTop: 2,
   },
   settingRight: {
     flexDirection: 'row',

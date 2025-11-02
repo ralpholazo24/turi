@@ -28,6 +28,7 @@ export default function RootLayout() {
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
           <Stack.Screen name="activity" />
+          <Stack.Screen name="notifications" />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
