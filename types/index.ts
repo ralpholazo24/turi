@@ -1,7 +1,8 @@
 export interface Member {
   id: string;
   name: string;
-  icon: string; // Icon name from lucide-react-native
+  icon: string; // Kept for backward compatibility, but we'll use avatarColor
+  avatarColor: string; // Color for initials avatar
   streakCount: number;
   lastStreakDate: string | null; // ISO date string
 }

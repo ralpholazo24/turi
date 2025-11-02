@@ -1,4 +1,5 @@
 import { AppData, Group, Member, Task } from '@/types';
+import { getRandomAvatarColor } from '@/utils/member-avatar';
 import { loadData, saveData } from '@/utils/storage';
 import { create } from 'zustand';
 
@@ -99,7 +100,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     const newMember: Member = {
       id: `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
-      icon,
+      icon, // Keep for backward compatibility
+      avatarColor: getRandomAvatarColor(), // Random color for avatar
       streakCount: 0,
       lastStreakDate: null,
     };

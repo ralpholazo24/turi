@@ -19,6 +19,7 @@ import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { TASK_ICON_OPTIONS, type TaskIconName } from '@/constants/icons-task-member';
+import { MemberAvatar } from '@/components/member-avatar';
 
 interface EditTaskModalProps {
   visible: boolean;
@@ -268,11 +269,7 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                               styles.memberAvatar,
                               isSelected && styles.memberAvatarSelected,
                             ]}>
-                            {/* eslint-disable-next-line import/namespace */}
-                            {(() => {
-                              const IconComponent = LucideIcons[member.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                              return IconComponent ? <IconComponent size={24} color="#11181C" /> : null;
-                            })()}
+                            <MemberAvatar member={member} size={40} />
                           </View>
                           {isSelected && (
                             <View style={styles.checkmarkContainer}>

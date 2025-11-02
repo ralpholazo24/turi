@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppData, Group } from '@/types';
+import { AppData, Group, Member } from '@/types';
+import { getColorFromName } from './member-avatar';
 
 const STORAGE_KEY = '@turi_app_data';
 const CURRENT_VERSION = '1.0.0';
@@ -54,11 +55,20 @@ export async function saveData(data: AppData): Promise<void> {
  * Migrate data from older versions
  */
 function migrateData(data: AppData): AppData {
-  // For now, just update version and return
-  // Add migration logic here when needed in future versions
+  // Migrate members to include avatarColor
+  const migratedGroups = data.groups.map((group) => ({
+    ...group,
+    members: group.members.map((member: Member) => ({
+      ...member,
+      // Add avatarColor if it doesn't exist (backward compatibility)
+      avatarColor: member.avatarColor || getColorFromName(member.name),
+    })),
+  }));
+
   return {
     ...data,
     version: CURRENT_VERSION,
+    groups: migratedGroups,
   };
 }
 

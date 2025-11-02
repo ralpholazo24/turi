@@ -5,6 +5,7 @@ import { getTaskCompletionStatus } from '@/utils/task-completion';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { MemberAvatar } from './member-avatar';
 
 interface TaskCardProps {
   task: Task;
@@ -100,15 +101,7 @@ export function TaskCard({
           <View style={styles.bottomSection}>
             {assignedMember ? (
               <View style={styles.assignedSection}>
-                <View style={styles.avatarContainer}>
-                  {/* eslint-disable-next-line import/namespace */}
-                  {(() => {
-                    const MemberIconComponent = LucideIcons[assignedMember.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                    return MemberIconComponent ? (
-                      <MemberIconComponent size={20} color="#FFFFFF" />
-                    ) : null;
-                  })()}
-                </View>
+                <MemberAvatar member={assignedMember} size={32} />
                 <Text style={styles.assignedText}>
                   {assignedMember.name}&apos;s turn
                 </Text>
@@ -207,19 +200,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: BORDER_RADIUS.circular.medium,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
   assignedText: {
     fontSize: 14,
     color: '#FFFFFF',
     opacity: 0.9,
+    marginLeft: 8,
   },
   rightSection: {
     alignItems: 'flex-end',

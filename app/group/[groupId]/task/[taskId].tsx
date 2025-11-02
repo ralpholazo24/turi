@@ -18,6 +18,7 @@ import { TaskContextMenu } from '@/components/task-context-menu';
 import { ConfirmationModal } from '@/components/confirmation-modal';
 import { Task, Member } from '@/types';
 import { getTaskCompletionStatus } from '@/utils/task-completion';
+import { MemberAvatar } from '@/components/member-avatar';
 
 export default function TaskDetailsScreen() {
   const { groupId, taskId } = useLocalSearchParams<{ groupId: string; taskId: string }>();
@@ -199,20 +200,12 @@ export default function TaskDetailsScreen() {
         {/* Current Assignee Section */}
         {currentMember && (
           <View style={styles.currentAssigneeSection}>
-            <View style={styles.avatarContainer}>
-              {/* eslint-disable-next-line import/namespace */}
-              {(() => {
-                const IconComponent = LucideIcons[currentMember.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                return IconComponent ? <IconComponent size={32} color="#11181C" /> : null;
-              })()}
-            </View>
+            <MemberAvatar member={currentMember} size={56} />
             <View style={styles.assigneeInfo}>
               <ThemedText style={[styles.itYourTurn, { color: group.colorStart }]}>
-                It&apos;s your turn:
+                {getMemberTurnText(currentMember)}
               </ThemedText>
-              <ThemedText type="title" style={styles.assigneeName}>
-                {currentMember.name}
-              </ThemedText>
+              <ThemedText style={styles.assigneeName}>{currentMember.name}</ThemedText>
             </View>
           </View>
         )}
@@ -235,27 +228,23 @@ export default function TaskDetailsScreen() {
                     { backgroundColor: backgroundColor, borderColor: borderColor + '30' },
                   ]}>
                   <View style={styles.historyItemContent}>
-                    <View style={styles.historyAvatarContainer}>
-                      {/* eslint-disable-next-line import/namespace */}
-                      {(() => {
-                        const IconComponent = LucideIcons[member.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                        return IconComponent ? <IconComponent size={24} color="#11181C" /> : null;
-                      })()}
-                    </View>
+                    <MemberAvatar member={member} size={48} />
                     <View style={styles.historyTextContainer}>
                       <ThemedText style={styles.historyMemberName}>
-                        {member.name} took {member.name.endsWith('s') ? `${member.name}'` : `${member.name}'s`} turn
+                        {member.name}
                       </ThemedText>
                       <ThemedText style={styles.historyDate}>
                         {formatDate(entry.completedAt)}
                       </ThemedText>
                     </View>
-                    <View style={styles.streakBadge}>
-                      <FlameIcon size={16} color="#F97316" />
-                      <ThemedText style={styles.streakText}>
-                        {entry.memberStreakAtTime}
-                      </ThemedText>
-                    </View>
+                    {entry.memberStreakAtTime > 0 && (
+                      <View style={styles.streakBadge}>
+                        <FlameIcon size={14} color="#F97316" />
+                        <ThemedText style={styles.streakText}>
+                          {entry.memberStreakAtTime}
+                        </ThemedText>
+                      </View>
+                    )}
                   </View>
                 </View>
               );
@@ -424,17 +413,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     paddingHorizontal: 4,
   },
-  avatarContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: BORDER_RADIUS.circular.large,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
   assigneeInfo: {
     flex: 1,
+    marginLeft: 16,
   },
   itYourTurn: {
     fontSize: 14,
@@ -471,17 +452,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  historyAvatarContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: BORDER_RADIUS.circular.medium,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
   historyTextContainer: {
     flex: 1,
+    marginLeft: 12,
   },
   historyMemberName: {
     fontSize: 16,

@@ -10,22 +10,23 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Group } from '@/types';
+import { Group, Member } from '@/types';
 import { useAppStore } from '@/store/use-app-store';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 
-interface AddMemberModalProps {
+interface EditMemberModalProps {
   visible: boolean;
   onClose: () => void;
   group: Group;
+  member: Member;
 }
 
-export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps) {
-  const { addMember } = useAppStore();
-  const [name, setName] = useState('');
+export function EditMemberModal({ visible, onClose, group, member }: EditMemberModalProps) {
+  const { updateMember } = useAppStore();
+  const [name, setName] = useState(member.name);
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -41,16 +42,15 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
       return;
     }
 
-    // Use 'User' as default icon since we're showing initials instead
-    await addMember(group.id, name.trim(), 'User');
+    await updateMember(group.id, member.id, { name: name.trim() });
 
     // Reset form
-    setName('');
+    setName(member.name);
     onClose();
   };
 
   const handleClose = () => {
-    setName('');
+    setName(member.name);
     onClose();
   };
 
@@ -71,7 +71,7 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
             <ThemedText type="subtitle" style={styles.headerTitle}>
-              Add New Member
+              Edit Member
             </ThemedText>
             <View style={styles.headerSpacer} />
           </View>
@@ -92,17 +92,17 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
             />
           </View>
 
-          {/* Add Member Button */}
+          {/* Save Button */}
           <View style={styles.footer}>
             <TouchableOpacity
               style={[
-                styles.addButton,
-                !name.trim() && styles.addButtonDisabled,
+                styles.saveButton,
+                !name.trim() && styles.saveButtonDisabled,
                 { backgroundColor: '#10B981' },
               ]}
               onPress={handleSave}
               disabled={!name.trim()}>
-              <Text style={styles.addButtonText}>Add Member</Text>
+              <Text style={styles.saveButtonText}>Save Changes</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -160,15 +160,15 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },
-  addButton: {
+  saveButton: {
     paddingVertical: 16,
     borderRadius: BORDER_RADIUS.medium,
     alignItems: 'center',
   },
-  addButtonDisabled: {
+  saveButtonDisabled: {
     opacity: 0.5,
   },
-  addButtonText: {
+  saveButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
