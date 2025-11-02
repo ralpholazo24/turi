@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/use-app-store';
 import { GroupCard } from '@/components/group-card';
 import { AddGroupModal } from '@/components/add-group-modal';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { BORDER_RADIUS } from '@/constants/border-radius';
+import { APP_ICONS } from '@/constants/icons';
 
 export default function HomeScreen() {
   const { groups, isLoading, initialize } = useAppStore();
@@ -13,6 +15,9 @@ export default function HomeScreen() {
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+
+  const PlusIcon = APP_ICONS.add;
+  const UsersIcon = APP_ICONS.users;
 
   useEffect(() => {
     initialize();
@@ -42,7 +47,7 @@ export default function HomeScreen() {
           </View>
         ) : groups.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyEmoji, { color: textColor }]}>👥</Text>
+            <UsersIcon size={64} color={textColor} style={styles.emptyIcon} />
             <ThemedText type="subtitle" style={styles.emptyTitle}>
               No crews yet
             </ThemedText>
@@ -64,7 +69,7 @@ export default function HomeScreen() {
         style={styles.fab}
         onPress={handleAddGroup}
         activeOpacity={0.8}>
-        <Text style={styles.fabIcon}>+</Text>
+        <PlusIcon size={32} color="#FFFFFF" />
       </TouchableOpacity>
 
       {/* Add Group Modal */}
@@ -102,9 +107,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 60,
   },
-  emptyEmoji: {
-    fontSize: 64,
+  emptyIcon: {
     marginBottom: 16,
+    opacity: 0.6,
   },
   emptyTitle: {
     marginBottom: 8,
@@ -122,7 +127,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: BORDER_RADIUS.circular.large,
     backgroundColor: '#FF6B35', // Orange color from design
     justifyContent: 'center',
     alignItems: 'center',
@@ -134,11 +139,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 8,
-  },
-  fabIcon: {
-    fontSize: 32,
-    color: '#FFFFFF',
-    fontWeight: '300',
-    lineHeight: 32,
   },
 });

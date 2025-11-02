@@ -3,6 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { Group } from '@/types';
+import { BORDER_RADIUS } from '@/constants/border-radius';
+import { APP_ICONS } from '@/constants/icons';
 
 interface GroupCardProps {
   group: Group;
@@ -23,6 +25,8 @@ export function GroupCard({ group }: GroupCardProps) {
 
   const completedTasksCount = group.tasks.filter((task) => task.lastCompletedAt).length;
   const totalTasksCount = group.tasks.length;
+
+  const FlameIcon = APP_ICONS.flame;
 
   const handlePress = () => {
     router.push(`/group/${group.id}`);
@@ -70,7 +74,11 @@ export function GroupCard({ group }: GroupCardProps) {
             {assignedMember ? (
               <View style={styles.assignedSection}>
                 <View style={styles.avatarContainer}>
-                  <Text style={styles.avatarEmoji}>{assignedMember.emoji}</Text>
+                  {/* eslint-disable-next-line import/namespace */}
+                  {(() => {
+                    const MemberIconComponent = LucideIcons[assignedMember.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
+                    return MemberIconComponent ? <MemberIconComponent size={20} color="#FFFFFF" /> : null;
+                  })()}
                 </View>
                 <Text style={styles.assignedText}>
                   Assigned to: {assignedMember.name}
@@ -85,7 +93,7 @@ export function GroupCard({ group }: GroupCardProps) {
             <View style={styles.rightSection}>
               {assignedMember && assignedMember.streakCount > 0 ? (
                 <View style={styles.streakBadge}>
-                  <Text style={styles.streakEmoji}>🔥</Text>
+                  <FlameIcon size={16} color="#FFFFFF" />
                   <Text style={styles.streakText}>{assignedMember.streakCount} Day Streak</Text>
                 </View>
               ) : totalTasksCount > 0 ? (
@@ -109,7 +117,7 @@ export function GroupCard({ group }: GroupCardProps) {
 const styles = StyleSheet.create({
   cardContainer: {
     marginBottom: 16,
-    borderRadius: 20,
+    borderRadius: BORDER_RADIUS.xlarge,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
@@ -121,7 +129,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   gradient: {
-    borderRadius: 20,
+    borderRadius: BORDER_RADIUS.xlarge,
     padding: 20,
   },
   cardContent: {
@@ -138,7 +146,7 @@ const styles = StyleSheet.create({
   iconBackground: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: BORDER_RADIUS.circular.xlarge,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -173,14 +181,11 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: BORDER_RADIUS.circular.medium,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
-  },
-  avatarEmoji: {
-    fontSize: 20,
   },
   assignedText: {
     fontSize: 14,
@@ -195,12 +200,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: BORDER_RADIUS.large,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  streakEmoji: {
-    fontSize: 16,
-    marginRight: 4,
+    gap: 4,
   },
   streakText: {
     fontSize: 12,
@@ -213,7 +215,7 @@ const styles = StyleSheet.create({
   progressCircle: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: BORDER_RADIUS.xlarge,
     borderWidth: 3,
     borderColor: '#FFFFFF',
     justifyContent: 'center',

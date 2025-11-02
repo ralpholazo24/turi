@@ -1,4 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
+import { BORDER_RADIUS } from '@/constants/border-radius';
 import {
     DEFAULT_GROUP_COLOR,
     DEFAULT_GROUP_ICON,
@@ -7,6 +8,7 @@ import {
     type GroupColorPreset,
     type GroupIconName,
 } from '@/constants/groups';
+import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -42,6 +44,8 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+
+  const CheckIcon = APP_ICONS.check;
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -176,7 +180,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
                         style={styles.colorGradient}>
                         {selectedColor.start === preset.start &&
                           selectedColor.end === preset.end && (
-                            <Text style={styles.checkmark}>✓</Text>
+                            <CheckIcon size={20} color="#FFFFFF" />
                           )}
                       </LinearGradient>
                     </View>
@@ -224,8 +228,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: BORDER_RADIUS.xlarge,
+    borderTopRightRadius: BORDER_RADIUS.xlarge,
     marginTop: 'auto',
     maxHeight: '90%',
   },
@@ -270,7 +274,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS.medium,
     padding: 16,
     fontSize: 16,
     minHeight: 50,
@@ -283,7 +287,7 @@ const styles = StyleSheet.create({
   iconButton: {
     width: 50,
     height: 50,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS.medium,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
@@ -306,7 +310,7 @@ const styles = StyleSheet.create({
   colorPreview: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS.medium,
     overflow: 'hidden',
     borderWidth: 3,
     borderColor: 'transparent',
@@ -320,13 +324,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  checkmark: {
-    fontSize: 20,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
   previewCard: {
-    borderRadius: 16,
+    borderRadius: BORDER_RADIUS.large,
     overflow: 'hidden',
     marginTop: 8,
   },
@@ -344,7 +343,7 @@ const styles = StyleSheet.create({
   previewIconBackground: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: BORDER_RADIUS.circular.xlarge,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',

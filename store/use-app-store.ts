@@ -2,6 +2,15 @@ import { AppData, Group, Member, Task } from '@/types';
 import { loadData, saveData } from '@/utils/storage';
 import { create } from 'zustand';
 
+// Helper function to get week number for weekly task validation
+function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
 interface AppState {
   groups: Group[];
   isLoading: boolean;
@@ -12,7 +21,7 @@ interface AppState {
   updateGroup: (groupId: string, updates: Partial<Group>) => Promise<void>;
   deleteGroup: (groupId: string) => Promise<void>;
   
-  addMember: (groupId: string, name: string, emoji: string) => Promise<void>;
+  addMember: (groupId: string, name: string, icon: string) => Promise<void>;
   updateMember: (groupId: string, memberId: string, updates: Partial<Member>) => Promise<void>;
   deleteMember: (groupId: string, memberId: string) => Promise<void>;
   
@@ -20,6 +29,7 @@ interface AppState {
   updateTask: (groupId: string, taskId: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (groupId: string, taskId: string) => Promise<void>;
   markTaskDone: (groupId: string, taskId: string) => Promise<void>;
+  skipTurn: (groupId: string, taskId: string) => Promise<void>;
   
   // Helper to persist data
   persist: () => Promise<void>;
@@ -85,11 +95,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     await get().persist();
   },
   
-  addMember: async (groupId: string, name: string, emoji: string) => {
+  addMember: async (groupId: string, name: string, icon: string) => {
     const newMember: Member = {
       id: `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
-      emoji,
+      icon,
       streakCount: 0,
       lastStreakDate: null,
     };
@@ -150,6 +160,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       ...taskData,
       assignedIndex: 0,
       lastCompletedAt: null,
+      completionHistory: taskData.completionHistory || [],
     };
     
     set((state) => ({
@@ -206,6 +217,35 @@ export const useAppStore = create<AppState>((set, get) => ({
     
     if (assignedMembers.length === 0) return;
     
+    // Check if task was already completed in the current period
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    
+    if (task.lastCompletedAt) {
+      const lastCompleted = new Date(task.lastCompletedAt);
+      lastCompleted.setHours(0, 0, 0, 0);
+      
+      if (task.frequency === 'daily') {
+        // For daily tasks, check if completed today
+        const daysDiff = Math.floor(
+          (today.getTime() - lastCompleted.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (daysDiff === 0) {
+          // Already completed today, don't allow another completion
+          return;
+        }
+      } else {
+        // For weekly tasks, check if completed this week
+        const lastCompletedWeek = getWeekNumber(lastCompleted);
+        const currentWeek = getWeekNumber(today);
+        if (lastCompletedWeek === currentWeek) {
+          // Already completed this week, don't allow another completion
+          return;
+        }
+      }
+    }
+    
     // Get current assigned member
     const currentMember = assignedMembers[task.assignedIndex];
     
@@ -213,7 +253,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const nextIndex = (task.assignedIndex + 1) % assignedMembers.length;
     
     // Update task: rotate assignment and update completion time
-    const now = new Date().toISOString();
+    const nowISO = now.toISOString();
     
     set((state) => ({
       groups: state.groups.map((g) =>
@@ -225,7 +265,15 @@ export const useAppStore = create<AppState>((set, get) => ({
                   ? {
                       ...t,
                       assignedIndex: nextIndex,
-                      lastCompletedAt: now,
+                      lastCompletedAt: nowISO,
+                      completionHistory: [
+                        ...(t.completionHistory || []),
+                        {
+                          memberId: currentMember.id,
+                          completedAt: nowISO,
+                          memberStreakAtTime: currentMember.streakCount,
+                        },
+                      ],
                     }
                   : t
               ),
@@ -236,23 +284,25 @@ export const useAppStore = create<AppState>((set, get) => ({
                 const lastStreakDate = m.lastStreakDate
                   ? new Date(m.lastStreakDate)
                   : null;
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                const todayForStreak = new Date();
+                todayForStreak.setHours(0, 0, 0, 0);
                 
                 // Check if streak should continue or reset
                 if (lastStreakDate) {
                   const streakDate = new Date(lastStreakDate);
                   streakDate.setHours(0, 0, 0, 0);
                   const daysDiff = Math.floor(
-                    (today.getTime() - streakDate.getTime()) / (1000 * 60 * 60 * 24)
+                    (todayForStreak.getTime() - streakDate.getTime()) / (1000 * 60 * 60 * 24)
                   );
                   
-                  // If completed yesterday or today, continue streak
+                  // If completed yesterday (daysDiff === 1), continue streak by incrementing
+                  // If completed today (daysDiff === 0), this shouldn't happen due to duplicate prevention,
+                  // but if it does, keep streak the same
                   if (daysDiff === 0 || daysDiff === 1) {
                     return {
                       ...m,
-                      streakCount: daysDiff === 0 ? m.streakCount + 1 : m.streakCount + 1,
-                      lastStreakDate: now,
+                      streakCount: daysDiff === 1 ? m.streakCount + 1 : m.streakCount,
+                      lastStreakDate: nowISO,
                     };
                   }
                 }
@@ -261,9 +311,47 @@ export const useAppStore = create<AppState>((set, get) => ({
                 return {
                   ...m,
                   streakCount: 1,
-                  lastStreakDate: now,
+                  lastStreakDate: nowISO,
                 };
               }),
+            }
+          : g
+      ),
+    }));
+    
+    await get().persist();
+  },
+  
+  skipTurn: async (groupId: string, taskId: string) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+    
+    const task = group.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    
+    // Get assigned members for this task
+    const assignedMembers = group.members.filter((m) =>
+      task.memberIds.includes(m.id)
+    );
+    
+    if (assignedMembers.length === 0) return;
+    
+    // Calculate next index (rotate)
+    const nextIndex = (task.assignedIndex + 1) % assignedMembers.length;
+    
+    set((state) => ({
+      groups: state.groups.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              tasks: g.tasks.map((t) =>
+                t.id === taskId
+                  ? {
+                      ...t,
+                      assignedIndex: nextIndex,
+                    }
+                  : t
+              ),
             }
           : g
       ),
