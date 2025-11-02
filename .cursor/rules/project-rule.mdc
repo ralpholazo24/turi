@@ -213,12 +213,24 @@ CurrentTurn = Alice
   - Shows permission status if denied
 - Language preferences:
   - Language selector (navigates to Language selection page)
-  - Supports multiple languages (currently English, more languages added as translations become available)
+  - Supports multiple languages (currently English and Spanish, more languages added as translations become available)
   - Language preference persists across app restarts
   - Automatically detects device language on first launch
-- Placeholder sections for future features:
-  - Account management
-  - Support (Help & FAQ, Contact Support, About App)
+  - Language changes apply immediately without confirmation dialog
+- Clear Data:
+  - Option to clear all app data (groups, tasks, members, preferences)
+  - Clears all AsyncStorage data and scheduled notifications
+  - Resets all stores to initial state
+  - Includes confirmation modal before clearing
+  - Shows success alert and navigates to home after clearing
+- Support features:
+  - Help & FAQ (navigates to Help page)
+  - Contact Support (opens email client)
+  - Feature Requests (opens email client)
+  - About App (navigates to About page)
+- UI:
+  - Clean design without border lines between setting items
+  - Organized into sections: ACCOUNT, PREFERENCES, SUPPORT, DATA
 
 ### 11. **Internationalization (i18n)**
 
@@ -227,12 +239,25 @@ CurrentTurn = Alice
 - Uses i18next and react-i18next for translation management
 - Language preference stored in AsyncStorage
 - Default language: English
+- Supports multiple languages (currently English and Spanish)
 - Automatically detects device language on first launch
 - Language selector available in Settings → App Language
+- Language changes apply immediately without confirmation dialog
+- Notifications automatically rescheduled with new language when language changes
 - ThemedText component supports translation via `i18nKey` prop
 - When adding new text to the app, always use translation keys instead of hardcoded strings
 - Translation keys follow namespace pattern: `section.item` (e.g., `settings.title`, `task.markDone`)
 - New languages can be added by creating new translation files in `locales/` directory
+
+### 13. **Empty States with Illustrations**
+
+- Empty states display theme-aware SVG illustrations:
+  - **No groups:** `man-fishing.svg` illustration on home screen
+  - **No tasks:** `cat-and-woman.svg` illustration when group has members but no tasks
+  - **No members:** `boy-sipping.svg` illustration when group has no members
+- Illustrations adapt to theme (light/dark mode) using `tintColor` prop
+- Illustrations displayed at 280x280px with 0.8 opacity for visual consistency
+- Empty state messages are translated and use i18n keys
 
 ### 12. **Notifications**
 
@@ -264,21 +289,23 @@ CurrentTurn = Alice
 
 ## 🧠 User Stories
 
-| #   | As a... | I want to...           | So that I can...                               |
-| --- | ------- | ---------------------- | ---------------------------------------------- |
-| 1   | User    | Create a group         | Organize shared tasks with my friends/family   |
-| 2   | User    | Add members            | Define who participates in tasks               |
-| 3   | User    | Add a new task         | Track who's responsible next                   |
-| 4   | User    | View who's turn it is  | Know who should do the task today              |
-| 5   | User    | Mark a task as done    | Automatically move turn to the next person     |
-| 6   | User    | Get positive feedback  | Stay motivated to keep using the app           |
-| 7   | User    | View activity feed     | See all completed and skipped tasks            |
-| 8   | User    | Use solo mode          | Manage tasks when I'm the only member          |
-| 9   | User    | Adjust app settings    | Customize my experience (dark mode, etc.)      |
-| 10  | User    | See overdue tasks      | Know which tasks need attention                |
-| 11  | User    | Enable notifications   | Get reminded before tasks are due              |
-| 12  | User    | Set reminder time      | Choose how early I want to be notified         |
-| 13  | User    | Receive task reminders | Know when it's my turn even when app is closed |
+| #   | As a... | I want to...                  | So that I can...                               |
+| --- | ------- | ----------------------------- | ---------------------------------------------- |
+| 1   | User    | Create a group                | Organize shared tasks with my friends/family   |
+| 2   | User    | Add members                   | Define who participates in tasks               |
+| 3   | User    | Add a new task                | Track who's responsible next                   |
+| 4   | User    | View who's turn it is         | Know who should do the task today              |
+| 5   | User    | Mark a task as done           | Automatically move turn to the next person     |
+| 6   | User    | Get positive feedback         | Stay motivated to keep using the app           |
+| 7   | User    | View activity feed            | See all completed and skipped tasks            |
+| 8   | User    | Use solo mode                 | Manage tasks when I'm the only member          |
+| 9   | User    | Adjust app settings           | Customize my experience (dark mode, etc.)      |
+| 10  | User    | See overdue tasks             | Know which tasks need attention                |
+| 11  | User    | Enable notifications          | Get reminded before tasks are due              |
+| 12  | User    | Set reminder time             | Choose how early I want to be notified         |
+| 13  | User    | Receive task reminders        | Know when it's my turn even when app is closed |
+| 14  | User    | Clear all app data            | Reset the app to a fresh start when needed     |
+| 15  | User    | See empty state illustrations | Enjoy visual feedback when there's no content  |
 
 ---
 
@@ -292,6 +319,7 @@ CurrentTurn = Alice
   - Group list (`GroupCard` with gradient backgrounds)
   - Add group button (FAB)
   - `AddGroupModal` (icon picker, color theme selector)
+  - Empty state with `man-fishing.svg` illustration when no groups exist (theme-aware)
 
 ### 2. **Group Screen**
 
@@ -300,9 +328,11 @@ CurrentTurn = Alice
   - Header with group icon + name + context menu (edit/delete)
   - Solo mode badge (when applicable)
   - Tabs: "Tasks" / "Members"
-  - `TaskCardList` (displays schedule information on cards, shows "No Members Yet" message when empty)
+  - `TaskCardList` (displays schedule information on cards, shows illustrations when empty)
+    - `cat-and-woman.svg` illustration when members exist but no tasks
+    - `boy-sipping.svg` illustration when no members exist
   - `AddTaskButton` (FAB, only shown when group has members)
-  - `MemberChipList` (swipe-to-reveal edit/delete actions)
+  - `MemberChipList` (swipe-to-reveal edit/delete actions, shows `boy-sipping.svg` illustration when empty)
   - `AddMemberButton` (FAB on Members tab)
 
 ### 3. **Task Details Screen**
@@ -342,11 +372,17 @@ CurrentTurn = Alice
   - Header with back button
   - ACCOUNT section (Activity link)
   - PREFERENCES section:
-    - Notifications toggle (with permission status indicator)
-    - Reminder time selector (shown when notifications enabled)
+    - Notifications link (navigates to notifications page, shows status)
     - Dark Mode toggle
-    - App Language placeholder
-  - SUPPORT section (Help & FAQ placeholder, Contact Support placeholder, About App placeholder)
+    - App Language link (shows current language, navigates to language selection)
+  - SUPPORT section:
+    - Feature Requests link
+    - Help & FAQ link
+    - Contact Support link (opens email client)
+    - About App link
+  - DATA section:
+    - Clear Data link (with confirmation modal)
+  - Clean UI without border lines between items
 
 ### 7. **Activity Feed Screen**
 
@@ -388,6 +424,7 @@ CurrentTurn = Alice
 - **Notifications:** expo-notifications
 - **Gestures:** react-native-gesture-handler
 - **Safe Area:** react-native-safe-area-context
+- **Images:** expo-image (for SVG illustrations with theme-aware tinting)
 
 ---
 
@@ -433,6 +470,10 @@ CurrentTurn = Alice
 - [ ] All user-facing text uses translation keys (no hardcoded strings).
 - [ ] Translation keys are properly structured and organized.
 - [ ] App detects device language on first launch.
+- [ ] Empty state illustrations display correctly and adapt to theme.
+- [ ] Clear Data functionality works correctly and clears all data.
+- [ ] Language changes apply immediately without confirmation dialog.
+- [ ] Settings screen displays without border lines between items.
 
 ---
 
@@ -494,6 +535,9 @@ CurrentTurn = Alice
 7. Solo Mode Implementation
 8. Notification System (scheduling, preferences, management)
 9. UI Polish & Safety (bounds checking, safe area insets, overdue indicators)
+10. Empty State Illustrations (theme-aware SVG illustrations)
+11. Clear Data Feature
+12. Settings UI Refinements (removed border lines, improved organization)
 
 ### Notification Implementation
 
@@ -523,3 +567,19 @@ CurrentTurn = Alice
   - Requests permission when enabling notifications
   - Shows permission status in settings
   - Gracefully handles permission denial
+
+### Clear Data Implementation
+
+- **Clear Data Utility:** `utils/clear-data.ts` provides `clearAllData()` function
+- **Data Cleared:**
+  - All AsyncStorage keys (`@turi_app_data`, `@turi_notification_enabled`, `@turi_notification_reminder_minutes`, `@turi:language`, `@turi_theme_preference`)
+  - All scheduled notifications (cancelled)
+  - All Zustand stores reset to initial state
+- **User Flow:**
+  - User taps "Clear Data" in Settings → DATA section
+  - Confirmation modal shown with warning message
+  - On confirm: All data cleared, success alert shown, navigates to home screen
+  - On cancel: Modal dismissed, no changes made
+- **Error Handling:**
+  - Errors logged to console
+  - Error alert shown to user if clearing fails
