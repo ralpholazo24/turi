@@ -6,7 +6,7 @@ import { useLanguageStore } from '@/store/use-language-store';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const LANGUAGES = [
@@ -14,10 +14,6 @@ const LANGUAGES = [
   { code: 'es', name: 'Español' },
   // Add more languages here as translations are added
 ];
-
-const getLanguageName = (code: string): string => {
-  return LANGUAGES.find(l => l.code === code)?.name || code.toUpperCase();
-};
 
 export default function LanguageScreen() {
   const { t } = useTranslation();
@@ -40,11 +36,6 @@ export default function LanguageScreen() {
     }
 
     await setLanguage(langCode);
-    Alert.alert(
-      t('common.done'),
-      t('language.languageChanged', { name: getLanguageName(langCode) }),
-      [{ text: t('common.ok') }]
-    );
   };
 
   return (

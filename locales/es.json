@@ -103,6 +103,7 @@
     "account": "CUENTA",
     "preferences": "PREFERENCIAS",
     "support": "SOPORTE",
+    "data": "DATOS",
     "activity": "Actividad",
     "notifications": "Notificaciones",
     "notificationsEnabled": "Activado",
@@ -114,7 +115,10 @@
     "featureRequests": "Solicitudes de Funciones",
     "helpFAQ": "Ayuda y Preguntas Frecuentes",
     "contactSupport": "Contactar Soporte",
-    "aboutApp": "Acerca de la App"
+    "aboutApp": "Acerca de la App",
+    "clearData": "Borrar Datos",
+    "dataCleared": "Todos los datos borrados",
+    "dataClearedMessage": "Todos los datos se han borrado exitosamente."
   },
   "notifications": {
     "title": "Notificaciones",
@@ -289,6 +293,8 @@
     "deleteGroupMessage": "¿Estás seguro de que quieres eliminar \"{{name}}\"? Esto eliminará permanentemente todos los miembros, tareas y datos asociados con este grupo. Esta acción no se puede deshacer.",
     "deleteMemberTitle": "Eliminar Miembro",
     "deleteMemberMessage": "¿Estás seguro de que quieres eliminar a {{name}}? Esto los eliminará de todas las tareas.",
+    "clearDataTitle": "Borrar Todos los Datos",
+    "clearDataMessage": "Esto eliminará permanentemente todos tus grupos, tareas, miembros y preferencias. Esta acción no se puede deshacer.",
     "ok": "OK"
   },
   "language": {

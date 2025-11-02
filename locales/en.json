@@ -103,6 +103,7 @@
     "account": "ACCOUNT",
     "preferences": "PREFERENCES",
     "support": "SUPPORT",
+    "data": "DATA",
     "activity": "Activity",
     "notifications": "Notifications",
     "notificationsEnabled": "Enabled",
@@ -114,7 +115,10 @@
     "featureRequests": "Feature Requests",
     "helpFAQ": "Help & FAQ",
     "contactSupport": "Contact Support",
-    "aboutApp": "About App"
+    "aboutApp": "About App",
+    "clearData": "Clear Data",
+    "dataCleared": "All data cleared",
+    "dataClearedMessage": "All data has been successfully cleared."
   },
   "language": {
     "title": "App Language",
@@ -295,6 +299,8 @@
     "deleteGroupMessage": "Are you sure you want to delete \"{{name}}\"? This will permanently delete all members, tasks, and data associated with this group. This cannot be undone.",
     "deleteMemberTitle": "Delete Member",
     "deleteMemberMessage": "Are you sure you want to remove {{name}}? This will remove them from all tasks.",
+    "clearDataTitle": "Clear All Data",
+    "clearDataMessage": "This will permanently delete all your groups, tasks, members, and preferences. This action cannot be undone.",
     "ok": "OK"
   },
   "taskModal": {

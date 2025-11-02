@@ -1,14 +1,17 @@
 import { ThemedText } from '@/components/themed-text';
+import { ConfirmationModal } from '@/components/confirmation-modal';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useLanguageStore } from '@/store/use-language-store';
+import { clearAllData } from '@/utils/clear-data';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -34,6 +37,9 @@ export default function SettingsScreen() {
   const InfoIcon = LucideIcons.Info;
   const ActivityIcon = LucideIcons.Activity;
   const SparklesIcon = LucideIcons.Sparkles;
+  const TrashIcon = LucideIcons.Trash2;
+
+  const [isClearDataModalVisible, setIsClearDataModalVisible] = useState(false);
 
   const isDarkMode = themePreference === 'dark';
 
@@ -65,6 +71,33 @@ export default function SettingsScreen() {
           [{ text: t('common.done') }]
         );
       });
+  };
+
+  const handleClearData = async () => {
+    try {
+      await clearAllData();
+      setIsClearDataModalVisible(false);
+      Alert.alert(
+        t('settings.dataCleared'),
+        t('settings.dataClearedMessage'),
+        [
+          {
+            text: t('common.ok'),
+            onPress: () => {
+              // Navigate to home screen
+              router.replace('/(tabs)/');
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      Alert.alert(
+        t('common.close'),
+        'An error occurred while clearing data. Please try again.',
+        [{ text: t('common.ok') }]
+      );
+    }
   };
 
   const handleSettingPress = (setting: string) => {
@@ -111,7 +144,7 @@ export default function SettingsScreen() {
           <ThemedText style={styles.sectionTitle} i18nKey="settings.preferences" />
           
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
+            style={styles.settingItem}
             onPress={() => router.push('/notifications')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
@@ -131,7 +164,7 @@ export default function SettingsScreen() {
             </View>
           </TouchableOpacity>
 
-          <View style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}>
+          <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
                 <MoonIcon size={20} color="#10B981" />
@@ -148,7 +181,7 @@ export default function SettingsScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
+            style={styles.settingItem}
             onPress={() => router.push('/language')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
@@ -171,7 +204,7 @@ export default function SettingsScreen() {
           <ThemedText style={styles.sectionTitle} i18nKey="settings.support" />
           
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
+            style={styles.settingItem}
             onPress={() => router.push('/feature-requests')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
@@ -184,7 +217,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
+            style={styles.settingItem}
             onPress={() => router.push('/help')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
@@ -197,7 +230,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
+            style={styles.settingItem}
             onPress={handleContactSupport}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
@@ -222,7 +255,37 @@ export default function SettingsScreen() {
             <LucideIcons.ChevronRight size={20} color={iconColor} />
           </TouchableOpacity>
         </View>
+
+        {/* Data Section */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionTitle} i18nKey="settings.data" />
+          
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => setIsClearDataModalVisible(true)}
+            activeOpacity={0.7}>
+            <View style={styles.settingLeft}>
+              <View style={[styles.iconContainer, { backgroundColor: '#EF4444' + '20' }]}>
+                <TrashIcon size={20} color="#EF4444" />
+              </View>
+              <ThemedText style={styles.settingText} i18nKey="settings.clearData" />
+            </View>
+            <LucideIcons.ChevronRight size={20} color={iconColor} />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
+
+      {/* Clear Data Confirmation Modal */}
+      <ConfirmationModal
+        visible={isClearDataModalVisible}
+        title={t('confirmation.clearDataTitle')}
+        message={t('confirmation.clearDataMessage')}
+        confirmText={t('settings.clearData')}
+        cancelText={t('common.cancel')}
+        confirmColor="#EF4444"
+        onConfirm={handleClearData}
+        onCancel={() => setIsClearDataModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -273,7 +336,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   settingLeft: {
     flexDirection: 'row',
