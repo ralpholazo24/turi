@@ -66,11 +66,17 @@ function SwipeableMemberCard({
     .onEnd((e) => {
       // If swiped more than half the action width, open
       if (translateX.value < -ACTION_WIDTH / 2) {
-        translateX.value = withSpring(-ACTION_WIDTH);
+        translateX.value = withSpring(-ACTION_WIDTH, {
+          damping: 20,
+          stiffness: 300,
+        });
         runOnJS(setIsOpen)(true);
       } else {
         // Otherwise, close
-        translateX.value = withSpring(0);
+        translateX.value = withSpring(0, {
+          damping: 20,
+          stiffness: 300,
+        });
         runOnJS(closeCard)();
       }
     })
@@ -81,13 +87,19 @@ function SwipeableMemberCard({
   }));
 
   const handleEdit = () => {
-    translateX.value = withSpring(0);
+    translateX.value = withSpring(0, {
+      damping: 20,
+      stiffness: 300,
+    });
     setIsOpen(false);
     onEdit(member);
   };
 
   const handleDelete = () => {
-    translateX.value = withSpring(0);
+    translateX.value = withSpring(0, {
+      damping: 20,
+      stiffness: 300,
+    });
     setIsOpen(false);
     onDelete(member);
   };

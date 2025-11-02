@@ -1,8 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import {
-    DEFAULT_GROUP_COLOR,
-    DEFAULT_GROUP_ICON,
     GROUP_COLOR_PRESETS,
     GROUP_ICON_OPTIONS,
     type GroupColorPreset,
@@ -13,7 +11,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     KeyboardAvoidingView,
     Modal,
@@ -26,17 +24,23 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Group } from '@/types';
 
-interface AddGroupModalProps {
+interface EditGroupModalProps {
   visible: boolean;
   onClose: () => void;
+  group: Group;
 }
 
-export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
-  const { createGroup } = useAppStore();
-  const [name, setName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState<GroupIconName>(DEFAULT_GROUP_ICON);
-  const [selectedColor, setSelectedColor] = useState<GroupColorPreset>(DEFAULT_GROUP_COLOR);
+export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps) {
+  const { updateGroup } = useAppStore();
+  const [name, setName] = useState(group.name);
+  const [selectedIcon, setSelectedIcon] = useState<GroupIconName>(group.icon as GroupIconName);
+  const [selectedColor, setSelectedColor] = useState<GroupColorPreset>(
+    GROUP_COLOR_PRESETS.find(
+      (preset) => preset.start === group.colorStart && preset.end === group.colorEnd
+    ) || GROUP_COLOR_PRESETS[0]
+  );
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -49,29 +53,44 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
   const EditIcon = APP_ICONS.pen;
   const CheckIcon = APP_ICONS.check;
 
+  // Update form when group changes
+  useEffect(() => {
+    if (visible && group) {
+      setName(group.name);
+      setSelectedIcon(group.icon as GroupIconName);
+      const matchingColor = GROUP_COLOR_PRESETS.find(
+        (preset) => preset.start === group.colorStart && preset.end === group.colorEnd
+      );
+      if (matchingColor) {
+        setSelectedColor(matchingColor);
+      }
+    }
+  }, [visible, group]);
+
   const handleSave = async () => {
     if (!name.trim()) {
       return;
     }
 
-    await createGroup(
-      name.trim(),
-      selectedIcon,
-      selectedColor.start,
-      selectedColor.end
-    );
+    await updateGroup(group.id, {
+      name: name.trim(),
+      icon: selectedIcon,
+      colorStart: selectedColor.start,
+      colorEnd: selectedColor.end,
+    });
 
-    // Reset form
-    setName('');
-    setSelectedIcon(DEFAULT_GROUP_ICON);
-    setSelectedColor(DEFAULT_GROUP_COLOR);
     onClose();
   };
 
   const handleClose = () => {
-    setName('');
-    setSelectedIcon(DEFAULT_GROUP_ICON);
-    setSelectedColor(DEFAULT_GROUP_COLOR);
+    setName(group.name);
+    setSelectedIcon(group.icon as GroupIconName);
+    const matchingColor = GROUP_COLOR_PRESETS.find(
+      (preset) => preset.start === group.colorStart && preset.end === group.colorEnd
+    );
+    if (matchingColor) {
+      setSelectedColor(matchingColor);
+    }
     onClose();
   };
 
@@ -97,7 +116,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
             <ThemedText type="subtitle" style={styles.headerTitle}>
-              New Crew
+              Edit Crew
             </ThemedText>
             <View style={styles.headerSpacer} />
           </View>
@@ -214,7 +233,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
               ]}
               onPress={handleSave}
               disabled={!name.trim()}>
-              <Text style={styles.saveButtonText}>Save Crew</Text>
+              <Text style={styles.saveButtonText}>Save Changes</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -363,3 +382,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+

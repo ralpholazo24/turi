@@ -12,6 +12,12 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group }: GroupCardProps) {
+  const FlameIcon = APP_ICONS.flame;
+
+  const handlePress = () => {
+    router.push(`/group/${group.id}`);
+  };
+
   const nextTask = group.tasks.find((task) => {
     if (task.memberIds.length === 0) return false;
     const assignedMember = group.members.find(
@@ -26,12 +32,6 @@ export function GroupCard({ group }: GroupCardProps) {
 
   const completedTasksCount = group.tasks.filter((task) => task.lastCompletedAt).length;
   const totalTasksCount = group.tasks.length;
-
-  const FlameIcon = APP_ICONS.flame;
-
-  const handlePress = () => {
-    router.push(`/group/${group.id}`);
-  };
 
   // Get the icon component dynamically
   // eslint-disable-next-line import/namespace
@@ -111,9 +111,9 @@ export function GroupCard({ group }: GroupCardProps) {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    marginBottom: 16,
     borderRadius: BORDER_RADIUS.xlarge,
     overflow: 'hidden',
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

@@ -11,6 +11,9 @@ import { TaskCardList } from '@/components/task-card-list';
 import { MemberChipList } from '@/components/member-chip-list';
 import { AddTaskModal } from '@/components/add-task-modal';
 import { AddMemberModal } from '@/components/add-member-modal';
+import { EditGroupModal } from '@/components/edit-group-modal';
+import { GroupContextMenu } from '@/components/group-context-menu';
+import { ConfirmationModal } from '@/components/confirmation-modal';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
@@ -19,21 +22,53 @@ type TabType = 'tasks' | 'members';
 
 export default function GroupScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
-  const { groups, initialize } = useAppStore();
+  const { groups, initialize, deleteGroup } = useAppStore();
   const [activeTab, setActiveTab] = useState<TabType>('tasks');
   const [isAddTaskModalVisible, setIsAddTaskModalVisible] = useState(false);
   const [isAddMemberModalVisible, setIsAddMemberModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
+  const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
 
   const BackIcon = APP_ICONS.back;
   const PlusIcon = APP_ICONS.add;
+  const MenuIcon = APP_ICONS.menu;
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
   const group = groups.find((g) => g.id === groupId);
+
+  const handleMenuPress = () => {
+    setIsContextMenuVisible(true);
+  };
+
+  const handleEdit = () => {
+    setIsContextMenuVisible(false);
+    setIsEditModalVisible(true);
+  };
+
+  const handleDelete = () => {
+    setIsContextMenuVisible(false);
+    setIsDeleteConfirmationVisible(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (group) {
+      await deleteGroup(group.id);
+      router.back();
+    }
+    setIsDeleteConfirmationVisible(false);
+  };
+
+  const handleCloseModals = () => {
+    setIsEditModalVisible(false);
+    setIsDeleteConfirmationVisible(false);
+    setIsContextMenuVisible(false);
+  };
 
   if (!group) {
     return (
@@ -74,6 +109,13 @@ export default function GroupScreen() {
             {group.name}
           </ThemedText>
         </View>
+
+        <TouchableOpacity
+          onPress={handleMenuPress}
+          style={styles.menuButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <MenuIcon size={24} color={textColor} />
+        </TouchableOpacity>
       </View>
 
       {/* Tabs */}
@@ -121,6 +163,35 @@ export default function GroupScreen() {
         onClose={() => setIsAddMemberModalVisible(false)}
         group={group}
       />
+
+      {/* Edit Group Modal */}
+      {group && (
+        <EditGroupModal
+          visible={isEditModalVisible}
+          onClose={handleCloseModals}
+          group={group}
+        />
+      )}
+
+      {/* Group Context Menu */}
+      <GroupContextMenu
+        visible={isContextMenuVisible}
+        onClose={() => setIsContextMenuVisible(false)}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmationModal
+        visible={isDeleteConfirmationVisible}
+        title="Delete Crew"
+        message={`Are you sure you want to delete "${group?.name}"? This will permanently delete all members, tasks, and data associated with this crew. This cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="#EF4444"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setIsDeleteConfirmationVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -157,6 +228,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     flex: 1,
+  },
+  menuButton: {
+    padding: 4,
+    marginLeft: 8,
   },
   content: {
     flex: 1,
