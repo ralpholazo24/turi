@@ -3,14 +3,11 @@ export interface Member {
   name: string;
   icon: string; // Kept for backward compatibility, but we'll use avatarColor
   avatarColor: string; // Color for initials avatar
-  streakCount: number;
-  lastStreakDate: string | null; // ISO date string
 }
 
 export interface TaskCompletion {
   memberId: string;
   completedAt: string; // ISO date string
-  memberStreakAtTime: number; // Streak count when completed
 }
 
 export interface Task {

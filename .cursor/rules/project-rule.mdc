@@ -22,7 +22,6 @@ Version 1 (MVP) focuses on **local-only functionality** with **no accounts or cl
 
 - Simplify managing shared, repetitive tasks.
 - Make task tracking fun, visual, and easy to maintain.
-- Encourage consistency through small gamified elements.
 
 ---
 
@@ -113,14 +112,11 @@ CurrentTurn = Alice
     id: string;
     name: string;
     avatarColor: string; // Random color assigned for avatar
-    streakCount: number;
-    lastStreakDate: string | null; // ISO date string
   }
 
   TaskCompletion {
     memberId: string;
     completedAt: string; // ISO date string
-    memberStreakAtTime: number; // Streak count when completed
   }
 
   Task {
@@ -130,7 +126,7 @@ CurrentTurn = Alice
     frequency: 'daily' | 'weekly' | 'monthly';
     assignedIndex: number;
     memberIds: string[];
-    lastCompletedAt: string | null; // ISO date string for streak calculation
+    lastCompletedAt: string | null; // ISO date string for completion tracking
     completionHistory: TaskCompletion[]; // History of completions
     // Scheduling options (optional, only used when frequency is weekly or monthly)
     scheduleWeek?: number; // For monthly: 1-4 (first, second, third, fourth week)
@@ -143,11 +139,8 @@ CurrentTurn = Alice
 
 ### 6. **Gamification**
 
-- **Streak counter** for completing tasks (per-user).
 - Confetti or celebration animation on completion.
 - Motivational messages like "Nice job!" or "Keep it going!"
-- **Streak logic:** Resets if user misses their turn on a daily/weekly/monthly task.
-- Streak badges displayed on task cards and in completion history.
 
 ---
 
@@ -185,7 +178,6 @@ CurrentTurn = Alice
   - `AddTaskButton` (FAB)
   - `MemberChipList` (swipe-to-reveal edit/delete actions)
   - `AddMemberButton` (FAB)
-  - Streak badges displayed on member chips and task cards
 
 ### 3. **Task Details Screen**
 
@@ -194,7 +186,7 @@ CurrentTurn = Alice
   - Task icon + name
   - Full schedule information display (e.g., "Every Mon at 2:30 PM", "Monthly: First Fri")
   - Current member responsible (with avatar)
-  - Completion history (with member avatars and streak badges)
+  - Completion history (with member avatars)
   - Mark done button (disabled when already completed)
   - Skip turn button (hidden when completed)
   - Edit/Delete options (context menu)
@@ -220,7 +212,6 @@ CurrentTurn = Alice
 
 - Confetti animation component
 - Motivational message component
-- Streak counter component (per-user)
 
 ---
 
@@ -261,8 +252,6 @@ CurrentTurn = Alice
 - [ ] Data persists after app restart.
 - [ ] UI looks correct on iOS and Android.
 - [ ] Confetti triggers on "Mark Done".
-- [ ] Streak counter increases on completion.
-- [ ] Streak resets when user misses their turn.
 
 ---
 
@@ -287,22 +276,20 @@ CurrentTurn = Alice
 ### Frequency Tracking
 
 - Track minimal completion dates (last completed timestamp per task).
-- Use frequency (daily/weekly/monthly) for display and streak calculation.
+- Use frequency (daily/weekly/monthly) for display.
 - Tasks can only be completed once per period (prevents duplicate completions).
 - Schedule information (week, day, time) stored for weekly and monthly tasks.
 
 ### Gamification
 
-- **Streaks only** (no XP for MVP).
-- Per-user streak tracking.
-- Streak resets if user misses their turn on a daily/weekly/monthly task.
-- Streak badges displayed on task cards and in completion history.
+- **Simple feedback only** (no streaks for MVP).
+- Confetti animation on completion.
+- Motivational messages.
 
 ### Data Structure
 
 - Use PRD structure with **versioning** for future migrations.
-- Add `lastCompletedAt` timestamp to Task for streak calculation.
-- Add `streakCount` and `lastStreakDate` to Member for tracking.
+- Add `lastCompletedAt` timestamp to Task for completion tracking.
 - Add `completionHistory` array to Task for tracking completion history.
 - Add `scheduleWeek`, `scheduleDay`, `scheduleTime` to Task for scheduling (weekly/monthly).
 - Groups use Lucide icons and color themes (gradient start/end).
@@ -314,4 +301,4 @@ CurrentTurn = Alice
 1. Home Screen → Group List
 2. Group Screen → Tasks & Members
 3. Task Details / Add Modals
-4. Gamification Layer (streaks, confetti, messages)
+4. Gamification Layer (confetti, messages)

@@ -76,7 +76,6 @@ export function TaskCard({
   
   const CheckIcon = APP_ICONS.check;
   const CalendarIcon = APP_ICONS.calendar;
-  const FlameIcon = APP_ICONS.flame;
 
   return (
     <TouchableOpacity
@@ -137,11 +136,6 @@ export function TaskCard({
                 <View style={styles.completedBadge}>
                   <CheckIcon size={16} color="#FFFFFF" />
                   <Text style={styles.completedText}>Done</Text>
-                </View>
-              ) : assignedMember && assignedMember.streakCount > 0 ? (
-                <View style={styles.streakBadge}>
-                  <FlameIcon size={16} color="#FFFFFF" />
-                  <Text style={styles.streakText}>{assignedMember.streakCount} Day Streak</Text>
                 </View>
               ) : (
                 <View style={styles.frequencyBadge}>
@@ -246,20 +240,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   completedText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.large,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    gap: 4,
-  },
-  streakText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',

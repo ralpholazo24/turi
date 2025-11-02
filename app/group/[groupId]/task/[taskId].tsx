@@ -39,7 +39,6 @@ export default function TaskDetailsScreen() {
   const BackIcon = APP_ICONS.back;
   const MenuIcon = APP_ICONS.menu;
   const CheckIcon = APP_ICONS.check;
-  const FlameIcon = APP_ICONS.flame;
   const ClipboardIcon = APP_ICONS.clipboard;
 
   useEffect(() => {
@@ -235,14 +234,6 @@ export default function TaskDetailsScreen() {
                         {formatDate(entry.completedAt)}
                       </ThemedText>
                     </View>
-                    {entry.memberStreakAtTime > 0 && (
-                      <View style={styles.streakBadge}>
-                        <FlameIcon size={14} color="#F97316" />
-                        <ThemedText style={styles.streakText}>
-                          {entry.memberStreakAtTime}
-                        </ThemedText>
-                      </View>
-                    )}
                   </View>
                 </View>
               );
@@ -462,20 +453,6 @@ const styles = StyleSheet.create({
   historyDate: {
     fontSize: 13,
     opacity: 0.6,
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.large,
-    backgroundColor: 'rgba(249, 115, 22, 0.1)',
-    gap: 4,
-  },
-  streakText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#F97316',
   },
   emptyHistory: {
     alignItems: 'center',

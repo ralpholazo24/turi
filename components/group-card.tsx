@@ -12,7 +12,6 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group }: GroupCardProps) {
-  const FlameIcon = APP_ICONS.flame;
 
   const handlePress = () => {
     router.push(`/group/${group.id}`);
@@ -86,12 +85,7 @@ export function GroupCard({ group }: GroupCardProps) {
             )}
 
             <View style={styles.rightSection}>
-              {assignedMember && assignedMember.streakCount > 0 ? (
-                <View style={styles.streakBadge}>
-                  <FlameIcon size={16} color="#FFFFFF" />
-                  <Text style={styles.streakText}>{assignedMember.streakCount} Day Streak</Text>
-                </View>
-              ) : totalTasksCount > 0 ? (
+              {totalTasksCount > 0 ? (
                 <View style={styles.progressBadge}>
                   <View style={styles.progressCircle}>
                     <Text style={styles.progressText}>
@@ -181,20 +175,6 @@ const styles = StyleSheet.create({
   },
   rightSection: {
     alignItems: 'flex-end',
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.large,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    gap: 4,
-  },
-  streakText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   progressBadge: {
     alignItems: 'center',

@@ -102,8 +102,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       name,
       icon, // Keep for backward compatibility
       avatarColor: getRandomAvatarColor(), // Random color for avatar
-      streakCount: 0,
-      lastStreakDate: null,
     };
     
     set((state) => ({
@@ -283,49 +281,11 @@ export const useAppStore = create<AppState>((set, get) => ({
                         {
                           memberId: currentMember.id,
                           completedAt: nowISO,
-                          memberStreakAtTime: currentMember.streakCount,
                         },
                       ],
                     }
                   : t
               ),
-              // Update member streak
-              members: g.members.map((m) => {
-                if (m.id !== currentMember.id) return m;
-                
-                const lastStreakDate = m.lastStreakDate
-                  ? new Date(m.lastStreakDate)
-                  : null;
-                const todayForStreak = new Date();
-                todayForStreak.setHours(0, 0, 0, 0);
-                
-                // Check if streak should continue or reset
-                if (lastStreakDate) {
-                  const streakDate = new Date(lastStreakDate);
-                  streakDate.setHours(0, 0, 0, 0);
-                  const daysDiff = Math.floor(
-                    (todayForStreak.getTime() - streakDate.getTime()) / (1000 * 60 * 60 * 24)
-                  );
-                  
-                  // If completed yesterday (daysDiff === 1), continue streak by incrementing
-                  // If completed today (daysDiff === 0), this shouldn't happen due to duplicate prevention,
-                  // but if it does, keep streak the same
-                  if (daysDiff === 0 || daysDiff === 1) {
-                    return {
-                      ...m,
-                      streakCount: daysDiff === 1 ? m.streakCount + 1 : m.streakCount,
-                      lastStreakDate: nowISO,
-                    };
-                  }
-                }
-                
-                // Start new streak
-                return {
-                  ...m,
-                  streakCount: 1,
-                  lastStreakDate: nowISO,
-                };
-              }),
             }
           : g
       ),

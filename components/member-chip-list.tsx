@@ -47,7 +47,6 @@ function SwipeableMemberCard({
 
   const EditIcon = APP_ICONS.edit;
   const DeleteIcon = APP_ICONS.delete;
-  const FlameIcon = APP_ICONS.flame;
 
   const closeCard = () => {
     setIsOpen(false);
@@ -139,16 +138,6 @@ function SwipeableMemberCard({
             {/* Member Info */}
             <View style={styles.memberInfo}>
               <ThemedText style={styles.memberName}>{member.name}</ThemedText>
-              {member.streakCount > 0 ? (
-                <View style={styles.streakContainer}>
-                  <FlameIcon size={16} color="#F97316" />
-                  <ThemedText style={styles.streakText}>
-                    {member.streakCount} Day Streak
-                  </ThemedText>
-                </View>
-              ) : (
-                <ThemedText style={styles.noStreakText}>No streak yet</ThemedText>
-              )}
             </View>
           </View>
         </Animated.View>
@@ -330,19 +319,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 4,
-  },
-  streakContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  streakText: {
-    fontSize: 14,
-    color: '#F97316',
-    fontWeight: '500',
-  },
-  noStreakText: {
-    fontSize: 14,
-    opacity: 0.5,
   },
 });
