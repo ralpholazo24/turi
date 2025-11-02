@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Text,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -22,6 +23,7 @@ import { Task, Member } from '@/types';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
 import { MemberAvatar } from '@/components/member-avatar';
+import ConfettiCannon from 'react-native-confetti-cannon';
 
 export default function TaskDetailsScreen() {
   const { groupId, taskId } = useLocalSearchParams<{ groupId: string; taskId: string }>();
@@ -30,6 +32,8 @@ export default function TaskDetailsScreen() {
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [isSkipConfirmationVisible, setIsSkipConfirmationVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiKey, setConfettiKey] = useState(0);
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -123,8 +127,14 @@ export default function TaskDetailsScreen() {
     if (completionStatus.isCompleted) {
       return; // Already completed, don't do anything
     }
+    // Trigger confetti animation
+    setConfettiKey(prev => prev + 1);
+    setShowConfetti(true);
     await markTaskDone(group.id, task.id);
-    router.back();
+    // Hide confetti after animation completes
+    setTimeout(() => {
+      setShowConfetti(false);
+    }, 4000);
   };
 
   const handleSkipTurn = async () => {
@@ -328,6 +338,20 @@ export default function TaskDetailsScreen() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setIsDeleteConfirmationVisible(false)}
       />
+
+      {/* Confetti Animation */}
+      {showConfetti && (
+        <ConfettiCannon
+          key={confettiKey}
+          count={250}
+          origin={{ x: Dimensions.get('window').width / 2, y: -50 }}
+          fadeOut
+          autoStart
+          explosionSpeed={500}
+          fallSpeed={4000}
+          colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#FFB6C1', '#87CEEB', '#DDA0DD']}
+        />
+      )}
     </SafeAreaView>
   );
 }
