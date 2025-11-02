@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, TouchableOpacity, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import * as Linking from 'expo-linking';
 import * as LucideIcons from 'lucide-react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -29,11 +30,38 @@ export default function SettingsScreen() {
   const HeadphonesIcon = LucideIcons.Headphones;
   const InfoIcon = LucideIcons.Info;
   const ActivityIcon = LucideIcons.Activity;
+  const SparklesIcon = LucideIcons.Sparkles;
 
   const isDarkMode = themePreference === 'dark';
 
   const handleToggleDarkMode = async (value: boolean) => {
     await updateThemePreference(value ? 'dark' : 'light');
+  };
+
+  const handleContactSupport = () => {
+    const subject = encodeURIComponent('Support Request - Turi App');
+    const body = encodeURIComponent('Hello,\n\nI need help with the following:\n\n');
+    const emailUrl = `mailto:ralpholazo@gmail.com?subject=${subject}&body=${body}`;
+
+    Linking.canOpenURL(emailUrl)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(emailUrl);
+        } else {
+          Alert.alert(
+            'Email Not Available',
+            'Please email your support request to: ralpholazo@gmail.com',
+            [{ text: 'OK' }]
+          );
+        }
+      })
+      .catch(() => {
+        Alert.alert(
+          'Error',
+          'Unable to open email client. Please email your support request to: ralpholazo@gmail.com',
+          [{ text: 'OK' }]
+        );
+      });
   };
 
   const handleSettingPress = (setting: string) => {
@@ -141,6 +169,19 @@ export default function SettingsScreen() {
           
           <TouchableOpacity
             style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
+            onPress={() => router.push('/feature-requests')}
+            activeOpacity={0.7}>
+            <View style={styles.settingLeft}>
+              <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
+                <SparklesIcon size={20} color={iconColor} />
+              </View>
+              <ThemedText style={styles.settingText}>Feature Requests</ThemedText>
+            </View>
+            <LucideIcons.ChevronRight size={20} color={iconColor} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
             onPress={() => handleSettingPress('Help & FAQ')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
@@ -154,7 +195,7 @@ export default function SettingsScreen() {
 
           <TouchableOpacity
             style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
-            onPress={() => handleSettingPress('Contact Support')}
+            onPress={handleContactSupport}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
@@ -167,7 +208,7 @@ export default function SettingsScreen() {
 
           <TouchableOpacity
             style={styles.settingItem}
-            onPress={() => handleSettingPress('About App')}
+            onPress={() => router.push('/about')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
