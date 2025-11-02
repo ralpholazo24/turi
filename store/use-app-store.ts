@@ -1,6 +1,6 @@
-import { create } from 'zustand';
 import { AppData, Group, Member, Task } from '@/types';
 import { loadData, saveData } from '@/utils/storage';
+import { create } from 'zustand';
 
 interface AppState {
   groups: Group[];
@@ -8,7 +8,7 @@ interface AppState {
   
   // Actions
   initialize: () => Promise<void>;
-  createGroup: (name: string, emoji: string, colorStart: string, colorEnd: string) => Promise<void>;
+  createGroup: (name: string, icon: string, colorStart: string, colorEnd: string) => Promise<void>;
   updateGroup: (groupId: string, updates: Partial<Group>) => Promise<void>;
   deleteGroup: (groupId: string) => Promise<void>;
   
@@ -49,11 +49,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     await saveData(appData);
   },
   
-  createGroup: async (name: string, emoji: string, colorStart: string, colorEnd: string) => {
+  createGroup: async (name: string, icon: string, colorStart: string, colorEnd: string) => {
     const newGroup: Group = {
       id: `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
-      emoji,
+      icon,
       colorStart,
       colorEnd,
       members: [],

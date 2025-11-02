@@ -19,7 +19,7 @@ export interface Task {
 export interface Group {
   id: string;
   name: string;
-  emoji: string;
+  icon: string; // Icon name from lucide-react-native
   colorStart: string; // Gradient start color
   colorEnd: string; // Gradient end color
   members: Member[];

@@ -1,24 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/use-app-store';
 import { GroupCard } from '@/components/group-card';
+import { AddGroupModal } from '@/components/add-group-modal';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function HomeScreen() {
   const { groups, isLoading, initialize } = useAppStore();
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
 
   useEffect(() => {
     initialize();
-  }, []);
+  }, [initialize]);
 
   const handleAddGroup = () => {
-    // TODO: Open AddGroupModal
-    alert('Add Group modal will be implemented next!');
+    setIsModalVisible(true);
   };
 
   return (
@@ -65,6 +66,9 @@ export default function HomeScreen() {
         activeOpacity={0.8}>
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
+
+      {/* Add Group Modal */}
+      <AddGroupModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
     </SafeAreaView>
   );
 }

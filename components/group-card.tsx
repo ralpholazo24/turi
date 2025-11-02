@@ -1,6 +1,7 @@
 import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import * as LucideIcons from 'lucide-react-native';
 import { Group } from '@/types';
 
 interface GroupCardProps {
@@ -27,6 +28,10 @@ export function GroupCard({ group }: GroupCardProps) {
     router.push(`/group/${group.id}`);
   };
 
+  // Get the icon component dynamically
+  // eslint-disable-next-line import/namespace
+  const IconComponent = LucideIcons[group.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+
   return (
     <TouchableOpacity
       style={styles.cardContainer}
@@ -34,15 +39,19 @@ export function GroupCard({ group }: GroupCardProps) {
       activeOpacity={0.8}>
       <LinearGradient
         colors={[group.colorStart, group.colorEnd]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        start={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 0 }}
         style={styles.gradient}>
         <View style={styles.cardContent}>
           {/* Top Section: Icon and Title */}
           <View style={styles.topSection}>
             <View style={styles.iconContainer}>
               <View style={styles.iconBackground}>
-                <Text style={styles.emoji}>{group.emoji}</Text>
+                {IconComponent ? (
+                  <IconComponent size={28} color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.fallbackIcon}>🏠</Text>
+                )}
               </View>
             </View>
             <View style={styles.textSection}>
@@ -134,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emoji: {
+  fallbackIcon: {
     fontSize: 28,
   },
   textSection: {
