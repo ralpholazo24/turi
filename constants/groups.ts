@@ -27,15 +27,18 @@ export type GroupIconName = typeof GROUP_ICON_OPTIONS[number]['component'];
 
 // Unique color gradient combinations for group cards
 // Gradient flows from bottom-right to upper-left
+// Based on vibrant color palette: Red, Orange, Yellow, Green, Mint, Teal, Cyan, Blue, Indigo, Purple
 export const GROUP_COLOR_PRESETS = [
-  { start: '#8B5CF6', end: '#EC4899', name: 'Purple-Pink' },
-  { start: '#06B6D4', end: '#10B981', name: 'Teal-Green' },
-  { start: '#F97316', end: '#FBBF24', name: 'Orange-Yellow' },
-  { start: '#3B82F6', end: '#8B5CF6', name: 'Blue-Purple' },
-  { start: '#EF4444', end: '#F97316', name: 'Red-Orange' },
-  { start: '#10B981', end: '#3B82F6', name: 'Green-Blue' },
-  { start: '#6366F1', end: '#8B5CF6', name: 'Indigo-Purple' },
-  { start: '#EC4899', end: '#F97316', name: 'Pink-Orange' },
+  { start: '#DC2626', end: '#F97316', name: 'Red-Orange' },      // Red → Orange (warm)
+  { start: '#EA580C', end: '#EAB308', name: 'Orange-Yellow' },   // Orange → Yellow (sunset)
+  { start: '#FCD34D', end: '#16A34A', name: 'Yellow-Green' },    // Yellow → Green (fresh)
+  { start: '#22C55E', end: '#5EEAD4', name: 'Green-Mint' },      // Green → Mint (cool)
+  { start: '#5EEAD4', end: '#14B8A6', name: 'Mint-Teal' },       // Mint → Teal (ocean)
+  { start: '#0D9488', end: '#06B6D4', name: 'Teal-Cyan' },       // Teal → Cyan (aqua)
+  { start: '#0891B2', end: '#2563EB', name: 'Cyan-Blue' },      // Cyan → Blue (sky)
+  { start: '#3B82F6', end: '#6366F1', name: 'Blue-Indigo' },    // Blue → Indigo (deep)
+  { start: '#4F46E5', end: '#9333EA', name: 'Indigo-Purple' },  // Indigo → Purple (royal)
+  { start: '#A855F7', end: '#EC4899', name: 'Purple-Pink' },    // Purple → Pink (vibrant)
 ] as const;
 
 export type GroupColorPreset = typeof GROUP_COLOR_PRESETS[number];
