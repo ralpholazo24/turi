@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import * as LucideIcons from 'lucide-react-native';
 import { useAppStore } from '@/store/use-app-store';
 import { GroupCard } from '@/components/group-card';
 import { AddGroupModal } from '@/components/add-group-modal';
@@ -38,6 +40,12 @@ export default function HomeScreen() {
           <ThemedText type="title" style={styles.title}>
             Your Groups
           </ThemedText>
+          <TouchableOpacity
+            onPress={() => router.push('/settings')}
+            style={styles.settingsButton}
+            activeOpacity={0.7}>
+            <LucideIcons.Settings size={24} color={textColor} />
+          </TouchableOpacity>
         </View>
 
         {/* Groups List */}
@@ -90,11 +98,18 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Space for FAB
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 24,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
+    flex: 1,
+  },
+  settingsButton: {
+    padding: 8,
   },
   loadingContainer: {
     flex: 1,
