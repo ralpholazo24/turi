@@ -83,6 +83,7 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
             groupColorStart={group.colorStart}
             groupColorEnd={group.colorEnd}
             groupId={group.id}
+            group={group}
           />
         );
       })}

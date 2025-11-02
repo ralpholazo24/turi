@@ -7,6 +7,7 @@ import { TASK_ICON_OPTIONS, type TaskIconName } from '@/constants/icons-task-mem
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
 import { Group, Task } from '@/types';
+import { isSoloMode } from '@/utils/solo-mode';
 import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
@@ -93,12 +94,17 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       setTaskName(task.name);
       setSelectedIcon(task.icon as TaskIconName);
       setFrequency(task.frequency);
-      setSelectedMembers(new Set(task.memberIds));
+      // In solo mode, automatically select the solo member
+      if (isSoloMode(group)) {
+        setSelectedMembers(new Set([group.members[0].id]));
+      } else {
+        setSelectedMembers(new Set(task.memberIds));
+      }
       setScheduleWeek(task.scheduleWeek);
       setScheduleDay(task.scheduleDay);
       setScheduleTime(task.scheduleTime || '');
     }
-  }, [visible, task]);
+  }, [visible, task, group]);
 
   const handleSelectAll = () => {
     if (selectedMembers.size === group.members.length) {
@@ -119,7 +125,16 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   };
 
   const handleSave = async () => {
-    if (!taskName.trim() || selectedMembers.size === 0) {
+    if (!taskName.trim()) {
+      return;
+    }
+
+    // In solo mode, automatically assign to the solo member
+    const finalSelectedMembers = isSoloMode(group) 
+      ? [group.members[0].id]
+      : Array.from(selectedMembers);
+
+    if (finalSelectedMembers.length === 0) {
       return;
     }
 
@@ -128,8 +143,8 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       return;
     }
 
-    // Adjust assignedIndex if current assignee is removed
-    const newMemberIds = Array.from(selectedMembers);
+    // Calculate new assigned index
+    const newMemberIds = finalSelectedMembers;
     const currentMemberId = task.memberIds[task.assignedIndex];
     let newAssignedIndex = task.assignedIndex;
 
@@ -380,53 +395,55 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
               </View>
             </View>
 
-            {/* Member Selector */}
-            <View style={styles.section}>
-              <View style={styles.labelRow}>
-                <ThemedText style={styles.label}>Who&apos;s in?</ThemedText>
-                <TouchableOpacity onPress={handleSelectAll}>
-                  <ThemedText style={styles.selectAllText}>
-                    {allSelected ? 'Deselect All' : 'Select All'}
+            {/* Member Selector - Hidden in solo mode */}
+            {!isSoloMode(group) && (
+              <View style={styles.section}>
+                <View style={styles.labelRow}>
+                  <ThemedText style={styles.label}>Who&apos;s in?</ThemedText>
+                  <TouchableOpacity onPress={handleSelectAll}>
+                    <ThemedText style={styles.selectAllText}>
+                      {allSelected ? 'Deselect All' : 'Select All'}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+                {group.members.length === 0 ? (
+                  <ThemedText style={styles.noMembersText}>
+                    Add members first to assign tasks
                   </ThemedText>
-                </TouchableOpacity>
-              </View>
-              {group.members.length === 0 ? (
-                <ThemedText style={styles.noMembersText}>
-                  Add members first to assign tasks
-                </ThemedText>
-              ) : (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.memberScroll}>
-                  {group.members.map((member) => {
-                    const isSelected = selectedMembers.has(member.id);
-                    return (
-                      <TouchableOpacity
-                        key={member.id}
-                        style={styles.memberOption}
-                        onPress={() => handleToggleMember(member.id)}>
-                        <View style={styles.memberAvatarContainer}>
-                          <View
-                            style={[
-                              styles.memberAvatar,
-                              isSelected && styles.memberAvatarSelected,
-                            ]}>
-                            <MemberAvatar member={member} size={40} />
-                          </View>
-                          {isSelected && (
-                            <View style={styles.checkmarkContainer}>
-                              <CheckIcon size={12} color="#FFFFFF" />
+                ) : (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.memberScroll}>
+                    {group.members.map((member) => {
+                      const isSelected = selectedMembers.has(member.id);
+                      return (
+                        <TouchableOpacity
+                          key={member.id}
+                          style={styles.memberOption}
+                          onPress={() => handleToggleMember(member.id)}>
+                          <View style={styles.memberAvatarContainer}>
+                            <View
+                              style={[
+                                styles.memberAvatar,
+                                isSelected && styles.memberAvatarSelected,
+                              ]}>
+                              <MemberAvatar member={member} size={40} />
                             </View>
-                          )}
-                        </View>
-                        <ThemedText style={styles.memberName}>{member.name}</ThemedText>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              )}
-            </View>
+                            {isSelected && (
+                              <View style={styles.checkmarkContainer}>
+                                <CheckIcon size={12} color="#FFFFFF" />
+                              </View>
+                            )}
+                          </View>
+                          <ThemedText style={styles.memberName}>{member.name}</ThemedText>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                )}
+              </View>
+            )}
           </ScrollView>
 
           {/* Save Button */}

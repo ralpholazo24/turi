@@ -22,6 +22,7 @@ import { ConfirmationModal } from '@/components/confirmation-modal';
 import { Task, Member } from '@/types';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
+import { isSoloMode } from '@/utils/solo-mode';
 import { MemberAvatar } from '@/components/member-avatar';
 import ConfettiCannon from 'react-native-confetti-cannon';
 
@@ -122,6 +123,9 @@ export default function TaskDetailsScreen() {
   
   // Check if task is overdue
   const isOverdue = isTaskOverdue(task);
+  
+  // Check if group is in solo mode
+  const soloMode = isSoloMode(group);
 
   const handleMarkDone = async () => {
     if (completionStatus.isCompleted) {
@@ -218,8 +222,12 @@ export default function TaskDetailsScreen() {
           <View style={styles.currentAssigneeSection}>
             <MemberAvatar member={currentMember} size={56} />
             <View style={styles.assigneeInfo}>
-              <ThemedText style={styles.assigneeName}>{currentMember.name}</ThemedText>
-              <ThemedText style={styles.itYourTurn}>It&apos;s your turn</ThemedText>
+              <ThemedText style={styles.assigneeName}>
+                {soloMode ? 'You' : currentMember.name}
+              </ThemedText>
+              {!soloMode && (
+                <ThemedText style={styles.itYourTurn}>It&apos;s your turn</ThemedText>
+              )}
             </View>
           </View>
         )}
@@ -287,7 +295,7 @@ export default function TaskDetailsScreen() {
           </ThemedText>
         </TouchableOpacity>
 
-        {!completionStatus.isCompleted && (
+        {!completionStatus.isCompleted && !soloMode && (
           <TouchableOpacity
             style={[styles.skipButton, { backgroundColor: backgroundColor, borderColor: borderColor + '50' }]}
             onPress={handleSkipTurn}

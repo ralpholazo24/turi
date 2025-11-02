@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
-import * as LucideIcons from 'lucide-react-native';
-import { useAppStore } from '@/store/use-app-store';
-import { ThemedText } from '@/components/themed-text';
-import { GroupTabs } from '@/components/group-tabs';
-import { TaskCardList } from '@/components/task-card-list';
-import { MemberChipList } from '@/components/member-chip-list';
-import { AddTaskModal } from '@/components/add-task-modal';
 import { AddMemberModal } from '@/components/add-member-modal';
+import { AddTaskModal } from '@/components/add-task-modal';
+import { ConfirmationModal } from '@/components/confirmation-modal';
 import { EditGroupModal } from '@/components/edit-group-modal';
 import { GroupContextMenu } from '@/components/group-context-menu';
-import { ConfirmationModal } from '@/components/confirmation-modal';
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { GroupTabs } from '@/components/group-tabs';
+import { MemberChipList } from '@/components/member-chip-list';
+import { TaskCardList } from '@/components/task-card-list';
+import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAppStore } from '@/store/use-app-store';
+import { router, useLocalSearchParams } from 'expo-router';
+import * as LucideIcons from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type TabType = 'tasks' | 'members';
 
@@ -105,9 +105,11 @@ export default function GroupScreen() {
               <View style={styles.iconPlaceholder} />
             )}
           </View>
-          <ThemedText type="subtitle" style={styles.groupName}>
-            {group.name}
-          </ThemedText>
+          <View style={styles.groupNameContainer}>
+            <ThemedText type="subtitle" style={styles.groupName}>
+              {group.name}
+            </ThemedText>
+          </View>
         </View>
 
         <TouchableOpacity
@@ -226,18 +228,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    gap: 12,
   },
   iconContainer: {
-    marginRight: 12,
+    width: 40,
+    height: 40,
+    borderRadius: BORDER_RADIUS.medium,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   iconPlaceholder: {
     width: 24,
     height: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: BORDER_RADIUS.small,
+  },
+  groupNameContainer: {
+    flex: 1,
   },
   groupName: {
     fontSize: 20,
     fontWeight: '600',
-    flex: 1,
+  },
+  soloBadge: {
+    marginTop: 4,
+  },
+  soloBadgeText: {
+    fontSize: 12,
+    opacity: 0.7,
+    fontStyle: 'italic',
   },
   menuButton: {
     padding: 4,

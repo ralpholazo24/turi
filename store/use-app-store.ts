@@ -1,5 +1,6 @@
 import { AppData, Group, Member, Task } from '@/types';
 import { getRandomAvatarColor } from '@/utils/member-avatar';
+import { isSoloMode } from '@/utils/solo-mode';
 import { loadData, saveData } from '@/utils/storage';
 import { create } from 'zustand';
 
@@ -155,12 +156,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     const group = get().groups.find((g) => g.id === groupId);
     if (!group) return;
     
+    // In solo mode, automatically assign to the single member
+    let finalTaskData = taskData;
+    if (isSoloMode(group)) {
+      const soloMember = group.members[0];
+      finalTaskData = {
+        ...taskData,
+        memberIds: [soloMember.id],
+        assignedIndex: 0,
+      };
+    }
+    
     const newTask: Task = {
       id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      ...taskData,
-      assignedIndex: 0,
+      ...finalTaskData,
+      assignedIndex: finalTaskData.assignedIndex ?? 0,
       lastCompletedAt: null,
-      completionHistory: taskData.completionHistory || [],
+      completionHistory: finalTaskData.completionHistory || [],
     };
     
     set((state) => ({
@@ -259,10 +271,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     // Get current assigned member
     const currentMember = assignedMembers[task.assignedIndex];
     
-    // Calculate next index (rotate)
-    const nextIndex = (task.assignedIndex + 1) % assignedMembers.length;
+    // In solo mode, don't rotate - just update completion time
+    const isSolo = isSoloMode(group);
+    const nextIndex = isSolo ? task.assignedIndex : (task.assignedIndex + 1) % assignedMembers.length;
     
-    // Update task: rotate assignment and update completion time
+    // Update task: rotate assignment (or keep same in solo mode) and update completion time
     const nowISO = now.toISOString();
     
     set((state) => ({

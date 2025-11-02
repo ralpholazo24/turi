@@ -1,6 +1,7 @@
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
-import { Member, Task } from '@/types';
+import { Group, Member, Task } from '@/types';
+import { isSoloMode } from '@/utils/solo-mode';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +17,7 @@ interface TaskCardProps {
   groupColorStart: string;
   groupColorEnd: string;
   groupId: string;
+  group: Group; // Add group for solo mode detection
 }
 
 export function TaskCard({
@@ -24,7 +26,9 @@ export function TaskCard({
   onPress,
   groupColorStart,
   groupColorEnd,
+  group,
 }: TaskCardProps) {
+  const soloMode = isSoloMode(group);
   // Calculate due date text
   const getDueDateText = () => {
     if (!task.lastCompletedAt) {
@@ -121,12 +125,17 @@ export function TaskCard({
 
           {/* Bottom Section: Assigned Member and Badge */}
           <View style={styles.bottomSection}>
-            {assignedMember ? (
+            {assignedMember && !soloMode ? (
               <View style={styles.assignedSection}>
                 <MemberAvatar member={assignedMember} size={32} />
                 <Text style={styles.assignedText}>
                   {assignedMember.name}&apos;s turn
                 </Text>
+              </View>
+            ) : assignedMember && soloMode ? (
+              <View style={styles.assignedSection}>
+                <MemberAvatar member={assignedMember} size={32} />
+                <Text style={styles.assignedText}>You</Text>
               </View>
             ) : (
               <Text style={styles.assignedText}>
