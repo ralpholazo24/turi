@@ -1,5 +1,6 @@
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { router } from 'expo-router';
+import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { Group } from '@/types';
 import { TaskCard } from './task-card';
@@ -16,12 +17,11 @@ interface TaskCardListProps {
 export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
   const { t } = useTranslation();
   const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
-  const ClipboardIcon = APP_ICONS.clipboard;
-  const UsersIcon = APP_ICONS.users;
 
   const handleTaskPress = (taskId: string) => {
     router.push(`/group/${group.id}/task/${taskId}`);
@@ -33,7 +33,12 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
     if (group.members.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <UsersIcon size={64} color={textColor} style={styles.emptyIcon} />
+          <Image
+            source={require('@/assets/illustrations/boy-sipping.svg')}
+            style={styles.emptyIllustration}
+            contentFit="contain"
+            tintColor={iconColor}
+          />
           <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="taskModal.noMembersYet" />
           <ThemedText style={styles.emptyText} i18nKey="taskModal.noMembersYetMessage" />
           {onOpenAddMember && (
@@ -51,7 +56,12 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
     // If members exist but no tasks
     return (
       <View style={styles.emptyContainer}>
-        <ClipboardIcon size={64} color={textColor} style={styles.emptyIcon} />
+        <Image
+          source={require('@/assets/illustrations/cat-and-woman.svg')}
+          style={styles.emptyIllustration}
+          contentFit="contain"
+          tintColor={iconColor}
+        />
         <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="group.noTasks" />
         <ThemedText style={styles.emptyText} i18nKey="group.noTasksDescription" />
       </View>
@@ -96,9 +106,11 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 20,
   },
-  emptyIcon: {
-    marginBottom: 16,
-    opacity: 0.6,
+  emptyIllustration: {
+    width: 280,
+    height: 280,
+    marginBottom: 24,
+    opacity: 0.8,
   },
   emptyTitle: {
     marginBottom: 8,

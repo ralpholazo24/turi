@@ -3,6 +3,7 @@ import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
 import { Group, Member } from '@/types';
+import { Image } from 'expo-image';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -156,12 +157,11 @@ export function MemberChipList({ group }: MemberChipListProps) {
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
-
-  const UsersIcon = APP_ICONS.users;
 
   const handleEdit = (member: Member) => {
     setSelectedMember(member);
@@ -190,7 +190,12 @@ export function MemberChipList({ group }: MemberChipListProps) {
   if (group.members.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <UsersIcon size={64} color={textColor} style={styles.emptyIcon} />
+        <Image
+          source={require('@/assets/illustrations/boy-sipping.svg')}
+          style={styles.emptyIllustration}
+          contentFit="contain"
+          tintColor={iconColor}
+        />
         <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="group.noMembers" />
         <ThemedText style={styles.emptyText} i18nKey="group.noMembersDescription" />
       </View>
@@ -250,9 +255,11 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 20,
   },
-  emptyIcon: {
-    marginBottom: 16,
-    opacity: 0.6,
+  emptyIllustration: {
+    width: 280,
+    height: 280,
+    marginBottom: 24,
+    opacity: 0.8,
   },
   emptyTitle: {
     marginBottom: 8,

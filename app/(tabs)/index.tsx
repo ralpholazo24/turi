@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import * as LucideIcons from 'lucide-react-native';
-import { useTranslation } from 'react-i18next';
-import { useAppStore } from '@/store/use-app-store';
-import { GroupCard } from '@/components/group-card';
 import { AddGroupModal } from '@/components/add-group-modal';
+import { GroupCard } from '@/components/group-card';
 import { ThemedText } from '@/components/themed-text';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAppStore } from '@/store/use-app-store';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import * as LucideIcons from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -20,9 +21,9 @@ export default function HomeScreen() {
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
 
   const PlusIcon = APP_ICONS.add;
-  const UsersIcon = APP_ICONS.users;
 
   useEffect(() => {
     initialize();
@@ -56,7 +57,12 @@ export default function HomeScreen() {
           </View>
         ) : groups.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <UsersIcon size={64} color={textColor} style={styles.emptyIcon} />
+            <Image
+              source={require('@/assets/illustrations/man-fishing.svg')}
+              style={styles.emptyIllustration}
+              contentFit="contain"
+              tintColor={iconColor}
+            />
             <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="home.noGroups" />
             <ThemedText style={styles.emptyText} i18nKey="home.noGroupsDescription" />
           </View>
@@ -119,9 +125,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 60,
   },
-  emptyIcon: {
-    marginBottom: 16,
-    opacity: 0.6,
+  emptyIllustration: {
+    width: 280,
+    height: 280,
+    marginBottom: 24,
+    opacity: 0.8,
   },
   emptyTitle: {
     marginBottom: 8,
