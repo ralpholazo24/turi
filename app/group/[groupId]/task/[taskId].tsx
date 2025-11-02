@@ -156,8 +156,10 @@ export default function TaskDetailsScreen() {
 
   const handleDeleteConfirm = async () => {
     setIsDeleteConfirmationVisible(false);
-    await deleteTask(group.id, task.id);
+    // Navigate immediately to avoid showing "not found" page
     router.back();
+    // Delete task after navigation (Zustand store persists independently)
+    await deleteTask(group.id, task.id);
   };
 
   const handleEdit = () => {

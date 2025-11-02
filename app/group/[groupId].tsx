@@ -58,10 +58,14 @@ export default function GroupScreen() {
 
   const handleDeleteConfirm = async () => {
     if (group) {
-      await deleteGroup(group.id);
+      setIsDeleteConfirmationVisible(false);
+      // Navigate immediately to avoid showing "not found" page
       router.back();
+      // Delete group after navigation (Zustand store persists independently)
+      await deleteGroup(group.id);
+    } else {
+      setIsDeleteConfirmationVisible(false);
     }
-    setIsDeleteConfirmationVisible(false);
   };
 
   const handleCloseModals = () => {
