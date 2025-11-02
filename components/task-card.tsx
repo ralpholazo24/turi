@@ -1,7 +1,7 @@
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { Member, Task } from '@/types';
-import { getTaskCompletionStatus } from '@/utils/task-completion';
+import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
@@ -71,6 +71,9 @@ export function TaskCard({
   // Check if task is already completed
   const completionStatus = getTaskCompletionStatus(task);
   
+  // Check if task is overdue
+  const isOverdue = isTaskOverdue(task);
+  
   // Get formatted schedule information
   const scheduleInfo = formatScheduleInfo(task);
   
@@ -109,8 +112,8 @@ export function TaskCard({
                 </Text>
               )}
               {!completionStatus.isCompleted && (
-                <Text style={styles.dueDateText}>
-                  {dueDateText}
+                <Text style={[styles.dueDateText, isOverdue && styles.overdueText]}>
+                  {isOverdue ? 'Overdue' : dueDateText}
                 </Text>
               )}
             </View>
@@ -136,6 +139,10 @@ export function TaskCard({
                 <View style={styles.completedBadge}>
                   <CheckIcon size={16} color="#FFFFFF" />
                   <Text style={styles.completedText}>Done</Text>
+                </View>
+              ) : isOverdue ? (
+                <View style={styles.overdueBadge}>
+                  <Text style={styles.overdueBadgeText}>Overdue</Text>
                 </View>
               ) : (
                 <View style={styles.frequencyBadge}>
@@ -211,6 +218,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     opacity: 0.9,
   },
+  overdueText: {
+    color: '#FFB3BA',
+    fontWeight: '600',
+    opacity: 1,
+  },
   bottomSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -257,6 +269,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  overdueBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.large,
+    backgroundColor: 'rgba(255, 179, 186, 0.3)',
+  },
+  overdueBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFB3BA',
   },
 });
 

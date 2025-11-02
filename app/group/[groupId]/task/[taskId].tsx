@@ -4,9 +4,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
 import { useAppStore } from '@/store/use-app-store';
 import { ThemedText } from '@/components/themed-text';
@@ -17,7 +19,7 @@ import { EditTaskModal } from '@/components/edit-task-modal';
 import { TaskContextMenu } from '@/components/task-context-menu';
 import { ConfirmationModal } from '@/components/confirmation-modal';
 import { Task, Member } from '@/types';
-import { getTaskCompletionStatus } from '@/utils/task-completion';
+import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
 import { MemberAvatar } from '@/components/member-avatar';
 
@@ -113,6 +115,9 @@ export default function TaskDetailsScreen() {
 
   // Check if task is already completed
   const completionStatus = getTaskCompletionStatus(task);
+  
+  // Check if task is overdue
+  const isOverdue = isTaskOverdue(task);
 
   const handleMarkDone = async () => {
     if (completionStatus.isCompleted) {
@@ -149,13 +154,6 @@ export default function TaskDetailsScreen() {
     setIsContextMenuVisible(true);
   };
 
-  // Get member name with possessive
-  const getMemberTurnText = (member: Member) => {
-    const name = member.name;
-    const possessive = name.endsWith('s') ? `${name}'` : `${name}'s`;
-    return `${possessive} turn`;
-  };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       {/* Header */}
@@ -174,24 +172,35 @@ export default function TaskDetailsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         {/* Task Overview Card */}
-        <View style={[styles.taskCard, { backgroundColor: backgroundColor, borderColor: borderColor + '30' }]}>
-          <View style={styles.taskCardContent}>
-            <View style={[styles.iconContainer, { backgroundColor: group.colorStart + '20' }]}>
-              {/* eslint-disable-next-line import/namespace */}
-              {(() => {
-                const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                return IconComponent ? <IconComponent size={48} color="#11181C" /> : null;
-              })()}
+        <View style={styles.taskCardContainer}>
+          <LinearGradient
+            colors={[group.colorStart, group.colorEnd]}
+            start={{ x: 1, y: 1 }}
+            end={{ x: 0, y: 0 }}
+            style={styles.taskCardGradient}>
+            <View style={styles.taskCardContent}>
+              <View style={styles.iconContainer}>
+                <View style={styles.iconBackground}>
+                  {/* eslint-disable-next-line import/namespace */}
+                  {(() => {
+                    const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
+                    return IconComponent ? <IconComponent size={48} color="#FFFFFF" /> : null;
+                  })()}
+                </View>
+              </View>
+              <View style={styles.taskInfo}>
+                <Text style={styles.taskName}>
+                  {task.name}
+                </Text>
+                <Text style={styles.frequency}>
+                  {getFrequencyText()}
+                </Text>
+                {!completionStatus.isCompleted && isOverdue && (
+                  <Text style={styles.overdueIndicator}>Overdue</Text>
+                )}
+              </View>
             </View>
-            <View style={styles.taskInfo}>
-              <ThemedText type="title" style={styles.taskName}>
-                {task.name}
-              </ThemedText>
-              <ThemedText style={[styles.frequency, { color: group.colorStart }]}>
-                {getFrequencyText()}
-              </ThemedText>
-            </View>
-          </View>
+          </LinearGradient>
         </View>
 
         {/* Current Assignee Section */}
@@ -199,10 +208,8 @@ export default function TaskDetailsScreen() {
           <View style={styles.currentAssigneeSection}>
             <MemberAvatar member={currentMember} size={56} />
             <View style={styles.assigneeInfo}>
-              <ThemedText style={[styles.itYourTurn, { color: group.colorStart }]}>
-                {getMemberTurnText(currentMember)}
-              </ThemedText>
               <ThemedText style={styles.assigneeName}>{currentMember.name}</ThemedText>
+              <ThemedText style={styles.itYourTurn}>It&apos;s your turn</ThemedText>
             </View>
           </View>
         )}
@@ -253,7 +260,7 @@ export default function TaskDetailsScreen() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={[styles.actionButtons, { backgroundColor }]}>
+      <View style={[styles.actionButtons, { backgroundColor, borderTopColor: borderColor + '30' }]}>
         <TouchableOpacity
           style={[
             styles.markDoneButton,
@@ -276,7 +283,7 @@ export default function TaskDetailsScreen() {
             onPress={handleSkipTurn}
             activeOpacity={0.8}>
             <ThemedText style={[styles.skipText, { color: group.colorStart }]}>
-              Skip Turn
+              Skip
             </ThemedText>
           </TouchableOpacity>
         )}
@@ -298,10 +305,10 @@ export default function TaskDetailsScreen() {
         onDelete={handleDelete}
       />
 
-      {/* Skip Turn Confirmation */}
+      {/* Skip Confirmation */}
       <ConfirmationModal
         visible={isSkipConfirmationVisible}
-        title="Skip Turn"
+        title="Skip"
         message="Are you sure you want to skip this turn? The task will move to the next person."
         confirmText="Skip"
         cancelText="Cancel"
@@ -358,11 +365,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  taskCard: {
-    borderRadius: BORDER_RADIUS.large,
-    padding: 20,
+  taskCardContainer: {
     marginBottom: 24,
-    borderWidth: 1,
+    borderRadius: BORDER_RADIUS.xlarge,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -372,29 +378,45 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  taskCardGradient: {
+    borderRadius: BORDER_RADIUS.xlarge,
+    padding: 24,
+  },
   taskCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconContainer: {
+    marginRight: 16,
+  },
+  iconBackground: {
     width: 80,
     height: 80,
-    borderRadius: BORDER_RADIUS.medium,
+    borderRadius: BORDER_RADIUS.circular.xlarge,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
   taskInfo: {
     flex: 1,
   },
   taskName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 4,
+    color: '#FFFFFF',
+    marginBottom: 8,
   },
   frequency: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
+    color: '#FFFFFF',
+    opacity: 0.9,
+  },
+  overdueIndicator: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFB3BA',
+    marginTop: 4,
   },
   currentAssigneeSection: {
     flexDirection: 'row',
@@ -406,14 +428,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 16,
   },
-  itYourTurn: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
   assigneeName: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  itYourTurn: {
+    fontSize: 14,
+    fontWeight: '500',
+    opacity: 0.7,
   },
   historySection: {
     marginBottom: 24,
@@ -475,7 +498,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 34,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },
   markDoneButton: {
     flexDirection: 'row',
