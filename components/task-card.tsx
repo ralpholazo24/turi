@@ -6,6 +6,7 @@ import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion'
 import { formatScheduleInfo } from '@/utils/task-schedule';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MemberAvatar } from './member-avatar';
 
@@ -28,13 +29,14 @@ export function TaskCard({
   groupColorEnd,
   group,
 }: TaskCardProps) {
+  const { t } = useTranslation();
   const soloMode = isSoloMode(group);
   // Calculate due date text
   const getDueDateText = () => {
     if (!task.lastCompletedAt) {
-      if (task.frequency === 'daily') return 'Due Today';
-      if (task.frequency === 'weekly') return 'Due This Week';
-      if (task.frequency === 'monthly') return 'Due This Month';
+      if (task.frequency === 'daily') return t('task.dueToday');
+      if (task.frequency === 'weekly') return t('task.dueThisWeek');
+      if (task.frequency === 'monthly') return t('task.dueThisMonth');
     }
 
     const lastCompleted = new Date(task.lastCompletedAt!);
@@ -47,13 +49,13 @@ export function TaskCard({
     );
 
     if (task.frequency === 'daily') {
-      if (daysSince === 0) return 'Due Tomorrow';
-      if (daysSince >= 1) return 'Due Today';
+      if (daysSince === 0) return t('task.dueTomorrow');
+      if (daysSince >= 1) return t('task.dueToday');
     } else if (task.frequency === 'weekly') {
       const daysUntilNext = 7 - (daysSince % 7);
-      if (daysUntilNext === 7) return 'Due Today';
-      if (daysUntilNext === 1) return 'Due Tomorrow';
-      return `Due in ${daysUntilNext} days`;
+      if (daysUntilNext === 7) return t('task.dueToday');
+      if (daysUntilNext === 1) return t('task.dueTomorrow');
+      return t('task.dueInDays', { count: daysUntilNext });
     } else if (task.frequency === 'monthly') {
       const lastCompletedMonth = lastCompleted.getMonth();
       const lastCompletedYear = lastCompleted.getFullYear();
@@ -61,16 +63,16 @@ export function TaskCard({
       const currentYear = today.getFullYear();
       
       if (lastCompletedMonth === currentMonth && lastCompletedYear === currentYear) {
-        return 'Due Next Month';
+        return t('task.dueNextMonth');
       }
-      return 'Due This Month';
+      return t('task.dueThisMonth');
     }
 
-    return task.frequency === 'daily' ? 'Due Today' : task.frequency === 'weekly' ? 'Due This Week' : 'Due This Month';
+    return task.frequency === 'daily' ? t('task.dueToday') : task.frequency === 'weekly' ? t('task.dueThisWeek') : t('task.dueThisMonth');
   };
 
   const dueDateText = getDueDateText();
-  const isDueToday = dueDateText.includes('Today');
+  const isDueToday = dueDateText.includes(t('common.today'));
   
   // Check if task is already completed
   const completionStatus = getTaskCompletionStatus(task);
@@ -116,7 +118,7 @@ export function TaskCard({
               )}
               {!completionStatus.isCompleted && (
                 <Text style={[styles.dueDateText, isOverdue && styles.overdueText]}>
-                  {isOverdue ? 'Overdue' : dueDateText}
+                  {isOverdue ? t('common.overdue') : dueDateText}
                 </Text>
               )}
             </View>
@@ -128,17 +130,17 @@ export function TaskCard({
               <View style={styles.assignedSection}>
                 <MemberAvatar member={assignedMember} size={32} />
                 <Text style={styles.assignedText}>
-                  {assignedMember.name}&apos;s turn
+                  {t('task.turn', { name: assignedMember.name })}
                 </Text>
               </View>
             ) : assignedMember && soloMode ? (
               <View style={styles.assignedSection}>
                 <MemberAvatar member={assignedMember} size={32} />
-                <Text style={styles.assignedText}>You</Text>
+                <Text style={styles.assignedText}>{t('task.yourTurn')}</Text>
               </View>
             ) : (
               <Text style={styles.assignedText}>
-                No one assigned
+                {t('task.noOneAssigned')}
               </Text>
             )}
 
@@ -147,15 +149,15 @@ export function TaskCard({
               {completionStatus.isCompleted ? (
                 <View style={styles.completedBadge}>
                   <CheckIcon size={16} color="#FFFFFF" />
-                  <Text style={styles.completedText}>Done</Text>
+                  <Text style={styles.completedText}>{t('common.done')}</Text>
                 </View>
               ) : isOverdue ? (
                 <View style={styles.overdueBadge}>
-                  <Text style={styles.overdueBadgeText}>Overdue</Text>
+                  <Text style={styles.overdueBadgeText}>{t('common.overdue')}</Text>
                 </View>
               ) : (
                 <View style={styles.pendingBadge}>
-                  <Text style={styles.pendingBadgeText}>Pending</Text>
+                  <Text style={styles.pendingBadgeText}>{t('common.pending')}</Text>
                 </View>
               )}
             </View>

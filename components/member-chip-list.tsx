@@ -4,6 +4,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
 import { Group, Member } from '@/types';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -147,6 +148,7 @@ function SwipeableMemberCard({
 }
 
 export function MemberChipList({ group }: MemberChipListProps) {
+  const { t } = useTranslation();
   const { deleteMember } = useAppStore();
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -189,12 +191,8 @@ export function MemberChipList({ group }: MemberChipListProps) {
     return (
       <View style={styles.emptyContainer}>
         <UsersIcon size={64} color={textColor} style={styles.emptyIcon} />
-        <ThemedText type="subtitle" style={styles.emptyTitle}>
-          No members yet
-        </ThemedText>
-        <ThemedText style={styles.emptyText}>
-          Add members to start assigning tasks!
-        </ThemedText>
+        <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="group.noMembers" />
+        <ThemedText style={styles.emptyText} i18nKey="group.noMembersDescription" />
       </View>
     );
   }
@@ -229,10 +227,10 @@ export function MemberChipList({ group }: MemberChipListProps) {
       {/* Delete Confirmation */}
       <ConfirmationModal
         visible={isDeleteConfirmationVisible}
-        title="Delete Member"
-        message={`Are you sure you want to delete ${selectedMember?.name}? This will remove them from all tasks and cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('confirmation.deleteMemberTitle')}
+        message={t('confirmation.deleteMemberMessage', { name: selectedMember?.name || '' })}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         confirmColor="#EF4444"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setIsDeleteConfirmationVisible(false)}

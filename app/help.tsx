@@ -2,12 +2,14 @@ import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 
 export default function HelpFAQScreen() {
+  const { t } = useTranslation();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
@@ -22,44 +24,44 @@ export default function HelpFAQScreen() {
 
   const faqItems = [
     {
-      question: 'How do I create a group?',
-      answer: 'On the home screen, tap the "+" button at the bottom right. Give your group a name, choose an icon and color theme, then add members.',
+      question: t('help.faq1.question'),
+      answer: t('help.faq1.answer'),
     },
     {
-      question: 'How does task rotation work?',
-      answer: 'When you create a task, it\'s assigned to the first member in your group. Each time someone marks the task as done, it automatically moves to the next person in the rotation.',
+      question: t('help.faq2.question'),
+      answer: t('help.faq2.answer'),
     },
     {
-      question: 'What happens if I skip my turn?',
-      answer: 'Skipping your turn moves the task to the next person without marking it as completed. The task will still be due and you can complete it later.',
+      question: t('help.faq3.question'),
+      answer: t('help.faq3.answer'),
     },
     {
-      question: 'How do I schedule tasks?',
-      answer: 'When creating or editing a task, you can set a frequency (daily, weekly, or monthly) and optionally specify a day of the week and time. For monthly tasks, you can also choose which week of the month.',
+      question: t('help.faq4.question'),
+      answer: t('help.faq4.answer'),
     },
     {
-      question: 'What is solo mode?',
-      answer: 'Solo mode automatically activates when you\'re the only member in a group. All tasks are assigned to you and rotation is disabled. It switches back to normal rotation when you add more members.',
+      question: t('help.faq5.question'),
+      answer: t('help.faq5.answer'),
     },
     {
-      question: 'How do notifications work?',
-      answer: 'Enable notifications in Settings, then choose how many minutes before a task is due you want to be reminded. Notifications are only sent for tasks that haven\'t been completed yet.',
+      question: t('help.faq6.question'),
+      answer: t('help.faq6.answer'),
     },
     {
-      question: 'Can I change who\'s assigned to a task?',
-      answer: 'Yes! You can skip turns to move assignments, or edit the task to change which members are assigned to it.',
+      question: t('help.faq7.question'),
+      answer: t('help.faq7.answer'),
     },
     {
-      question: 'Where can I see task history?',
-      answer: 'Open any task to see its completion history. The history shows who completed the task and when, with times displayed for each completion.',
+      question: t('help.faq8.question'),
+      answer: t('help.faq8.answer'),
     },
     {
-      question: 'What if I delete a task by mistake?',
-      answer: 'Unfortunately, deleted tasks cannot be recovered. Please be careful when deleting tasks or groups.',
+      question: t('help.faq9.question'),
+      answer: t('help.faq9.answer'),
     },
     {
-      question: 'How do I customize group colors and icons?',
-      answer: 'When creating or editing a group, you can choose from a variety of icons and color themes. Each group can have its own unique look!',
+      question: t('help.faq10.question'),
+      answer: t('help.faq10.answer'),
     },
   ];
 
@@ -70,9 +72,7 @@ export default function HelpFAQScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <BackIcon size={24} color={textColor} />
         </TouchableOpacity>
-        <ThemedText type="title" style={styles.headerTitle}>
-          Help & FAQ
-        </ThemedText>
+        <ThemedText type="title" style={styles.headerTitle} i18nKey="help.title" />
         <View style={styles.headerSpacer} />
       </View>
 
@@ -86,12 +86,8 @@ export default function HelpFAQScreen() {
           <View style={[styles.iconContainer, { backgroundColor: borderColor + '15' }]}>
             <HelpCircleIcon size={32} color={iconColor} />
           </View>
-          <ThemedText type="title" style={styles.introTitle}>
-            How can we help?
-          </ThemedText>
-          <ThemedText style={styles.introText}>
-            Find answers to common questions about using Turi.
-          </ThemedText>
+          <ThemedText type="title" style={styles.introTitle} i18nKey="help.intro" />
+          <ThemedText style={styles.introText} i18nKey="help.introDescription" />
         </View>
 
         {/* FAQ Items */}
@@ -117,15 +113,13 @@ export default function HelpFAQScreen() {
         {/* Contact Support Section */}
         <View style={styles.contactSection}>
           <View style={[styles.contactCard, { backgroundColor: borderColor + '15', borderColor: borderColor + '30' }]}>
-            <ThemedText style={styles.contactTitle}>Still need help?</ThemedText>
-            <ThemedText style={styles.contactText}>
-              If you can't find what you're looking for, feel free to contact our support team.
-            </ThemedText>
+            <ThemedText style={styles.contactTitle} i18nKey="help.stillNeedHelp" />
+            <ThemedText style={styles.contactText} i18nKey="help.stillNeedHelpDescription" />
             <TouchableOpacity
               style={[styles.contactButton, { backgroundColor: '#10B981' }]}
               onPress={() => router.push('/settings')}
               activeOpacity={0.7}>
-              <ThemedText style={styles.contactButtonText}>Contact Support</ThemedText>
+              <ThemedText style={styles.contactButtonText} i18nKey="help.contactSupport" />
             </TouchableOpacity>
           </View>
         </View>

@@ -14,6 +14,7 @@ import { useAppStore } from '@/store/use-app-store';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,6 +22,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 type TabType = 'tasks' | 'members';
 
 export default function GroupScreen() {
+  const { t } = useTranslation();
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const { groups, initialize, deleteGroup } = useAppStore();
   const [activeTab, setActiveTab] = useState<TabType>('tasks');
@@ -201,10 +203,10 @@ export default function GroupScreen() {
       {/* Delete Confirmation */}
       <ConfirmationModal
         visible={isDeleteConfirmationVisible}
-        title="Delete Group"
-        message={`Are you sure you want to delete "${group?.name}"? This will permanently delete all members, tasks, and data associated with this group. This cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('confirmation.deleteGroupTitle')}
+        message={t('confirmation.deleteGroupMessage', { name: group?.name || '' })}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         confirmColor="#EF4444"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setIsDeleteConfirmationVisible(false)}

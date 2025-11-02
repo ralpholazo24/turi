@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Task, Group } from '@/types';
 import { calculateNotificationDate, getAssignedMemberName, calculateNextDueDate } from './notification-schedule';
 import { formatScheduleInfo } from './task-schedule';
+import i18n from '@/i18n';
 
 /**
  * Helper function to check if a task is completed for a specific date's period
@@ -84,10 +85,12 @@ export async function scheduleTaskNotification(
     const assignedMemberName = getAssignedMemberName(task, group);
     const scheduleInfo = formatScheduleInfo(task);
     
-    // Create notification content
+    // Create notification content with translations
     const notificationContent: Notifications.NotificationContentInput = {
-      title: `🔔 ${task.name}`,
-      body: `${assignedMemberName}'s turn - ${scheduleInfo || 'Due soon'}`,
+      title: i18n.t('notifications.notificationTitle', { taskName: task.name }),
+      body: scheduleInfo 
+        ? i18n.t('notifications.notificationBody', { memberName: assignedMemberName, scheduleInfo })
+        : i18n.t('notifications.notificationBodyNoSchedule', { memberName: assignedMemberName }),
       sound: true,
       data: {
         taskId: task.id,

@@ -2,6 +2,7 @@ import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { Group } from '@/types';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
@@ -12,6 +13,7 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group }: GroupCardProps) {
+  const { t } = useTranslation();
 
   const handlePress = () => {
     router.push(`/group/${group.id}`);
@@ -62,7 +64,7 @@ export function GroupCard({ group }: GroupCardProps) {
               <Text style={styles.groupName}>{group.name}</Text>
               {nextTask && (
                 <Text style={styles.nextTask}>
-                  {nextTask.assignedIndex === 0 ? 'Next: ' : 'Next up: '}
+                  {nextTask.assignedIndex === 0 ? t('group.next') : t('group.nextUp')}
                   {nextTask.name}
                 </Text>
               )}
@@ -75,12 +77,12 @@ export function GroupCard({ group }: GroupCardProps) {
               <View style={styles.assignedSection}>
                 <MemberAvatar member={assignedMember} size={32} />
                 <Text style={styles.assignedText}>
-                  Assigned to: {assignedMember.name}
+                  {t('group.assignedTo')}{assignedMember.name}
                 </Text>
               </View>
             ) : (
               <Text style={styles.assignedText}>
-                {group.members.length === 0 ? 'No members yet' : 'No tasks assigned'}
+                {group.members.length === 0 ? t('group.noMembers') : t('group.noTasksAssigned')}
               </Text>
             )}
 
@@ -92,7 +94,7 @@ export function GroupCard({ group }: GroupCardProps) {
                       {completedTasksCount}/{totalTasksCount}
                     </Text>
                   </View>
-                  <Text style={styles.progressLabel}>Done</Text>
+                  <Text style={styles.progressLabel}>{t('common.done')}</Text>
                 </View>
               ) : null}
             </View>

@@ -8,6 +8,7 @@ import { GroupActivity } from '@/types';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -29,7 +30,7 @@ interface ActivityItem {
   date: Date;
 }
 
-function getRelativeDateKey(date: Date): string {
+function getRelativeDateKey(date: Date, t: (key: string) => string): string {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today);
@@ -40,11 +41,11 @@ function getRelativeDateKey(date: Date): string {
   const itemDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
   if (itemDate.getTime() === today.getTime()) {
-    return 'Today';
+    return t('common.today');
   } else if (itemDate.getTime() === yesterday.getTime()) {
-    return 'Yesterday';
+    return t('common.yesterday');
   } else if (itemDate >= weekAgo) {
-    return 'This week';
+    return t('activity.thisWeek');
   } else {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -54,18 +55,18 @@ function getRelativeDateKey(date: Date): string {
   }
 }
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(date: Date, t: (key: string, options?: any) => string): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return t('activity.justNow');
+  if (diffMins < 60) return t('activity.minutesAgo', { count: diffMins });
+  if (diffHours < 24) return t('activity.hoursAgo', { count: diffHours });
+  if (diffDays === 1) return t('common.yesterday');
+  if (diffDays < 7) return t('activity.daysAgo', { count: diffDays });
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -73,6 +74,7 @@ function formatTimeAgo(date: Date): string {
 }
 
 export default function ActivityScreen() {
+  const { t } = useTranslation();
   const { groups } = useAppStore();
   const [filter, setFilter] = useState<
     'all' | 'completed' | 'skipped' | 'created' | 'member'
@@ -156,7 +158,7 @@ export default function ActivityScreen() {
     const grouped: { [key: string]: ActivityItem[] } = {};
 
     filteredItems.forEach((item) => {
-      const dateKey = getRelativeDateKey(item.date);
+      const dateKey = getRelativeDateKey(item.date, t);
 
       if (!grouped[dateKey]) {
         grouped[dateKey] = [];
@@ -165,7 +167,7 @@ export default function ActivityScreen() {
     });
 
     return grouped;
-  }, [filteredItems]);
+  }, [filteredItems, t]);
 
   const getActivityIcon = (type: GroupActivity['type']) => {
     switch (type) {
@@ -210,23 +212,26 @@ export default function ActivityScreen() {
   };
 
   const getActivityMessage = (item: ActivityItem): string => {
+    const memberName = item.memberName || t('activity.someone');
+    const taskName = item.taskName || 'task';
+    
     switch (item.type) {
       case 'task_completed':
-        return `${item.memberName || 'Someone'} completed ${item.taskName || 'task'}`;
+        return t('activity.taskCompleted', { name: memberName, taskName });
       case 'task_skipped':
-        return `${item.memberName || 'Someone'} skipped ${item.taskName || 'task'}`;
+        return t('activity.taskSkipped', { name: memberName, taskName });
       case 'task_created':
-        return `Added task "${item.taskName || 'task'}"`;
+        return t('activity.addedTask', { taskName });
       case 'task_deleted':
-        return `Deleted task "${item.taskName || 'task'}"`;
+        return t('activity.deletedTask', { taskName });
       case 'member_added':
-        return `Added member ${item.memberName || 'Someone'}`;
+        return t('activity.addedMember', { name: memberName });
       case 'member_deleted':
-        return `Removed member ${item.memberName || 'Someone'}`;
+        return t('activity.removedMember', { name: memberName });
       case 'group_created':
-        return `Created group "${item.groupName}"`;
+        return t('activity.createdGroup', { name: item.groupName });
       default:
-        return 'Activity';
+        return t('activity.title');
     }
   };
 
@@ -245,9 +250,7 @@ export default function ActivityScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <BackIcon size={24} color={textColor} />
         </TouchableOpacity>
-        <ThemedText type="title" style={styles.headerTitle}>
-          Activity
-        </ThemedText>
+        <ThemedText type="title" style={styles.headerTitle} i18nKey="activity.title" />
         <View style={styles.headerRight} />
       </View>
 
@@ -265,14 +268,14 @@ export default function ActivityScreen() {
             ]}
             onPress={() => setFilter('all')}
             activeOpacity={0.7}>
-            <ThemedText
-              style={[
-                styles.filterText,
-                filter === 'all' && styles.filterTextActive,
-                filter === 'all' && { color: iconColor },
-              ]}>
-              All
-            </ThemedText>
+              <ThemedText
+                style={[
+                  styles.filterText,
+                  filter === 'all' && styles.filterTextActive,
+                  filter === 'all' && { color: iconColor },
+                ]}
+                i18nKey="activity.all"
+              />
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -282,14 +285,14 @@ export default function ActivityScreen() {
             onPress={() => setFilter('completed')}
             activeOpacity={0.7}>
             <CheckIcon size={12} color={filter === 'completed' ? '#10B981' : iconColor} />
-            <ThemedText
-              style={[
-                styles.filterText,
-                filter === 'completed' && styles.filterTextActive,
-                filter === 'completed' && { color: '#10B981' },
-              ]}>
-              Done
-            </ThemedText>
+              <ThemedText
+                style={[
+                  styles.filterText,
+                  filter === 'completed' && styles.filterTextActive,
+                  filter === 'completed' && { color: '#10B981' },
+                ]}
+                i18nKey="activity.done"
+              />
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -299,14 +302,14 @@ export default function ActivityScreen() {
             onPress={() => setFilter('skipped')}
             activeOpacity={0.7}>
             <SkipForwardIcon size={12} color={filter === 'skipped' ? '#F97316' : iconColor} />
-            <ThemedText
-              style={[
-                styles.filterText,
-                filter === 'skipped' && styles.filterTextActive,
-                filter === 'skipped' && { color: '#F97316' },
-              ]}>
-              Skipped
-            </ThemedText>
+              <ThemedText
+                style={[
+                  styles.filterText,
+                  filter === 'skipped' && styles.filterTextActive,
+                  filter === 'skipped' && { color: '#F97316' },
+                ]}
+                i18nKey="activity.skipped"
+              />
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -316,14 +319,14 @@ export default function ActivityScreen() {
             onPress={() => setFilter('created')}
             activeOpacity={0.7}>
             <PlusIcon size={12} color={filter === 'created' ? '#3B82F6' : iconColor} />
-            <ThemedText
-              style={[
-                styles.filterText,
-                filter === 'created' && styles.filterTextActive,
-                filter === 'created' && { color: '#3B82F6' },
-              ]}>
-              Created
-            </ThemedText>
+              <ThemedText
+                style={[
+                  styles.filterText,
+                  filter === 'created' && styles.filterTextActive,
+                  filter === 'created' && { color: '#3B82F6' },
+                ]}
+                i18nKey="activity.created"
+              />
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -333,14 +336,14 @@ export default function ActivityScreen() {
             onPress={() => setFilter('member')}
             activeOpacity={0.7}>
             <UsersIcon size={12} color={filter === 'member' ? '#10B981' : iconColor} />
-            <ThemedText
-              style={[
-                styles.filterText,
-                filter === 'member' && styles.filterTextActive,
-                filter === 'member' && { color: '#10B981' },
-              ]}>
-              Members
-            </ThemedText>
+              <ThemedText
+                style={[
+                  styles.filterText,
+                  filter === 'member' && styles.filterTextActive,
+                  filter === 'member' && { color: '#10B981' },
+                ]}
+                i18nKey="activity.members"
+              />
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -351,19 +354,17 @@ export default function ActivityScreen() {
         showsVerticalScrollIndicator={false}>
         {filteredItems.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <ThemedText type="subtitle" style={styles.emptyTitle}>
-              No activity yet
-            </ThemedText>
+            <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="activity.noActivity" />
             <ThemedText style={styles.emptyText}>
               {filter === 'all'
-                ? 'Complete tasks, create groups, or add members to see activity here'
+                ? t('activity.noActivityDescription')
                 : filter === 'completed'
-                  ? 'No completed tasks yet'
+                  ? t('activity.noCompletedTasks')
                   : filter === 'skipped'
-                    ? 'No skipped tasks yet'
+                    ? t('activity.noSkippedTasks')
                     : filter === 'created'
-                      ? 'No created items yet'
-                      : 'No member changes yet'}
+                      ? t('activity.noCreatedItems')
+                      : t('activity.noMemberChanges')}
             </ThemedText>
           </View>
         ) : (
@@ -423,7 +424,7 @@ export default function ActivityScreen() {
                               {item.groupName}
                             </ThemedText>
                           </View>
-                          <ThemedText style={styles.timeText}>{formatTimeAgo(item.date)}</ThemedText>
+                          <ThemedText style={styles.timeText}>{formatTimeAgo(item.date, t)}</ThemedText>
                         </View>
                       </View>
                     </View>

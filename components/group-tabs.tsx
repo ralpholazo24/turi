@@ -1,4 +1,5 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
@@ -11,6 +12,7 @@ interface GroupTabsProps {
 }
 
 export function GroupTabs({ activeTab, onTabChange }: GroupTabsProps) {
+  const { t } = useTranslation();
   const backgroundColor = useThemeColor({}, 'background');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
@@ -30,9 +32,9 @@ export function GroupTabs({ activeTab, onTabChange }: GroupTabsProps) {
             style={[
               styles.tabText,
               activeTab === 'tasks' && styles.tabTextActive,
-            ]}>
-            Tasks
-          </ThemedText>
+            ]}
+            i18nKey="group.tasks"
+          />
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -44,9 +46,9 @@ export function GroupTabs({ activeTab, onTabChange }: GroupTabsProps) {
             style={[
               styles.tabText,
               activeTab === 'members' && styles.tabTextActive,
-            ]}>
-            Members
-          </ThemedText>
+            ]}
+            i18nKey="group.members"
+          />
         </TouchableOpacity>
       </View>
     </View>

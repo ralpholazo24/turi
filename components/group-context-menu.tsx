@@ -1,4 +1,5 @@
 import { StyleSheet, Modal, View, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
@@ -17,6 +18,7 @@ export function GroupContextMenu({
   onEdit,
   onDelete,
 }: GroupContextMenuProps) {
+  const { t } = useTranslation();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
@@ -64,7 +66,7 @@ export function GroupContextMenu({
                 <View style={[styles.menuIcon, { backgroundColor: '#3B82F6' + '20' }]}>
                   <EditIcon size={18} color="#3B82F6" />
                 </View>
-                <ThemedText style={styles.menuItemText}>Edit Group</ThemedText>
+                <ThemedText style={styles.menuItemText} i18nKey="group.editGroup" />
               </View>
             </TouchableOpacity>
 
@@ -76,9 +78,7 @@ export function GroupContextMenu({
                 <View style={[styles.menuIcon, { backgroundColor: '#EF4444' + '20' }]}>
                   <DeleteIcon size={18} color="#EF4444" />
                 </View>
-                <ThemedText style={[styles.menuItemText, styles.deleteText]}>
-                  Delete Group
-                </ThemedText>
+                <ThemedText style={[styles.menuItemText, styles.deleteText]} i18nKey="group.deleteGroup" />
               </View>
             </TouchableOpacity>
           </View>

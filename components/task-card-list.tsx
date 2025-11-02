@@ -1,5 +1,6 @@
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Group } from '@/types';
 import { TaskCard } from './task-card';
 import { ThemedText } from './themed-text';
@@ -13,6 +14,7 @@ interface TaskCardListProps {
 }
 
 export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
+  const { t } = useTranslation();
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
@@ -32,18 +34,14 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
       return (
         <View style={styles.emptyContainer}>
           <UsersIcon size={64} color={textColor} style={styles.emptyIcon} />
-          <ThemedText type="subtitle" style={styles.emptyTitle}>
-            No Members Yet
-          </ThemedText>
-          <ThemedText style={styles.emptyText}>
-            You don&apos;t have any members yet. Add some first to assign tasks!
-          </ThemedText>
+          <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="taskModal.noMembersYet" />
+          <ThemedText style={styles.emptyText} i18nKey="taskModal.noMembersYetMessage" />
           {onOpenAddMember && (
             <TouchableOpacity
               style={styles.addMembersButton}
               onPress={onOpenAddMember}
               activeOpacity={0.7}>
-              <Text style={styles.addMembersButtonText}>Add Members</Text>
+              <Text style={styles.addMembersButtonText}>{t('taskModal.addMembers')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -54,12 +52,8 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
     return (
       <View style={styles.emptyContainer}>
         <ClipboardIcon size={64} color={textColor} style={styles.emptyIcon} />
-        <ThemedText type="subtitle" style={styles.emptyTitle}>
-          No tasks yet
-        </ThemedText>
-        <ThemedText style={styles.emptyText}>
-          Add your first task to get started!
-        </ThemedText>
+        <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="group.noTasks" />
+        <ThemedText style={styles.emptyText} i18nKey="group.noTasksDescription" />
       </View>
     );
   }

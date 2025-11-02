@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { Group, Member } from '@/types';
 import { useAppStore } from '@/store/use-app-store';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -25,6 +26,7 @@ interface EditMemberModalProps {
 }
 
 export function EditMemberModal({ visible, onClose, group, member }: EditMemberModalProps) {
+  const { t } = useTranslation();
   const { updateMember } = useAppStore();
   const [name, setName] = useState(member.name);
 
@@ -78,13 +80,13 @@ export function EditMemberModal({ visible, onClose, group, member }: EditMemberM
 
           {/* Content */}
           <View style={styles.content}>
-            <ThemedText style={styles.label}>Name</ThemedText>
+            <ThemedText style={styles.label} i18nKey="member.name" />
             <TextInput
               style={[
                 styles.input,
                 { backgroundColor: backgroundColor, borderColor, color: textColor },
               ]}
-              placeholder="Enter member name..."
+              placeholder={t('member.namePlaceholder')}
               placeholderTextColor={textColor + '80'}
               value={name}
               onChangeText={setName}
@@ -102,7 +104,7 @@ export function EditMemberModal({ visible, onClose, group, member }: EditMemberM
               ]}
               onPress={handleSave}
               disabled={!name.trim()}>
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

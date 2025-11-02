@@ -1,5 +1,6 @@
 import { StyleSheet, Modal, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
@@ -19,18 +20,22 @@ export function ConfirmationModal({
   visible,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   confirmColor = '#EF4444',
   onConfirm,
   onCancel,
 }: ConfirmationModalProps) {
+  const { t } = useTranslation();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+
+  const finalConfirmText = confirmText || t('common.confirm');
+  const finalCancelText = cancelText || t('common.cancel');
 
   const handleConfirm = () => {
     onConfirm();
@@ -72,7 +77,7 @@ export function ConfirmationModal({
                 ]}
                 onPress={onCancel}
                 activeOpacity={0.7}>
-                <ThemedText style={styles.cancelButtonText}>{cancelText}</ThemedText>
+                <ThemedText style={styles.cancelButtonText}>{finalCancelText}</ThemedText>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -83,7 +88,7 @@ export function ConfirmationModal({
                 ]}
                 onPress={handleConfirm}
                 activeOpacity={0.8}>
-                <ThemedText style={styles.confirmButtonText}>{confirmText}</ThemedText>
+                <ThemedText style={styles.confirmButtonText}>{finalConfirmText}</ThemedText>
               </TouchableOpacity>
             </View>
           </View>

@@ -5,10 +5,12 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AboutScreen() {
+  const { t } = useTranslation();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
@@ -27,9 +29,7 @@ export default function AboutScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <BackIcon size={24} color={textColor} />
         </TouchableOpacity>
-        <ThemedText type="title" style={styles.headerTitle}>
-          About
-        </ThemedText>
+        <ThemedText type="title" style={styles.headerTitle} i18nKey="about.title" />
         <View style={styles.headerSpacer} />
       </View>
 
@@ -46,25 +46,16 @@ export default function AboutScreen() {
             </View>
           </View>
           
-          <ThemedText type="title" style={styles.appName}>
-            Turi
-          </ThemedText>
+          <ThemedText type="title" style={styles.appName} i18nKey="about.appName" />
           
-          <ThemedText style={styles.appVersion}>Version 1.0.0</ThemedText>
+          <ThemedText style={styles.appVersion} i18nKey="about.versionNumber" />
         </View>
 
         {/* Description Section */}
         <View style={styles.section}>
-          <ThemedText style={styles.description}>
-            Turi is a fun, lightweight app that helps groups manage recurring shared tasks 
-            by showing whose turn it is in a friendly, colorful interface.
-          </ThemedText>
+          <ThemedText style={styles.description} i18nKey="about.description" />
           
-          <ThemedText style={styles.description}>
-            Whether you're sharing chores with roommates, managing tasks with family, 
-            or coordinating work with your team, Turi makes it easy to keep track of 
-            who's responsible next.
-          </ThemedText>
+          <ThemedText style={styles.description} i18nKey="about.description2" />
         </View>
 
         {/* Developer Section */}
@@ -77,56 +68,54 @@ export default function AboutScreen() {
                 contentFit="cover"
               />
             </View>
-            <ThemedText style={styles.devTitle}>Developed with</ThemedText>
+            <ThemedText style={styles.devTitle} i18nKey="about.developedWith" />
             <View style={styles.heartContainer}>
               <HeartIcon size={20} color="#FF6B35" fill="#FF6B35" />
             </View>
-            <ThemedText style={styles.devName}>by Ralph Olazo</ThemedText>
+            <ThemedText style={styles.devName} i18nKey="about.by" i18nOptions={{ name: t('about.developerName') }} />
           </View>
         </View>
 
         {/* Features Section */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>FEATURES</ThemedText>
+          <ThemedText style={styles.sectionTitle} i18nKey="about.features" />
           
           <View style={styles.featureList}>
             <View style={styles.featureItem}>
               <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
-              <ThemedText style={styles.featureText}>Task rotation management</ThemedText>
+              <ThemedText style={styles.featureText} i18nKey="about.feature1" />
             </View>
             
             <View style={styles.featureItem}>
               <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
-              <ThemedText style={styles.featureText}>Flexible scheduling (daily, weekly, monthly)</ThemedText>
+              <ThemedText style={styles.featureText} i18nKey="about.feature2" />
             </View>
             
             <View style={styles.featureItem}>
               <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
-              <ThemedText style={styles.featureText}>Task reminders and notifications</ThemedText>
+              <ThemedText style={styles.featureText} i18nKey="about.feature3" />
             </View>
             
             <View style={styles.featureItem}>
               <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
-              <ThemedText style={styles.featureText}>Activity feed and history</ThemedText>
+              <ThemedText style={styles.featureText} i18nKey="about.feature4" />
             </View>
             
             <View style={styles.featureItem}>
               <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
-              <ThemedText style={styles.featureText}>Dark mode support</ThemedText>
+              <ThemedText style={styles.featureText} i18nKey="about.feature5" />
             </View>
             
             <View style={styles.featureItem}>
               <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
-              <ThemedText style={styles.featureText}>Solo mode for personal tasks</ThemedText>
+              <ThemedText style={styles.featureText} i18nKey="about.feature6" />
             </View>
           </View>
         </View>
 
         {/* Footer */}
         <View style={styles.footer}>
-          <ThemedText style={styles.footerText}>
-            Made with care for better task management
-          </ThemedText>
+          <ThemedText style={styles.footerText} i18nKey="about.footer" />
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -3,6 +3,7 @@ import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppStore } from '@/store/use-app-store';
 import { GroupCard } from '@/components/group-card';
 import { AddGroupModal } from '@/components/add-group-modal';
@@ -12,6 +13,7 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const { groups, isLoading, initialize } = useAppStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const insets = useSafeAreaInsets();
@@ -38,9 +40,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <ThemedText type="title" style={styles.title}>
-            Your Groups
-          </ThemedText>
+          <ThemedText type="title" style={styles.title} i18nKey="home.yourGroups" />
           <TouchableOpacity
             onPress={() => router.push('/settings')}
             style={styles.settingsButton}
@@ -52,17 +52,13 @@ export default function HomeScreen() {
         {/* Groups List */}
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ThemedText>Loading...</ThemedText>
+            <ThemedText i18nKey="common.loading" />
           </View>
         ) : groups.length === 0 ? (
           <View style={styles.emptyContainer}>
             <UsersIcon size={64} color={textColor} style={styles.emptyIcon} />
-            <ThemedText type="subtitle" style={styles.emptyTitle}>
-              No groups yet
-            </ThemedText>
-            <ThemedText style={styles.emptyText}>
-              Create your first group to start managing shared tasks!
-            </ThemedText>
+            <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="home.noGroups" />
+            <ThemedText style={styles.emptyText} i18nKey="home.noGroupsDescription" />
           </View>
         ) : (
           <View style={styles.groupsContainer}>

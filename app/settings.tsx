@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, TouchableOpacity, View, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import * as Linking from 'expo-linking';
-import * as LucideIcons from 'lucide-react-native';
 import { ThemedText } from '@/components/themed-text';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useNotifications } from '@/hooks/use-notifications';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useNotifications } from '@/hooks/use-notifications';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useLanguageStore } from '@/store/use-language-store';
+import * as Linking from 'expo-linking';
+import { router } from 'expo-router';
+import * as LucideIcons from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
+import { Alert, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
+  const { t } = useTranslation();
   const { themePreference, updateThemePreference } = useColorScheme();
   const { notificationsEnabled, permissionStatus } = useNotifications();
+  const { language } = useLanguageStore();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
@@ -49,17 +52,17 @@ export default function SettingsScreen() {
           Linking.openURL(emailUrl);
         } else {
           Alert.alert(
-            'Email Not Available',
+            t('common.close'),
             'Please email your support request to: ralpholazo@gmail.com',
-            [{ text: 'OK' }]
+            [{ text: t('common.done') }]
           );
         }
       })
       .catch(() => {
         Alert.alert(
-          'Error',
+          t('common.close'),
           'Unable to open email client. Please email your support request to: ralpholazo@gmail.com',
-          [{ text: 'OK' }]
+          [{ text: t('common.done') }]
         );
       });
   };
@@ -76,9 +79,7 @@ export default function SettingsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <BackIcon size={24} color={textColor} />
         </TouchableOpacity>
-        <ThemedText type="title" style={styles.headerTitle}>
-          Settings
-        </ThemedText>
+        <ThemedText type="title" style={styles.headerTitle} i18nKey="settings.title" />
         <View style={styles.headerSpacer} />
       </View>
 
@@ -89,7 +90,7 @@ export default function SettingsScreen() {
         
         {/* Account Section */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>ACCOUNT</ThemedText>
+          <ThemedText style={styles.sectionTitle} i18nKey="settings.account" />
           
           <TouchableOpacity
             style={styles.settingItem}
@@ -99,7 +100,7 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' + '20' }]}>
                 <ActivityIcon size={20} color="#3B82F6" />
               </View>
-              <ThemedText style={styles.settingText}>Activity</ThemedText>
+              <ThemedText style={styles.settingText} i18nKey="settings.activity" />
             </View>
             <LucideIcons.ChevronRight size={20} color={iconColor} />
           </TouchableOpacity>
@@ -107,7 +108,7 @@ export default function SettingsScreen() {
 
         {/* Preferences Section */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>PREFERENCES</ThemedText>
+          <ThemedText style={styles.sectionTitle} i18nKey="settings.preferences" />
           
           <TouchableOpacity
             style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
@@ -117,14 +118,14 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
                 <BellIcon size={20} color="#10B981" />
               </View>
-              <ThemedText style={styles.settingText}>Notifications</ThemedText>
+              <ThemedText style={styles.settingText} i18nKey="settings.notifications" />
             </View>
             <View style={styles.settingRight}>
               {permissionStatus === 'denied' && (
-                <ThemedText style={styles.settingValue}>Permission required</ThemedText>
+                <ThemedText style={styles.settingValue} i18nKey="settings.permissionRequired" />
               )}
               {notificationsEnabled && permissionStatus !== 'denied' && (
-                <ThemedText style={styles.settingValue}>Enabled</ThemedText>
+                <ThemedText style={styles.settingValue} i18nKey="settings.notificationsEnabled" />
               )}
               <LucideIcons.ChevronRight size={20} color={iconColor} />
             </View>
@@ -135,7 +136,7 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
                 <MoonIcon size={20} color="#10B981" />
               </View>
-              <ThemedText style={styles.settingText}>Dark Mode</ThemedText>
+              <ThemedText style={styles.settingText} i18nKey="settings.darkMode" />
             </View>
             <Switch
               value={isDarkMode}
@@ -148,16 +149,18 @@ export default function SettingsScreen() {
 
           <TouchableOpacity
             style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
-            onPress={() => handleSettingPress('App Language')}
+            onPress={() => router.push('/language')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
                 <GlobeIcon size={20} color="#10B981" />
               </View>
-              <ThemedText style={styles.settingText}>App Language</ThemedText>
+              <ThemedText style={styles.settingText} i18nKey="settings.appLanguage" />
             </View>
             <View style={styles.settingRight}>
-              <ThemedText style={styles.settingValue}>English</ThemedText>
+              <ThemedText style={styles.settingValue}>
+                {language === 'es' ? t('settings.spanish') : t('settings.english')}
+              </ThemedText>
               <LucideIcons.ChevronRight size={20} color={iconColor} />
             </View>
           </TouchableOpacity>
@@ -165,7 +168,7 @@ export default function SettingsScreen() {
 
         {/* Support Section */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>SUPPORT</ThemedText>
+          <ThemedText style={styles.sectionTitle} i18nKey="settings.support" />
           
           <TouchableOpacity
             style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
@@ -175,7 +178,7 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
                 <SparklesIcon size={20} color={iconColor} />
               </View>
-              <ThemedText style={styles.settingText}>Feature Requests</ThemedText>
+              <ThemedText style={styles.settingText} i18nKey="settings.featureRequests" />
             </View>
             <LucideIcons.ChevronRight size={20} color={iconColor} />
           </TouchableOpacity>
@@ -188,7 +191,7 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
                 <HelpCircleIcon size={20} color={iconColor} />
               </View>
-              <ThemedText style={styles.settingText}>Help & FAQ</ThemedText>
+              <ThemedText style={styles.settingText} i18nKey="settings.helpFAQ" />
             </View>
             <LucideIcons.ChevronRight size={20} color={iconColor} />
           </TouchableOpacity>
@@ -201,7 +204,7 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
                 <HeadphonesIcon size={20} color={iconColor} />
               </View>
-              <ThemedText style={styles.settingText}>Contact Support</ThemedText>
+              <ThemedText style={styles.settingText} i18nKey="settings.contactSupport" />
             </View>
             <LucideIcons.ChevronRight size={20} color={iconColor} />
           </TouchableOpacity>
@@ -214,7 +217,7 @@ export default function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
                 <InfoIcon size={20} color={iconColor} />
               </View>
-              <ThemedText style={styles.settingText}>About App</ThemedText>
+              <ThemedText style={styles.settingText} i18nKey="settings.aboutApp" />
             </View>
             <LucideIcons.ChevronRight size={20} color={iconColor} />
           </TouchableOpacity>

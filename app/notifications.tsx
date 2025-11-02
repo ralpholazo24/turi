@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Switch, TouchableOpacity, View, Alert } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -12,6 +13,7 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 
 export default function NotificationsSettingsScreen() {
+  const { t } = useTranslation();
   const { groups } = useAppStore();
   const {
     notificationsEnabled,
@@ -37,9 +39,9 @@ export default function NotificationsSettingsScreen() {
     if (wasTryingToEnable && permissionStatus === 'denied' && !notificationsEnabled) {
       // Permission was denied when trying to enable notifications
       Alert.alert(
-        'Permission Required',
-        'To enable notifications, please grant permission in your device settings.',
-        [{ text: 'OK' }]
+        t('notifications.permissionRequired'),
+        t('notifications.permissionRequiredMessage'),
+        [{ text: t('common.ok') }]
       );
       setWasTryingToEnable(false);
     }
@@ -54,30 +56,30 @@ export default function NotificationsSettingsScreen() {
 
   const formatReminderTime = (minutes: number): string => {
     if (minutes < 60) {
-      return `${minutes} min`;
+      return `${minutes} ${t('notifications.min')}`;
     }
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (mins === 0) {
-      return `${hours} hr`;
+      return `${hours} ${t('notifications.hr')}`;
     }
-    return `${hours} hr ${mins} min`;
+    return `${hours} ${t('notifications.hr')} ${mins} ${t('notifications.min')}`;
   };
 
   const handleReminderTimePress = () => {
     const options = [
-      { label: '5 minutes', value: 5 },
-      { label: '10 minutes', value: 10 },
-      { label: '15 minutes', value: 15 },
-      { label: '30 minutes', value: 30 },
-      { label: '1 hour', value: 60 },
-      { label: '2 hours', value: 120 },
-      { label: 'Cancel', value: -1 },
+      { label: t('notifications.minutes', { count: 5 }), value: 5 },
+      { label: t('notifications.minutes', { count: 10 }), value: 10 },
+      { label: t('notifications.minutes', { count: 15 }), value: 15 },
+      { label: t('notifications.minutes', { count: 30 }), value: 30 },
+      { label: t('notifications.hour', { count: 1 }), value: 60 },
+      { label: t('notifications.hours', { count: 2 }), value: 120 },
+      { label: t('common.cancel'), value: -1 },
     ];
 
     Alert.alert(
-      'Reminder Time',
-      'Get notified before your task is due',
+      t('notifications.reminderTime'),
+      t('notifications.reminderTimeDescription'),
       options.map((option) => ({
         text: option.label,
         style: option.value === -1 ? 'cancel' : 'default',
@@ -105,9 +107,7 @@ export default function NotificationsSettingsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <BackIcon size={24} color={textColor} />
         </TouchableOpacity>
-        <ThemedText type="title" style={styles.headerTitle}>
-          Notifications
-        </ThemedText>
+        <ThemedText type="title" style={styles.headerTitle} i18nKey="notifications.title" />
         <View style={styles.headerSpacer} />
       </View>
 
@@ -120,16 +120,14 @@ export default function NotificationsSettingsScreen() {
         <View style={styles.section}>
           <View style={[styles.infoCard, { backgroundColor: borderColor + '15', borderColor: borderColor + '30' }]}>
             <BellIcon size={24} color={iconColor} style={styles.infoIcon} />
-            <ThemedText style={styles.infoTitle}>Task Reminders</ThemedText>
-            <ThemedText style={styles.infoText}>
-              Get notified before your tasks are due. Notifications are sent based on your reminder time setting.
-            </ThemedText>
+            <ThemedText style={styles.infoTitle} i18nKey="notifications.taskReminders" />
+            <ThemedText style={styles.infoText} i18nKey="notifications.taskRemindersDescription" />
           </View>
         </View>
 
         {/* Notification Settings */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>SETTINGS</ThemedText>
+          <ThemedText style={styles.sectionTitle} i18nKey="notifications.settings" />
           
           <View style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}>
             <View style={styles.settingLeft}>
@@ -137,16 +135,12 @@ export default function NotificationsSettingsScreen() {
                 <BellIcon size={20} color="#10B981" />
               </View>
               <View style={styles.settingTextContainer}>
-                <ThemedText style={styles.settingText}>Enable Notifications</ThemedText>
+                <ThemedText style={styles.settingText} i18nKey="notifications.enableNotifications" />
                 {permissionStatus === 'denied' && (
-                  <ThemedText style={styles.settingSubtext}>
-                    Permission required in device settings
-                  </ThemedText>
+                  <ThemedText style={styles.settingSubtext} i18nKey="notifications.permissionRequiredDevice" />
                 )}
                 {permissionStatus === 'granted' && notificationsEnabled && (
-                  <ThemedText style={styles.settingSubtext}>
-                    You'll receive reminders before tasks are due
-                  </ThemedText>
+                  <ThemedText style={styles.settingSubtext} i18nKey="notifications.youWillReceiveReminders" />
                 )}
               </View>
             </View>
@@ -169,10 +163,8 @@ export default function NotificationsSettingsScreen() {
                   <BellIcon size={20} color="#10B981" />
                 </View>
                 <View style={styles.settingTextContainer}>
-                  <ThemedText style={styles.settingText}>Remind Me Before</ThemedText>
-                  <ThemedText style={styles.settingSubtext}>
-                    Get notified before your task is due
-                  </ThemedText>
+                  <ThemedText style={styles.settingText} i18nKey="notifications.remindMeBefore" />
+                  <ThemedText style={styles.settingSubtext} i18nKey="notifications.getNotifiedBeforeTask" />
                 </View>
               </View>
               <View style={styles.settingRight}>
@@ -188,7 +180,7 @@ export default function NotificationsSettingsScreen() {
         {/* How It Works */}
         {notificationsEnabled && (
           <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>HOW IT WORKS</ThemedText>
+            <ThemedText style={styles.sectionTitle} i18nKey="notifications.howItWorks" />
             
             <View style={styles.howItWorksContainer}>
               <View style={styles.howItWorksItem}>
@@ -196,10 +188,8 @@ export default function NotificationsSettingsScreen() {
                   <ThemedText style={[styles.stepNumberText, { color: '#10B981' }]}>1</ThemedText>
                 </View>
                 <View style={styles.stepContent}>
-                  <ThemedText style={styles.stepTitle}>Tasks are scheduled</ThemedText>
-                  <ThemedText style={styles.stepDescription}>
-                    When you create or update tasks with schedules, notifications are automatically scheduled.
-                  </ThemedText>
+                  <ThemedText style={styles.stepTitle} i18nKey="notifications.tasksAreScheduled" />
+                  <ThemedText style={styles.stepDescription} i18nKey="notifications.tasksAreScheduledDescription" />
                 </View>
               </View>
 
@@ -208,10 +198,8 @@ export default function NotificationsSettingsScreen() {
                   <ThemedText style={[styles.stepNumberText, { color: '#10B981' }]}>2</ThemedText>
                 </View>
                 <View style={styles.stepContent}>
-                  <ThemedText style={styles.stepTitle}>You get reminders</ThemedText>
-                  <ThemedText style={styles.stepDescription}>
-                    You'll receive a notification {formatReminderTime(reminderMinutes).toLowerCase()} before each task is due.
-                  </ThemedText>
+                  <ThemedText style={styles.stepTitle} i18nKey="notifications.youGetReminders" />
+                  <ThemedText style={styles.stepDescription} i18nKey="notifications.youGetRemindersDescription" i18nOptions={{ time: formatReminderTime(reminderMinutes).toLowerCase() }} />
                 </View>
               </View>
 
@@ -220,10 +208,8 @@ export default function NotificationsSettingsScreen() {
                   <ThemedText style={[styles.stepNumberText, { color: '#10B981' }]}>3</ThemedText>
                 </View>
                 <View style={styles.stepContent}>
-                  <ThemedText style={styles.stepTitle}>Notifications update automatically</ThemedText>
-                  <ThemedText style={styles.stepDescription}>
-                    When tasks are completed or updated, notifications are automatically rescheduled for the next occurrence.
-                  </ThemedText>
+                  <ThemedText style={styles.stepTitle} i18nKey="notifications.notificationsUpdateAutomatically" />
+                  <ThemedText style={styles.stepDescription} i18nKey="notifications.notificationsUpdateAutomaticallyDescription" />
                 </View>
               </View>
             </View>

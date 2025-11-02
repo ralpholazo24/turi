@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { Group } from '@/types';
 import { useAppStore } from '@/store/use-app-store';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -24,6 +25,7 @@ interface AddMemberModalProps {
 }
 
 export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps) {
+  const { t } = useTranslation();
   const { addMember } = useAppStore();
   const [name, setName] = useState('');
 
@@ -70,21 +72,19 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
             <TouchableOpacity onPress={handleClose}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
-            <ThemedText type="subtitle" style={styles.headerTitle}>
-              Add New Member
-            </ThemedText>
+            <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="member.addNewMember" />
             <View style={styles.headerSpacer} />
           </View>
 
           {/* Content */}
           <View style={styles.content}>
-            <ThemedText style={styles.label}>Name</ThemedText>
+            <ThemedText style={styles.label} i18nKey="member.name" />
             <TextInput
               style={[
                 styles.input,
                 { backgroundColor: backgroundColor, borderColor, color: textColor },
               ]}
-              placeholder="Enter member name..."
+              placeholder={t('member.namePlaceholder')}
               placeholderTextColor={textColor + '80'}
               value={name}
               onChangeText={setName}
@@ -102,7 +102,7 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
               ]}
               onPress={handleSave}
               disabled={!name.trim()}>
-              <Text style={styles.addButtonText}>Add Member</Text>
+              <Text style={styles.addButtonText}>{t('member.addMember')}</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

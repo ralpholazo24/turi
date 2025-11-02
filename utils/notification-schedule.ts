@@ -1,4 +1,5 @@
 import { Task, Group } from '@/types';
+import i18n from '@/i18n';
 
 /**
  * Default time for tasks without a scheduled time
@@ -125,13 +126,13 @@ export function getAssignedMemberName(task: Task, group: Group): string {
   );
   
   if (assignedMembers.length === 0) {
-    return 'Someone';
+    return i18n.t('activity.someone');
   }
   
   // Ensure assignedIndex is within bounds
   const safeAssignedIndex = Math.min(task.assignedIndex, assignedMembers.length - 1);
   const assignedMember = assignedMembers[safeAssignedIndex];
   
-  return assignedMember?.name || 'Someone';
+  return assignedMember?.name || i18n.t('activity.someone');
 }
 

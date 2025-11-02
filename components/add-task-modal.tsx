@@ -10,6 +10,7 @@ import { Group } from '@/types';
 import { isSoloMode } from '@/utils/solo-mode';
 import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Modal,
@@ -31,6 +32,7 @@ interface AddTaskModalProps {
 }
 
 export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTaskModalProps) {
+  const { t } = useTranslation();
   const { addTask } = useAppStore();
   const [taskName, setTaskName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<TaskIconName>('Trash2');
@@ -58,21 +60,21 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
   
   // Days of the week
   const DAYS = [
-    { value: 0, label: 'Sun' },
-    { value: 1, label: 'Mon' },
-    { value: 2, label: 'Tue' },
-    { value: 3, label: 'Wed' },
-    { value: 4, label: 'Thu' },
-    { value: 5, label: 'Fri' },
-    { value: 6, label: 'Sat' },
+    { value: 0, label: t('task.sunday') },
+    { value: 1, label: t('task.monday') },
+    { value: 2, label: t('task.tuesday') },
+    { value: 3, label: t('task.wednesday') },
+    { value: 4, label: t('task.thursday') },
+    { value: 5, label: t('task.friday') },
+    { value: 6, label: t('task.saturday') },
   ];
   
   // Weeks of the month
   const WEEKS = [
-    { value: 1, label: 'First' },
-    { value: 2, label: 'Second' },
-    { value: 3, label: 'Third' },
-    { value: 4, label: 'Fourth' },
+    { value: 1, label: t('task.firstWeek') },
+    { value: 2, label: t('task.secondWeek') },
+    { value: 3, label: t('task.thirdWeek') },
+    { value: 4, label: t('task.fourthWeek') },
   ];
   
   // Validate time format (HH:MM)
@@ -204,9 +206,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
             <TouchableOpacity onPress={handleClose}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
-            <ThemedText type="subtitle" style={styles.headerTitle}>
-              Add a New Task
-            </ThemedText>
+            <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="group.addTask" />
             <View style={styles.headerSpacer} />
           </View>
 
@@ -230,14 +230,14 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
             {/* Task Name Input */}
             <View style={styles.section}>
               <View style={styles.labelRow}>
-                <ThemedText style={styles.label}>Task name</ThemedText>
+                <ThemedText style={styles.label} i18nKey="taskModal.taskName" />
               </View>
               <TextInput
                 style={[
                   styles.input,
                   { backgroundColor: backgroundColor, borderColor, color: textColor },
                 ]}
-                placeholder="e.g., Water the plants"
+                placeholder={t('taskModal.taskNamePlaceholder')}
                 placeholderTextColor={textColor + '80'}
                 value={taskName}
                 onChangeText={setTaskName}
@@ -247,7 +247,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
 
             {/* Frequency Selector */}
             <View style={styles.section}>
-              <ThemedText style={styles.label}>How often?</ThemedText>
+              <ThemedText style={styles.label} i18nKey="taskModal.howOften" />
               <View style={styles.frequencyContainer}>
                 <TouchableOpacity
                   style={[
@@ -263,7 +263,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
                       frequency === 'daily' && styles.frequencyTextActive,
                       { color: frequency === 'daily' ? '#FFFFFF' : iconColor },
                     ]}>
-                    Daily
+                    {t('task.daily')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -280,7 +280,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
                       frequency === 'weekly' && styles.frequencyTextActive,
                       { color: frequency === 'weekly' ? '#FFFFFF' : iconColor },
                     ]}>
-                    Weekly
+                    {t('task.weekly')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -297,7 +297,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
                       frequency === 'monthly' && styles.frequencyTextActive,
                       { color: frequency === 'monthly' ? '#FFFFFF' : iconColor },
                     ]}>
-                    Monthly
+                    {t('task.monthly')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -305,12 +305,12 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
 
             {/* Scheduling Options */}
             <View style={styles.section}>
-              <ThemedText style={styles.label}>Schedule</ThemedText>
+              <ThemedText style={styles.label} i18nKey="taskModal.schedule" />
               
               {/* Week selector for monthly */}
               {frequency === 'monthly' && (
                 <View style={styles.scheduleRow}>
-                  <ThemedText style={styles.scheduleLabel}>Week:</ThemedText>
+                  <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.week" />
                   <View style={styles.scheduleButtonGroup}>
                     {WEEKS.map((week) => (
                       <TouchableOpacity
@@ -338,7 +338,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
               {/* Day selector for weekly and monthly */}
               {(frequency === 'weekly' || frequency === 'monthly') && (
                 <View style={styles.scheduleRow}>
-                  <ThemedText style={styles.scheduleLabel}>Day:</ThemedText>
+                  <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.day" />
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -368,7 +368,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
 
               {/* Time selector - Optional for all frequencies */}
               <View style={styles.scheduleRow}>
-                <ThemedText style={styles.scheduleLabel}>Time (optional):</ThemedText>
+                <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.timeOptional" />
                 <TimePicker
                   value={scheduleTime}
                   onChange={handleTimeChange}
@@ -379,7 +379,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
 
             {/* Icon Picker */}
             <View style={styles.section}>
-              <ThemedText style={styles.label}>Pick an icon</ThemedText>
+              <ThemedText style={styles.label} i18nKey="taskModal.pickIcon" />
               <View style={styles.iconGrid}>
                 {TASK_ICON_OPTIONS.map((iconOption) => {
                   // eslint-disable-next-line import/namespace
@@ -407,17 +407,15 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
             {!isSoloMode(group) && (
               <View style={styles.section}>
                 <View style={styles.labelRow}>
-                  <ThemedText style={styles.label}>Who&apos;s in?</ThemedText>
+                  <ThemedText style={styles.label} i18nKey="taskModal.whosIn" />
                   <TouchableOpacity onPress={handleSelectAll}>
                     <ThemedText style={styles.selectAllText}>
-                      {allSelected ? 'Deselect All' : 'Select All'}
+                      {allSelected ? t('taskModal.deselectAll') : t('taskModal.selectAll')}
                     </ThemedText>
                   </TouchableOpacity>
                 </View>
                 {group.members.length === 0 ? (
-                  <ThemedText style={styles.noMembersText}>
-                    Add members first to assign tasks
-                  </ThemedText>
+                  <ThemedText style={styles.noMembersText} i18nKey="taskModal.addMembersFirst" />
                 ) : (
                   <ScrollView
                     horizontal
@@ -464,7 +462,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
               ]}
               onPress={handleSave}
               disabled={!taskName.trim() || (!isSoloMode(group) && selectedMembers.size === 0) || group.members.length === 0}>
-              <Text style={styles.saveButtonText}>Save Task</Text>
+              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -479,24 +477,20 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
         <View style={styles.noMembersModalContainer}>
           <View style={styles.noMembersModalBackdrop} />
           <View style={[styles.noMembersModalContent, { backgroundColor, borderColor: borderColor + '30' }]}>
-            <ThemedText type="subtitle" style={styles.noMembersTitle}>
-              No Members Yet
-            </ThemedText>
-            <ThemedText style={styles.noMembersMessage}>
-              You don&apos;t have any members yet. Add some first to assign tasks!
-            </ThemedText>
+            <ThemedText type="subtitle" style={styles.noMembersTitle} i18nKey="taskModal.noMembersYet" />
+            <ThemedText style={styles.noMembersMessage} i18nKey="taskModal.noMembersYetMessage" />
             <View style={styles.noMembersButtons}>
               <TouchableOpacity
                 style={[styles.noMembersButton, styles.cancelButton, { borderColor }]}
                 onPress={() => setShowNoMembersModal(false)}
                 activeOpacity={0.7}>
-                <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
+                <ThemedText style={styles.cancelButtonText} i18nKey="common.cancel" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.noMembersButton, styles.addMembersButton]}
                 onPress={handleAddMembers}
                 activeOpacity={0.7}>
-                <Text style={styles.addMembersButtonText}>Add Members</Text>
+                <Text style={styles.addMembersButtonText}>{t('taskModal.addMembers')}</Text>
               </TouchableOpacity>
             </View>
           </View>

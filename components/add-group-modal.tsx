@@ -14,6 +14,7 @@ import { useAppStore } from '@/store/use-app-store';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     KeyboardAvoidingView,
     Modal,
@@ -33,6 +34,7 @@ interface AddGroupModalProps {
 }
 
 export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
+  const { t } = useTranslation();
   const { createGroup } = useAppStore();
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<GroupIconName>(DEFAULT_GROUP_ICON);
@@ -96,9 +98,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
             <TouchableOpacity onPress={handleClose}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
-            <ThemedText type="subtitle" style={styles.headerTitle}>
-              New Group
-            </ThemedText>
+            <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="group.newGroup" />
             <View style={styles.headerSpacer} />
           </View>
 
@@ -126,14 +126,14 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
             {/* Name Input */}
             <View style={styles.section}>
               <View style={styles.labelRow}>
-                <ThemedText style={styles.label}>Group Name</ThemedText>
+                <ThemedText style={styles.label} i18nKey="group.groupName" />
               </View>
               <TextInput
                 style={[
                   styles.input,
                   { backgroundColor: backgroundColor, borderColor, color: textColor },
                 ]}
-                placeholder="e.g., Family Chores"
+                placeholder={t('taskModal.groupNamePlaceholder')}
                 placeholderTextColor={textColor + '80'}
                 value={name}
                 onChangeText={setName}
@@ -143,7 +143,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
 
             {/* Icon Picker */}
             <View style={styles.section}>
-              <ThemedText style={styles.label}>Pick an icon</ThemedText>
+              <ThemedText style={styles.label} i18nKey="group.pickIcon" />
               <View style={styles.iconGrid}>
                 {GROUP_ICON_OPTIONS.map((icon) => {
                   // eslint-disable-next-line import/namespace
@@ -172,7 +172,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
 
             {/* Color Picker */}
             <View style={styles.section}>
-              <ThemedText style={styles.label}>Color Theme</ThemedText>
+              <ThemedText style={styles.label} i18nKey="group.colorTheme" />
               <View style={styles.colorGrid}>
                 {GROUP_COLOR_PRESETS.map((preset, index) => (
                   <TouchableOpacity
@@ -213,7 +213,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
               ]}
               onPress={handleSave}
               disabled={!name.trim()}>
-              <Text style={styles.saveButtonText}>Save Group</Text>
+              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

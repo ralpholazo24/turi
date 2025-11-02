@@ -13,6 +13,7 @@ import { Group } from '@/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Modal,
@@ -33,6 +34,7 @@ interface EditGroupModalProps {
 }
 
 export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps) {
+  const { t } = useTranslation();
   const { updateGroup } = useAppStore();
   const [name, setName] = useState(group.name);
   const [selectedIcon, setSelectedIcon] = useState<GroupIconName>(group.icon as GroupIconName);
@@ -115,9 +117,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
             <TouchableOpacity onPress={handleClose}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
-            <ThemedText type="subtitle" style={styles.headerTitle}>
-              Edit Group
-            </ThemedText>
+            <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="group.editGroup" />
             <View style={styles.headerSpacer} />
           </View>
 
@@ -145,14 +145,14 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
             {/* Name Input */}
             <View style={styles.section}>
               <View style={styles.labelRow}>
-                <ThemedText style={styles.label}>Group Name</ThemedText>
+                <ThemedText style={styles.label} i18nKey="group.groupName" />
               </View>
               <TextInput
                 style={[
                   styles.input,
                   { backgroundColor: backgroundColor, borderColor, color: textColor },
                 ]}
-                placeholder="e.g., Family Chores"
+                placeholder={t('taskModal.groupNamePlaceholder')}
                 placeholderTextColor={textColor + '80'}
                 value={name}
                 onChangeText={setName}
@@ -191,7 +191,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
 
             {/* Color Picker */}
             <View style={styles.section}>
-              <ThemedText style={styles.label}>Color Theme</ThemedText>
+              <ThemedText style={styles.label} i18nKey="group.colorTheme" />
               <View style={styles.colorGrid}>
                 {GROUP_COLOR_PRESETS.map((preset, index) => (
                   <TouchableOpacity
@@ -232,7 +232,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
               ]}
               onPress={handleSave}
               disabled={!name.trim()}>
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

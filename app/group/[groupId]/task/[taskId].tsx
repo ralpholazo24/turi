@@ -1,32 +1,33 @@
-import { useEffect, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Text,
-  Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as LucideIcons from 'lucide-react-native';
-import { useAppStore } from '@/store/use-app-store';
+import { ConfirmationModal } from '@/components/confirmation-modal';
+import { EditTaskModal } from '@/components/edit-task-modal';
+import { MemberAvatar } from '@/components/member-avatar';
+import { TaskContextMenu } from '@/components/task-context-menu';
 import { ThemedText } from '@/components/themed-text';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
-import { EditTaskModal } from '@/components/edit-task-modal';
-import { TaskContextMenu } from '@/components/task-context-menu';
-import { ConfirmationModal } from '@/components/confirmation-modal';
-import { Task, Member } from '@/types';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAppStore } from '@/store/use-app-store';
+import { isSoloMode } from '@/utils/solo-mode';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
-import { isSoloMode } from '@/utils/solo-mode';
-import { MemberAvatar } from '@/components/member-avatar';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, useLocalSearchParams } from 'expo-router';
+import * as LucideIcons from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TaskDetailsScreen() {
+  const { t } = useTranslation();
   const { groupId, taskId } = useLocalSearchParams<{ groupId: string; taskId: string }>();
   const { groups, markTaskDone, skipTurn, deleteTask, initialize } = useAppStore();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -64,7 +65,7 @@ export default function TaskDetailsScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.content}>
-          <ThemedText type="title">Task not found</ThemedText>
+          <ThemedText type="title" i18nKey="task.taskNotFound" />
         </View>
       </SafeAreaView>
     );
@@ -77,7 +78,11 @@ export default function TaskDetailsScreen() {
   // Format frequency text
   const getFrequencyText = () => {
     const scheduleInfo = formatScheduleInfo(task);
-    return scheduleInfo || (task.frequency === 'daily' ? 'Daily' : task.frequency === 'weekly' ? 'Weekly' : 'Monthly');
+    if (scheduleInfo) return scheduleInfo;
+    // Fallback to frequency name
+    if (task.frequency === 'daily') return t('task.daily');
+    if (task.frequency === 'weekly') return t('task.weekly');
+    return t('task.monthly');
   };
 
   // Format completion date
@@ -92,10 +97,10 @@ export default function TaskDetailsScreen() {
     const yesterdayStr = yesterday.toDateString();
 
     if (dateStr === todayStr) {
-      return 'Today';
+      return t('common.today');
     }
     if (dateStr === yesterdayStr) {
-      return 'Yesterday';
+      return t('common.yesterday');
     }
 
     // Check if it's this week
@@ -104,11 +109,12 @@ export default function TaskDetailsScreen() {
     );
 
     if (daysDiff < 7) {
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      return `Last ${days[date.getDay()]}`;
+      const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayKey = dayKeys[date.getDay()];
+      return t('task.lastDay', { day: t(`task.${dayKey}`) });
     }
 
-    // Format as "Oct 12"
+    // Format as "Oct 12" - keep English month names for now as they're commonly understood
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${months[date.getMonth()]} ${date.getDate()}`;
   };
@@ -223,7 +229,7 @@ export default function TaskDetailsScreen() {
                   {getFrequencyText()}
                 </Text>
                 {!completionStatus.isCompleted && isOverdue && (
-                  <Text style={styles.overdueIndicator}>Overdue</Text>
+                  <Text style={styles.overdueIndicator}>{t('common.overdue')}</Text>
                 )}
               </View>
             </View>
@@ -236,10 +242,10 @@ export default function TaskDetailsScreen() {
             <MemberAvatar member={currentMember} size={56} />
             <View style={styles.assigneeInfo}>
               <ThemedText style={styles.assigneeName}>
-                {soloMode ? 'You' : currentMember.name}
+                {soloMode ? t('task.yourTurn') : currentMember.name}
               </ThemedText>
               {!soloMode && (
-                <ThemedText style={styles.itYourTurn}>It&apos;s your turn</ThemedText>
+                <ThemedText style={styles.itYourTurn} i18nKey="task.itYourTurn" />
               )}
             </View>
           </View>
@@ -248,9 +254,7 @@ export default function TaskDetailsScreen() {
         {/* Completion History */}
         {sortedHistory.length > 0 && (
           <View style={styles.historySection}>
-            <ThemedText type="subtitle" style={styles.historyTitle}>
-              Completion History
-            </ThemedText>
+            <ThemedText type="subtitle" style={styles.historyTitle} i18nKey="task.completionHistory" />
             {sortedHistory.map((entry, index) => {
               const member = group.members.find((m) => m.id === entry.memberId);
               if (!member) return null;
@@ -283,9 +287,7 @@ export default function TaskDetailsScreen() {
         {sortedHistory.length === 0 && (
           <View style={styles.emptyHistory}>
             <ClipboardIcon size={48} color={textColor} style={styles.emptyHistoryIcon} />
-            <ThemedText style={styles.emptyHistoryText}>
-              No completion history yet. Complete the task to see it here!
-            </ThemedText>
+            <ThemedText style={styles.emptyHistoryText} i18nKey="task.noHistory" />
           </View>
         )}
       </ScrollView>
@@ -304,7 +306,7 @@ export default function TaskDetailsScreen() {
           activeOpacity={completionStatus.isCompleted ? 1 : 0.8}>
           <CheckIcon size={24} color="#FFFFFF" />
           <ThemedText style={styles.markDoneText}>
-            {completionStatus.isCompleted ? completionStatus.message : 'Mark Done'}
+            {completionStatus.isCompleted ? completionStatus.message : t('task.markDone')}
           </ThemedText>
         </TouchableOpacity>
 
@@ -313,9 +315,7 @@ export default function TaskDetailsScreen() {
             style={[styles.skipButton, { backgroundColor: backgroundColor, borderColor: borderColor + '50' }]}
             onPress={handleSkipTurn}
             activeOpacity={0.8}>
-            <ThemedText style={[styles.skipText, { color: group.colorStart }]}>
-              Skip
-            </ThemedText>
+            <ThemedText style={[styles.skipText, { color: group.colorStart }]} i18nKey="common.skip" />
           </TouchableOpacity>
         )}
       </View>
@@ -339,10 +339,10 @@ export default function TaskDetailsScreen() {
       {/* Skip Confirmation */}
       <ConfirmationModal
         visible={isSkipConfirmationVisible}
-        title="Skip"
-        message="Are you sure you want to skip this turn? The task will move to the next person."
-        confirmText="Skip"
-        cancelText="Cancel"
+        title={t('confirmation.skipTitle')}
+        message={t('confirmation.skipMessage')}
+        confirmText={t('common.skip')}
+        cancelText={t('common.cancel')}
         confirmColor="#F97316"
         onConfirm={handleSkipConfirm}
         onCancel={() => setIsSkipConfirmationVisible(false)}
@@ -351,10 +351,10 @@ export default function TaskDetailsScreen() {
       {/* Delete Task Confirmation */}
       <ConfirmationModal
         visible={isDeleteConfirmationVisible}
-        title="Delete Task"
-        message="Are you sure you want to delete this task? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('confirmation.deleteTaskTitle')}
+        message={t('confirmation.deleteTaskMessage')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         confirmColor="#EF4444"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setIsDeleteConfirmationVisible(false)}

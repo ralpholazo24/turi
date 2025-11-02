@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, TouchableOpacity, View, TextInput, Alert, Keybo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
@@ -10,6 +11,7 @@ import { APP_ICONS } from '@/constants/icons';
 import * as Linking from 'expo-linking';
 
 export default function FeatureRequestsScreen() {
+  const { t } = useTranslation();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
@@ -31,19 +33,19 @@ export default function FeatureRequestsScreen() {
 
   const handleSubmit = () => {
     if (!featureTitle.trim()) {
-      Alert.alert('Title Required', 'Please enter a title for your feature request.');
+      Alert.alert(t('featureRequests.titleRequired'), t('featureRequests.titleRequiredMessage'));
       return;
     }
 
     if (!featureDescription.trim()) {
-      Alert.alert('Description Required', 'Please describe your feature request.');
+      Alert.alert(t('featureRequests.descriptionRequired'), t('featureRequests.descriptionRequiredMessage'));
       return;
     }
 
     // Create email body with feature request
-    const subject = encodeURIComponent(`Feature Request: ${featureTitle}`);
+    const subject = encodeURIComponent(`${t('featureRequests.emailSubject')}: ${featureTitle}`);
     const body = encodeURIComponent(
-      `Feature Request Details:\n\nTitle: ${featureTitle}\n\nDescription:\n${featureDescription}\n\n---\nSubmitted from Turi app`
+      `${t('featureRequests.emailBodyPrefix')}\n\n${t('featureRequests.titleLabel')}: ${featureTitle}\n\n${t('featureRequests.descriptionLabel')}:\n${featureDescription}\n\n---\n${t('featureRequests.submittedFromApp')}`
     );
     const emailUrl = `mailto:ralpholazo@gmail.com?subject=${subject}&body=${body}`;
 
@@ -55,23 +57,23 @@ export default function FeatureRequestsScreen() {
           setFeatureTitle('');
           setFeatureDescription('');
           Alert.alert(
-            'Thank You!',
-            'Your feature request has been opened in your email client. Please send it to submit your request.',
-            [{ text: 'OK' }]
+            t('featureRequests.thankYou'),
+            t('featureRequests.thankYouMessage'),
+            [{ text: t('common.ok') }]
           );
         } else {
             Alert.alert(
-              'Email Not Available',
-              'Please email your feature request to: ralpholazo@gmail.com',
-              [{ text: 'OK' }]
+              t('featureRequests.emailNotAvailable'),
+              t('featureRequests.emailNotAvailableMessage'),
+              [{ text: t('common.ok') }]
             );
         }
       })
       .catch(() => {
         Alert.alert(
-          'Error',
-          'Unable to open email client. Please email your feature request to: ralpholazo@gmail.com',
-          [{ text: 'OK' }]
+          t('featureRequests.error'),
+          t('featureRequests.errorMessage'),
+          [{ text: t('common.ok') }]
         );
       });
   };
@@ -83,9 +85,7 @@ export default function FeatureRequestsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <BackIcon size={24} color={textColor} />
         </TouchableOpacity>
-        <ThemedText type="title" style={styles.headerTitle}>
-          Feature Requests
-        </ThemedText>
+        <ThemedText type="title" style={styles.headerTitle} i18nKey="featureRequests.title" />
         <View style={styles.headerSpacer} />
       </View>
 
@@ -102,15 +102,13 @@ export default function FeatureRequestsScreen() {
           {/* Info Card */}
           <View style={[styles.infoCard, { backgroundColor: borderColor + '15' }]}>
             <SparklesIcon size={20} color={iconColor} style={styles.infoIcon} />
-            <ThemedText style={styles.infoText}>
-              Have an idea for a new feature? We'd love to hear from you! Share your suggestions below.
-            </ThemedText>
+            <ThemedText style={styles.infoText} i18nKey="featureRequests.info" />
           </View>
 
           {/* Form */}
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <ThemedText style={styles.label}>Title</ThemedText>
+              <ThemedText style={styles.label} i18nKey="featureRequests.titleLabel" />
               <TextInput
                 style={[
                   styles.input,
@@ -120,7 +118,7 @@ export default function FeatureRequestsScreen() {
                     borderColor: borderColor + '30',
                   },
                 ]}
-                placeholder="What feature would you like to see?"
+                placeholder={t('featureRequests.titlePlaceholder')}
                 placeholderTextColor={iconColor + '80'}
                 value={featureTitle}
                 onChangeText={setFeatureTitle}
@@ -129,7 +127,7 @@ export default function FeatureRequestsScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <ThemedText style={styles.label}>Description</ThemedText>
+              <ThemedText style={styles.label} i18nKey="featureRequests.descriptionLabel" />
               <TextInput
                 style={[
                   styles.textArea,
@@ -139,7 +137,7 @@ export default function FeatureRequestsScreen() {
                     borderColor: borderColor + '30',
                   },
                 ]}
-                placeholder="Describe your feature request in detail..."
+                placeholder={t('featureRequests.descriptionPlaceholder')}
                 placeholderTextColor={iconColor + '80'}
                 value={featureDescription}
                 onChangeText={setFeatureDescription}
@@ -164,7 +162,7 @@ export default function FeatureRequestsScreen() {
               disabled={!featureTitle.trim() || !featureDescription.trim()}
               activeOpacity={0.7}>
               <SendIcon size={20} color="#FFFFFF" />
-              <ThemedText style={styles.submitButtonText}>Submit Feature Request</ThemedText>
+              <ThemedText style={styles.submitButtonText} i18nKey="featureRequests.submit" />
             </TouchableOpacity>
           </View>
         </ScrollView>
