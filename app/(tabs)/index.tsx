@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useAppStore } from '@/store/use-app-store';
@@ -14,6 +14,7 @@ import { APP_ICONS } from '@/constants/icons';
 export default function HomeScreen() {
   const { groups, isLoading, initialize } = useAppStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -74,7 +75,7 @@ export default function HomeScreen() {
 
       {/* Floating Action Button */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { bottom: 20 + insets.bottom }]}
         onPress={handleAddGroup}
         activeOpacity={0.8}>
         <PlusIcon size={32} color="#FFFFFF" />

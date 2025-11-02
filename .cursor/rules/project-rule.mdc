@@ -68,10 +68,12 @@ Version 1 (MVP) focuses on **local-only functionality** with **no accounts or cl
     - **For daily tasks:** Time (optional)
   - Assigned members (rotation follows member list)
   - Completion history (tracking who completed when)
+  - Skip history (tracking who skipped when)
 
 - "Mark Done" button rotates to the next member.
 - Tasks can only be completed once per period (daily/weekly/monthly).
 - Task cards display schedule information prominently.
+- Visual overdue indicators when tasks are past their due period.
 
 ### 4. **Rotation Logic**
 
@@ -119,6 +121,24 @@ CurrentTurn = Alice
     completedAt: string; // ISO date string
   }
 
+  TaskSkip {
+    memberId: string;
+    skippedAt: string; // ISO date string
+  }
+
+  GroupActivity {
+    id: string;
+    type: 'task_completed' | 'task_skipped' | 'task_created' | 'task_deleted' | 'member_added' | 'member_deleted' | 'group_created';
+    timestamp: string; // ISO date string
+    actorId?: string; // Member ID who performed the action (optional)
+    targetId?: string; // Task ID or Member ID that was affected
+    metadata?: {
+      taskName?: string;
+      taskIcon?: string;
+      memberName?: string;
+    };
+  }
+
   Task {
     id: string;
     name: string;
@@ -128,10 +148,23 @@ CurrentTurn = Alice
     memberIds: string[];
     lastCompletedAt: string | null; // ISO date string for completion tracking
     completionHistory: TaskCompletion[]; // History of completions
+    skipHistory: TaskSkip[]; // History of skips
     // Scheduling options (optional, only used when frequency is weekly or monthly)
     scheduleWeek?: number; // For monthly: 1-4 (first, second, third, fourth week)
     scheduleDay?: number; // 0-6 (Sunday = 0, Monday = 1, ..., Saturday = 6)
     scheduleTime?: string; // HH:MM format (24-hour), e.g., "14:30" for 2:30 PM
+  }
+
+  Group {
+    id: string;
+    name: string;
+    icon: string; // Lucide icon name
+    colorStart: string; // Gradient start color
+    colorEnd: string; // Gradient end color
+    members: Member[];
+    tasks: Task[];
+    createdAt: string; // ISO date string - when group was created
+    activities: GroupActivity[]; // Activity feed for this group
   }
   ```
 
@@ -142,6 +175,44 @@ CurrentTurn = Alice
 - Confetti or celebration animation on completion.
 - Motivational messages like "Nice job!" or "Keep it going!"
 
+### 7. **Solo Mode**
+
+- Automatically enabled when a group has only one member.
+- Tasks are automatically assigned to the single member.
+- Rotation is disabled (tasks remain assigned to the solo user).
+- UI elements adjust:
+  - "Whose turn" indicators show "You" instead of member name
+  - "Assign to" or member selection is hidden
+  - "Skip" button is hidden
+  - Solo mode badge appears: "Solo mode — all tasks are yours 👤"
+- When another member is added, automatically switches to normal rotation mode.
+
+### 8. **Activity Feed**
+
+- Chronological feed of all activities across all groups.
+- Activity types tracked:
+  - Task completed (who + when)
+  - Task skipped (who + when)
+  - Task created
+  - Task deleted
+  - Member added
+  - Member deleted
+  - Group created
+- Filterable by type (All, Done, Skipped, Created, Members).
+- Grouped by relative date (Today, Yesterday, This week, specific dates).
+- Shows relative time ("Just now", "2h ago", "3d ago").
+- Clickable items navigate to task details or group pages.
+- Accessible from Settings → Activity.
+
+### 9. **Settings**
+
+- Dark mode toggle (persists across app restarts).
+- Activity link (navigates to Activity Feed).
+- Placeholder sections for future features:
+  - Account management
+  - Preferences (Notifications, App Language)
+  - Support (Help & FAQ, Contact Support, About App)
+
 ---
 
 ## 🧠 User Stories
@@ -150,10 +221,14 @@ CurrentTurn = Alice
 | --- | ------- | --------------------- | -------------------------------------------- |
 | 1   | User    | Create a group        | Organize shared tasks with my friends/family |
 | 2   | User    | Add members           | Define who participates in tasks             |
-| 3   | User    | Add a new task        | Track who’s responsible next                 |
-| 4   | User    | View who’s turn it is | Know who should do the task today            |
+| 3   | User    | Add a new task        | Track who's responsible next                 |
+| 4   | User    | View who's turn it is | Know who should do the task today            |
 | 5   | User    | Mark a task as done   | Automatically move turn to the next person   |
 | 6   | User    | Get positive feedback | Stay motivated to keep using the app         |
+| 7   | User    | View activity feed    | See all completed and skipped tasks          |
+| 8   | User    | Use solo mode         | Manage tasks when I'm the only member        |
+| 9   | User    | Adjust app settings   | Customize my experience (dark mode, etc.)    |
+| 10  | User    | See overdue tasks     | Know which tasks need attention              |
 
 ---
 
@@ -173,23 +248,26 @@ CurrentTurn = Alice
 - **Components:**
 
   - Header with group icon + name + context menu (edit/delete)
+  - Solo mode badge (when applicable)
   - Tabs: "Tasks" / "Members"
-  - `TaskCardList` (displays schedule information on cards)
-  - `AddTaskButton` (FAB)
+  - `TaskCardList` (displays schedule information on cards, shows "No Members Yet" message when empty)
+  - `AddTaskButton` (FAB, only shown when group has members)
   - `MemberChipList` (swipe-to-reveal edit/delete actions)
-  - `AddMemberButton` (FAB)
+  - `AddMemberButton` (FAB on Members tab)
 
 ### 3. **Task Details Screen**
 
 - **Components:**
 
-  - Task icon + name
+  - Task icon + name (gradient card matching group colors)
   - Full schedule information display (e.g., "Every Mon at 2:30 PM", "Monthly: First Fri")
-  - Current member responsible (with avatar)
+  - Overdue indicator when task is past due
+  - Current member responsible (with avatar, shows "You" in solo mode)
   - Completion history (with member avatars)
-  - Mark done button (disabled when already completed)
-  - Skip turn button (hidden when completed)
+  - Mark done button (disabled when already completed, triggers confetti)
+  - Skip button (hidden when completed or in solo mode)
   - Edit/Delete options (context menu)
+  - Screen remains open after marking task as done
 
 ### 4. **Add Task Modal**
 
@@ -208,7 +286,24 @@ CurrentTurn = Alice
 - Name input only (avatar color assigned automatically)
 - Save button
 
-### 6. **Gamification Layer**
+### 6. **Settings Screen**
+
+- **Components:**
+  - Header with back button
+  - ACCOUNT section (Activity link)
+  - PREFERENCES section (Notifications placeholder, Dark Mode toggle, App Language placeholder)
+  - SUPPORT section (Help & FAQ placeholder, Contact Support placeholder, About App placeholder)
+
+### 7. **Activity Feed Screen**
+
+- **Components:**
+  - Header with back button
+  - Filter tabs (All, Done, Skipped, Created, Members)
+  - Chronological activity list grouped by date
+  - Activity items with icons, member avatars, group badges
+  - Clickable items navigate to task details or group pages
+
+### 8. **Gamification Layer**
 
 - Confetti animation component
 - Motivational message component
@@ -229,12 +324,14 @@ CurrentTurn = Alice
 - **Framework:** React Native (Expo)
 - **State Management:** Zustand
 - **Storage:** AsyncStorage
-- **Animations:** react-native-reanimated (for gestures and animations)
-- **Navigation:** Expo Router (file-based routing)
+- **Theme Management:** Zustand (global theme state)
+- **Animations:** react-native-reanimated (for gestures and animations), react-native-confetti-cannon
+- **Navigation:** Expo Router (file-based routing, no bottom tab bar visible)
 - **Icons:** Lucide React Native
 - **Gradients:** expo-linear-gradient
 - **Time Picker:** @react-native-community/datetimepicker
 - **Gestures:** react-native-gesture-handler
+- **Safe Area:** react-native-safe-area-context
 
 ---
 
@@ -252,6 +349,14 @@ CurrentTurn = Alice
 - [ ] Data persists after app restart.
 - [ ] UI looks correct on iOS and Android.
 - [ ] Confetti triggers on "Mark Done".
+- [ ] Solo mode works correctly (auto-assignment, UI adjustments).
+- [ ] Activity feed shows all activity types correctly.
+- [ ] Activity filters work correctly.
+- [ ] Overdue indicators display correctly.
+- [ ] Dark mode toggle works and persists.
+- [ ] FAB buttons respect safe area insets.
+- [ ] Skip history is tracked correctly.
+- [ ] Activity tracking works for all action types.
 
 ---
 
@@ -291,10 +396,14 @@ CurrentTurn = Alice
 - Use PRD structure with **versioning** for future migrations.
 - Add `lastCompletedAt` timestamp to Task for completion tracking.
 - Add `completionHistory` array to Task for tracking completion history.
+- Add `skipHistory` array to Task for tracking skip history.
 - Add `scheduleWeek`, `scheduleDay`, `scheduleTime` to Task for scheduling (weekly/monthly).
+- Add `createdAt` timestamp to Group for creation date.
+- Add `activities` array to Group for activity feed tracking.
 - Groups use Lucide icons and color themes (gradient start/end).
 - Members use initials-based avatars with random color assignment.
 - Tasks use Lucide icons.
+- Activity tracking includes metadata for task names, icons, and member names.
 
 ### UI Build Priority
 
@@ -302,3 +411,7 @@ CurrentTurn = Alice
 2. Group Screen → Tasks & Members
 3. Task Details / Add Modals
 4. Gamification Layer (confetti, messages)
+5. Settings Screen
+6. Activity Feed Screen
+7. Solo Mode Implementation
+8. UI Polish & Safety (bounds checking, safe area insets, overdue indicators)

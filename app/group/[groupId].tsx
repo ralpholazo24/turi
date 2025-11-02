@@ -16,7 +16,7 @@ import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type TabType = 'tasks' | 'members';
 
@@ -29,6 +29,7 @@ export default function GroupScreen() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+  const insets = useSafeAreaInsets();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
 
@@ -145,7 +146,7 @@ export default function GroupScreen() {
       {/* Floating Action Button - Only show on Tasks tab and when group has members */}
       {activeTab === 'tasks' && group.members.length > 0 && (
         <TouchableOpacity
-          style={styles.fab}
+          style={[styles.fab, { bottom: 20 + insets.bottom }]}
           onPress={() => setIsAddTaskModalVisible(true)}
           activeOpacity={0.8}>
           <PlusIcon size={32} color="#FFFFFF" />
@@ -155,7 +156,7 @@ export default function GroupScreen() {
       {/* Add Member Button - Only show on Members tab */}
       {activeTab === 'members' && (
         <TouchableOpacity
-          style={styles.fab}
+          style={[styles.fab, { bottom: 20 + insets.bottom }]}
           onPress={() => setIsAddMemberModalVisible(true)}
           activeOpacity={0.8}>
           <PlusIcon size={32} color="#FFFFFF" />

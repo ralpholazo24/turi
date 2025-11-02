@@ -148,6 +148,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
       memberIds: Array.from(finalSelectedMembers),
       lastCompletedAt: null,
       completionHistory: [],
+      skipHistory: [],
       scheduleWeek: frequency === 'monthly' ? scheduleWeek : undefined,
       scheduleDay: (frequency === 'weekly' || frequency === 'monthly') ? scheduleDay : undefined,
       scheduleTime: scheduleTime || undefined,

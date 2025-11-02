@@ -30,15 +30,12 @@ export default function SettingsScreen() {
   const HelpCircleIcon = LucideIcons.HelpCircle;
   const HeadphonesIcon = LucideIcons.Headphones;
   const InfoIcon = LucideIcons.Info;
+  const ActivityIcon = LucideIcons.Activity;
 
   const isDarkMode = themePreference === 'dark';
 
   const handleToggleDarkMode = async (value: boolean) => {
     await updateThemePreference(value ? 'dark' : 'light');
-  };
-
-  const handleManageGroups = () => {
-    router.push('/(tabs)');
   };
 
   const handleSettingPress = (setting: string) => {
@@ -69,14 +66,14 @@ export default function SettingsScreen() {
           <ThemedText style={styles.sectionTitle}>ACCOUNT</ThemedText>
           
           <TouchableOpacity
-            style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
-            onPress={handleManageGroups}
+            style={styles.settingItem}
+            onPress={() => router.push('/activity')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' + '20' }]}>
-                <UsersIcon size={20} color="#3B82F6" />
+                <ActivityIcon size={20} color="#3B82F6" />
               </View>
-              <ThemedText style={styles.settingText}>Manage Groups</ThemedText>
+              <ThemedText style={styles.settingText}>Activity</ThemedText>
             </View>
             <LucideIcons.ChevronRight size={20} color={iconColor} />
           </TouchableOpacity>

@@ -1,4 +1,4 @@
-import { AppData, Group, Member, Task } from '@/types';
+import { AppData, Group, GroupActivity, Member, Task } from '@/types';
 import { getRandomAvatarColor } from '@/utils/member-avatar';
 import { isSoloMode } from '@/utils/solo-mode';
 import { loadData, saveData } from '@/utils/storage';
@@ -62,6 +62,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   
   createGroup: async (name: string, icon: string, colorStart: string, colorEnd: string) => {
+    const nowISO = new Date().toISOString();
     const newGroup: Group = {
       id: `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
@@ -70,6 +71,14 @@ export const useAppStore = create<AppState>((set, get) => ({
       colorEnd,
       members: [],
       tasks: [],
+      createdAt: nowISO,
+      activities: [
+        {
+          id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          type: 'group_created',
+          timestamp: nowISO,
+        },
+      ],
     };
     
     set((state) => ({
@@ -98,6 +107,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   
   addMember: async (groupId: string, name: string, icon: string) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+
     const newMember: Member = {
       id: `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
@@ -105,10 +117,25 @@ export const useAppStore = create<AppState>((set, get) => ({
       avatarColor: getRandomAvatarColor(), // Random color for avatar
     };
     
+    const nowISO = new Date().toISOString();
+    const activity: GroupActivity = {
+      id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'member_added',
+      timestamp: nowISO,
+      targetId: newMember.id,
+      metadata: {
+        memberName: name,
+      },
+    };
+    
     set((state) => ({
       groups: state.groups.map((group) =>
         group.id === groupId
-          ? { ...group, members: [...group.members, newMember] }
+          ? {
+              ...group,
+              members: [...group.members, newMember],
+              activities: [...(group.activities || []), activity],
+            }
           : group
       ),
     }));
@@ -134,6 +161,21 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   
   deleteMember: async (groupId: string, memberId: string) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+    
+    const member = group.members.find((m) => m.id === memberId);
+    const nowISO = new Date().toISOString();
+    const activity: GroupActivity = {
+      id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'member_deleted',
+      timestamp: nowISO,
+      targetId: memberId,
+      metadata: {
+        memberName: member?.name || 'Unknown',
+      },
+    };
+    
     set((state) => ({
       groups: state.groups.map((group) =>
         group.id === groupId
@@ -144,6 +186,7 @@ export const useAppStore = create<AppState>((set, get) => ({
                 ...task,
                 memberIds: task.memberIds.filter((id) => id !== memberId),
               })),
+              activities: [...(group.activities || []), activity],
             }
           : group
       ),
@@ -173,12 +216,29 @@ export const useAppStore = create<AppState>((set, get) => ({
       assignedIndex: finalTaskData.assignedIndex ?? 0,
       lastCompletedAt: null,
       completionHistory: finalTaskData.completionHistory || [],
+      skipHistory: [],
+    };
+    
+    const nowISO = new Date().toISOString();
+    const activity: GroupActivity = {
+      id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'task_created',
+      timestamp: nowISO,
+      targetId: newTask.id,
+      metadata: {
+        taskName: newTask.name,
+        taskIcon: newTask.icon,
+      },
     };
     
     set((state) => ({
       groups: state.groups.map((group) =>
         group.id === groupId
-          ? { ...group, tasks: [...group.tasks, newTask] }
+          ? {
+              ...group,
+              tasks: [...group.tasks, newTask],
+              activities: [...(group.activities || []), activity],
+            }
           : group
       ),
     }));
@@ -204,10 +264,30 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   
   deleteTask: async (groupId: string, taskId: string) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+    
+    const task = group.tasks.find((t) => t.id === taskId);
+    const nowISO = new Date().toISOString();
+    const activity: GroupActivity = {
+      id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'task_deleted',
+      timestamp: nowISO,
+      targetId: taskId,
+      metadata: {
+        taskName: task?.name || 'Unknown',
+        taskIcon: task?.icon || '',
+      },
+    };
+    
     set((state) => ({
       groups: state.groups.map((group) =>
         group.id === groupId
-          ? { ...group, tasks: group.tasks.filter((task) => task.id !== taskId) }
+          ? {
+              ...group,
+              tasks: group.tasks.filter((task) => task.id !== taskId),
+              activities: [...(group.activities || []), activity],
+            }
           : group
       ),
     }));
@@ -268,15 +348,32 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     }
     
+    // Ensure assignedIndex is within bounds (in case members were deleted)
+    const safeAssignedIndex = Math.min(task.assignedIndex, assignedMembers.length - 1);
+    
     // Get current assigned member
-    const currentMember = assignedMembers[task.assignedIndex];
+    const currentMember = assignedMembers[safeAssignedIndex];
+    
+    if (!currentMember) return; // Safety check
     
     // In solo mode, don't rotate - just update completion time
     const isSolo = isSoloMode(group);
-    const nextIndex = isSolo ? task.assignedIndex : (task.assignedIndex + 1) % assignedMembers.length;
+    const nextIndex = isSolo ? safeAssignedIndex : (safeAssignedIndex + 1) % assignedMembers.length;
     
     // Update task: rotate assignment (or keep same in solo mode) and update completion time
     const nowISO = now.toISOString();
+    
+    const activity: GroupActivity = {
+      id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'task_completed',
+      timestamp: nowISO,
+      actorId: currentMember.id,
+      targetId: taskId,
+      metadata: {
+        taskName: task.name,
+        taskIcon: task.icon,
+      },
+    };
     
     set((state) => ({
       groups: state.groups.map((g) =>
@@ -299,6 +396,7 @@ export const useAppStore = create<AppState>((set, get) => ({
                     }
                   : t
               ),
+              activities: [...(g.activities || []), activity],
             }
           : g
       ),
@@ -321,8 +419,32 @@ export const useAppStore = create<AppState>((set, get) => ({
     
     if (assignedMembers.length === 0) return;
     
+    // Ensure assignedIndex is within bounds (in case members were deleted)
+    const safeAssignedIndex = Math.min(task.assignedIndex, assignedMembers.length - 1);
+    
+    // Get current assigned member
+    const currentMember = assignedMembers[safeAssignedIndex];
+    
+    if (!currentMember) return; // Safety check
+    
     // Calculate next index (rotate)
-    const nextIndex = (task.assignedIndex + 1) % assignedMembers.length;
+    const nextIndex = (safeAssignedIndex + 1) % assignedMembers.length;
+    
+    // Record skip in history
+    const now = new Date();
+    const nowISO = now.toISOString();
+    
+    const activity: GroupActivity = {
+      id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'task_skipped',
+      timestamp: nowISO,
+      actorId: currentMember.id,
+      targetId: taskId,
+      metadata: {
+        taskName: task.name,
+        taskIcon: task.icon,
+      },
+    };
     
     set((state) => ({
       groups: state.groups.map((g) =>
@@ -334,9 +456,17 @@ export const useAppStore = create<AppState>((set, get) => ({
                   ? {
                       ...t,
                       assignedIndex: nextIndex,
+                      skipHistory: [
+                        ...(t.skipHistory || []),
+                        {
+                          memberId: currentMember.id,
+                          skippedAt: nowISO,
+                        },
+                      ],
                     }
                   : t
               ),
+              activities: [...(g.activities || []), activity],
             }
           : g
       ),
