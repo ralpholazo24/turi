@@ -1,30 +1,30 @@
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import {
-    GROUP_COLOR_PRESETS,
-    GROUP_ICON_OPTIONS,
-    type GroupColorPreset,
-    type GroupIconName,
+  GROUP_COLOR_PRESETS,
+  GROUP_ICON_OPTIONS,
+  type GroupColorPreset,
+  type GroupIconName,
 } from '@/constants/groups';
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
+import { Group } from '@/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Group } from '@/types';
 
 interface EditGroupModalProps {
   visible: boolean;
@@ -116,7 +116,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
             <ThemedText type="subtitle" style={styles.headerTitle}>
-              Edit Crew
+              Edit Group
             </ThemedText>
             <View style={styles.headerSpacer} />
           </View>
@@ -145,8 +145,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
             {/* Name Input */}
             <View style={styles.section}>
               <View style={styles.labelRow}>
-                <EditIcon size={20} color={textColor} style={styles.labelIcon} />
-                <ThemedText style={styles.label}>Crew Name</ThemedText>
+                <ThemedText style={styles.label}>Group Name</ThemedText>
               </View>
               <TextInput
                 style={[

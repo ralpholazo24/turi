@@ -184,8 +184,8 @@ export default function GroupScreen() {
       {/* Delete Confirmation */}
       <ConfirmationModal
         visible={isDeleteConfirmationVisible}
-        title="Delete Crew"
-        message={`Are you sure you want to delete "${group?.name}"? This will permanently delete all members, tasks, and data associated with this crew. This cannot be undone.`}
+        title="Delete Group"
+        message={`Are you sure you want to delete "${group?.name}"? This will permanently delete all members, tasks, and data associated with this group. This cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         confirmColor="#EF4444"

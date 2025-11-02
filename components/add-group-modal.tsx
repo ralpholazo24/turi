@@ -97,7 +97,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
             <ThemedText type="subtitle" style={styles.headerTitle}>
-              New Crew
+              New Group
             </ThemedText>
             <View style={styles.headerSpacer} />
           </View>
@@ -126,8 +126,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
             {/* Name Input */}
             <View style={styles.section}>
               <View style={styles.labelRow}>
-                <EditIcon size={20} color={textColor} style={styles.labelIcon} />
-                <ThemedText style={styles.label}>Crew Name</ThemedText>
+                <ThemedText style={styles.label}>Group Name</ThemedText>
               </View>
               <TextInput
                 style={[
@@ -214,7 +213,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
               ]}
               onPress={handleSave}
               disabled={!name.trim()}>
-              <Text style={styles.saveButtonText}>Save Crew</Text>
+              <Text style={styles.saveButtonText}>Save Group</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

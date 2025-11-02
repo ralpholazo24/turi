@@ -36,7 +36,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <ThemedText type="title" style={styles.title}>
-            Your Crews
+            Your Groups
           </ThemedText>
         </View>
 
@@ -49,10 +49,10 @@ export default function HomeScreen() {
           <View style={styles.emptyContainer}>
             <UsersIcon size={64} color={textColor} style={styles.emptyIcon} />
             <ThemedText type="subtitle" style={styles.emptyTitle}>
-              No crews yet
+              No groups yet
             </ThemedText>
             <ThemedText style={styles.emptyText}>
-              Create your first crew to start managing shared tasks!
+              Create your first group to start managing shared tasks!
             </ThemedText>
           </View>
         ) : (

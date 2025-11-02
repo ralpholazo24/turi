@@ -64,7 +64,7 @@ export function GroupContextMenu({
                 <View style={[styles.menuIcon, { backgroundColor: '#3B82F6' + '20' }]}>
                   <EditIcon size={18} color="#3B82F6" />
                 </View>
-                <ThemedText style={styles.menuItemText}>Edit Crew</ThemedText>
+                <ThemedText style={styles.menuItemText}>Edit Group</ThemedText>
               </View>
             </TouchableOpacity>
 
@@ -77,7 +77,7 @@ export function GroupContextMenu({
                   <DeleteIcon size={18} color="#EF4444" />
                 </View>
                 <ThemedText style={[styles.menuItemText, styles.deleteText]}>
-                  Delete Crew
+                  Delete Group
                 </ThemedText>
               </View>
             </TouchableOpacity>
