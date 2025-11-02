@@ -1,21 +1,21 @@
-import { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  runOnJS,
-} from 'react-native-reanimated';
-import { Group, Member } from '@/types';
-import { ThemedText } from './themed-text';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
-import { MemberAvatar } from './member-avatar';
-import { EditMemberModal } from './edit-member-modal';
-import { ConfirmationModal } from './confirmation-modal';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
+import { Group, Member } from '@/types';
+import { useState } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import { ConfirmationModal } from './confirmation-modal';
+import { EditMemberModal } from './edit-member-modal';
+import { MemberAvatar } from './member-avatar';
+import { ThemedText } from './themed-text';
 
 interface MemberChipListProps {
   group: Group;
