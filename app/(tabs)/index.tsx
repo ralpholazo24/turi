@@ -22,6 +22,8 @@ export default function HomeScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'icon');
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const PlusIcon = APP_ICONS.add;
 
@@ -77,10 +79,10 @@ export default function HomeScreen() {
 
       {/* Floating Action Button */}
       <TouchableOpacity
-        style={[styles.fab, { bottom: 20 + insets.bottom }]}
+        style={[styles.fab, { bottom: 20 + insets.bottom, backgroundColor: buttonBackgroundColor }]}
         onPress={handleAddGroup}
         activeOpacity={0.8}>
-        <PlusIcon size={32} color="#FFFFFF" />
+        <PlusIcon size={32} color={buttonTextColor} />
       </TouchableOpacity>
 
       {/* Add Group Modal */}
@@ -144,11 +146,9 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 20,
     width: 56,
     height: 56,
     borderRadius: BORDER_RADIUS.circular.large,
-    backgroundColor: '#FF6B35', // Orange color from design
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

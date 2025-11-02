@@ -18,6 +18,15 @@ export default function AboutScreen() {
     'icon'
   );
   const iconColor = useThemeColor({}, 'icon');
+  const tintColor = useThemeColor({}, 'tint');
+  
+  // Theme-aware colors
+  const accentColor = useThemeColor(
+    { light: '#FF6B35', dark: '#FF8C65' },
+    'tint'
+  );
+  const accentBgColor = accentColor + '20';
+  const featureDotColor = tintColor;
 
   const BackIcon = APP_ICONS.back;
   const HeartIcon = LucideIcons.Heart;
@@ -41,8 +50,8 @@ export default function AboutScreen() {
         {/* App Info Section */}
         <View style={styles.section}>
           <View style={styles.logoContainer}>
-            <View style={[styles.logoCircle, { backgroundColor: '#FF6B35' + '20' }]}>
-              <ThemedText style={[styles.logoText, { color: '#FF6B35' }]}>T</ThemedText>
+            <View style={[styles.logoCircle, { backgroundColor: accentBgColor }]}>
+              <ThemedText style={[styles.logoText, { color: accentColor }]}>T</ThemedText>
             </View>
           </View>
           
@@ -70,7 +79,7 @@ export default function AboutScreen() {
             </View>
             <ThemedText style={styles.devTitle} i18nKey="about.developedWith" />
             <View style={styles.heartContainer}>
-              <HeartIcon size={20} color="#FF6B35" fill="#FF6B35" />
+              <HeartIcon size={20} color={accentColor} fill={accentColor} />
             </View>
             <ThemedText style={styles.devName} i18nKey="about.by" i18nOptions={{ name: t('about.developerName') }} />
           </View>
@@ -82,32 +91,32 @@ export default function AboutScreen() {
           
           <View style={styles.featureList}>
             <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
+              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
               <ThemedText style={styles.featureText} i18nKey="about.feature1" />
             </View>
             
             <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
+              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
               <ThemedText style={styles.featureText} i18nKey="about.feature2" />
             </View>
             
             <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
+              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
               <ThemedText style={styles.featureText} i18nKey="about.feature3" />
             </View>
             
             <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
+              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
               <ThemedText style={styles.featureText} i18nKey="about.feature4" />
             </View>
             
             <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
+              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
               <ThemedText style={styles.featureText} i18nKey="about.feature5" />
             </View>
             
             <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: '#10B981' }]} />
+              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
               <ThemedText style={styles.featureText} i18nKey="about.feature6" />
             </View>
           </View>

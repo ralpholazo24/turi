@@ -34,6 +34,8 @@ export default function GroupScreen() {
   const insets = useSafeAreaInsets();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const BackIcon = APP_ICONS.back;
   const PlusIcon = APP_ICONS.add;
@@ -148,20 +150,20 @@ export default function GroupScreen() {
       {/* Floating Action Button - Only show on Tasks tab and when group has members */}
       {activeTab === 'tasks' && group.members.length > 0 && (
         <TouchableOpacity
-          style={[styles.fab, { bottom: 20 + insets.bottom }]}
+          style={[styles.fab, { bottom: 20 + insets.bottom, backgroundColor: buttonBackgroundColor }]}
           onPress={() => setIsAddTaskModalVisible(true)}
           activeOpacity={0.8}>
-          <PlusIcon size={32} color="#FFFFFF" />
+          <PlusIcon size={32} color={buttonTextColor} />
         </TouchableOpacity>
       )}
 
       {/* Add Member Button - Only show on Members tab */}
       {activeTab === 'members' && (
         <TouchableOpacity
-          style={[styles.fab, { bottom: 20 + insets.bottom }]}
+          style={[styles.fab, { bottom: 20 + insets.bottom, backgroundColor: buttonBackgroundColor }]}
           onPress={() => setIsAddMemberModalVisible(true)}
           activeOpacity={0.8}>
-          <PlusIcon size={32} color="#FFFFFF" />
+          <PlusIcon size={32} color={buttonTextColor} />
         </TouchableOpacity>
       )}
 
@@ -286,11 +288,9 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 20,
     width: 56,
     height: 56,
     borderRadius: BORDER_RADIUS.circular.large,
-    backgroundColor: '#10B981', // Green color
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

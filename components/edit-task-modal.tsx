@@ -51,6 +51,8 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const CloseIcon = APP_ICONS.close;
   const EditIcon = APP_ICONS.pen;
@@ -199,7 +201,17 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
             <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="task.editTask" />
-            <View style={styles.headerSpacer} />
+            <TouchableOpacity
+              style={[
+                styles.headerSaveButton,
+                (!taskName.trim() || selectedMembers.size === 0) && styles.headerSaveButtonDisabled,
+                { backgroundColor: buttonBackgroundColor },
+              ]}
+              onPress={handleSave}
+              disabled={!taskName.trim() || selectedMembers.size === 0}
+              activeOpacity={0.8}>
+              <CheckIcon size={20} color={buttonTextColor} />
+            </TouchableOpacity>
           </View>
 
           <ScrollView
@@ -443,20 +455,6 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
               </View>
             )}
           </ScrollView>
-
-          {/* Save Button */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[
-                styles.saveButton,
-                (!taskName.trim() || selectedMembers.size === 0) && styles.saveButtonDisabled,
-                { backgroundColor: '#10B981' },
-              ]}
-              onPress={handleSave}
-              disabled={!taskName.trim() || selectedMembers.size === 0}>
-              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
-            </TouchableOpacity>
-          </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
     </Modal>
@@ -492,16 +490,25 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
   },
-  headerSpacer: {
-    width: 24,
+  headerSaveButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerSaveButtonDisabled: {
+    opacity: 0.4,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   section: {
     marginBottom: 32,
@@ -679,24 +686,6 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 12,
     textAlign: 'center',
-  },
-  footer: {
-    padding: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  saveButton: {
-    paddingVertical: 16,
-    borderRadius: BORDER_RADIUS.medium,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    opacity: 0.5,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 

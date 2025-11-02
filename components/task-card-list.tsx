@@ -22,6 +22,8 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const handleTaskPress = (taskId: string) => {
     router.push(`/group/${group.id}/task/${taskId}`);
@@ -43,10 +45,10 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
           <ThemedText style={styles.emptyText} i18nKey="taskModal.noMembersYetMessage" />
           {onOpenAddMember && (
             <TouchableOpacity
-              style={styles.addMembersButton}
+              style={[styles.addMembersButton, { backgroundColor: buttonBackgroundColor }]}
               onPress={onOpenAddMember}
               activeOpacity={0.7}>
-              <Text style={styles.addMembersButtonText}>{t('taskModal.addMembers')}</Text>
+              <Text style={[styles.addMembersButtonText, { color: buttonTextColor }]}>{t('taskModal.addMembers')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -121,14 +123,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   addMembersButton: {
-    backgroundColor: '#10B981',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: BORDER_RADIUS.medium,
     marginTop: 8,
+    alignItems: 'center',
   },
   addMembersButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

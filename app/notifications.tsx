@@ -29,6 +29,10 @@ export default function NotificationsSettingsScreen() {
     'icon'
   );
   const iconColor = useThemeColor({}, 'icon');
+  const tintColor = useThemeColor({}, 'tint');
+  
+  // Theme-aware icon colors
+  const iconBgColor = iconColor + '20';
 
   const BackIcon = APP_ICONS.back;
   const BellIcon = LucideIcons.Bell;
@@ -129,51 +133,55 @@ export default function NotificationsSettingsScreen() {
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle} i18nKey="notifications.settings" />
           
-          <View style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
-                <BellIcon size={20} color="#10B981" />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <BellIcon size={20} color={iconColor} />
+                </View>
+                <View style={styles.settingTextContainer}>
+                  <ThemedText style={styles.settingText} i18nKey="notifications.enableNotifications" />
+                  {permissionStatus === 'denied' && (
+                    <ThemedText style={styles.settingSubtext} i18nKey="notifications.permissionRequiredDevice" />
+                  )}
+                  {permissionStatus === 'granted' && notificationsEnabled && (
+                    <ThemedText style={styles.settingSubtext} i18nKey="notifications.youWillReceiveReminders" />
+                  )}
+                </View>
               </View>
-              <View style={styles.settingTextContainer}>
-                <ThemedText style={styles.settingText} i18nKey="notifications.enableNotifications" />
-                {permissionStatus === 'denied' && (
-                  <ThemedText style={styles.settingSubtext} i18nKey="notifications.permissionRequiredDevice" />
-                )}
-                {permissionStatus === 'granted' && notificationsEnabled && (
-                  <ThemedText style={styles.settingSubtext} i18nKey="notifications.youWillReceiveReminders" />
-                )}
-              </View>
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={handleToggleNotifications}
+                trackColor={{ false: borderColor + '60', true: tintColor }}
+                thumbColor={backgroundColor}
+                ios_backgroundColor={borderColor + '60'}
+              />
             </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={handleToggleNotifications}
-              trackColor={{ false: '#E5E7EB', true: '#10B981' }}
-              thumbColor="#FFFFFF"
-              ios_backgroundColor="#E5E7EB"
-            />
           </View>
 
           {notificationsEnabled && (
-            <TouchableOpacity
-              style={styles.settingItem}
-              onPress={handleReminderTimePress}
-              activeOpacity={0.7}>
-              <View style={styles.settingLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
-                  <BellIcon size={20} color="#10B981" />
+            <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+              <TouchableOpacity
+                style={styles.settingItem}
+                onPress={handleReminderTimePress}
+                activeOpacity={0.7}>
+                <View style={styles.settingLeft}>
+                  <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                    <BellIcon size={20} color={iconColor} />
+                  </View>
+                  <View style={styles.settingTextContainer}>
+                    <ThemedText style={styles.settingText} i18nKey="notifications.remindMeBefore" />
+                    <ThemedText style={styles.settingSubtext} i18nKey="notifications.getNotifiedBeforeTask" />
+                  </View>
                 </View>
-                <View style={styles.settingTextContainer}>
-                  <ThemedText style={styles.settingText} i18nKey="notifications.remindMeBefore" />
-                  <ThemedText style={styles.settingSubtext} i18nKey="notifications.getNotifiedBeforeTask" />
+                <View style={styles.settingRight}>
+                  <ThemedText style={styles.settingValue}>
+                    {formatReminderTime(reminderMinutes)}
+                  </ThemedText>
+                  <LucideIcons.ChevronRight size={20} color={iconColor} />
                 </View>
-              </View>
-              <View style={styles.settingRight}>
-                <ThemedText style={styles.settingValue}>
-                  {formatReminderTime(reminderMinutes)}
-                </ThemedText>
-                <LucideIcons.ChevronRight size={20} color={iconColor} />
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
 
@@ -184,8 +192,8 @@ export default function NotificationsSettingsScreen() {
             
             <View style={styles.howItWorksContainer}>
               <View style={styles.howItWorksItem}>
-                <View style={[styles.stepNumber, { backgroundColor: '#10B981' + '20' }]}>
-                  <ThemedText style={[styles.stepNumberText, { color: '#10B981' }]}>1</ThemedText>
+                <View style={[styles.stepNumber, { backgroundColor: iconBgColor }]}>
+                  <ThemedText style={[styles.stepNumberText, { color: iconColor }]}>1</ThemedText>
                 </View>
                 <View style={styles.stepContent}>
                   <ThemedText style={styles.stepTitle} i18nKey="notifications.tasksAreScheduled" />
@@ -194,8 +202,8 @@ export default function NotificationsSettingsScreen() {
               </View>
 
               <View style={styles.howItWorksItem}>
-                <View style={[styles.stepNumber, { backgroundColor: '#10B981' + '20' }]}>
-                  <ThemedText style={[styles.stepNumberText, { color: '#10B981' }]}>2</ThemedText>
+                <View style={[styles.stepNumber, { backgroundColor: iconBgColor }]}>
+                  <ThemedText style={[styles.stepNumberText, { color: iconColor }]}>2</ThemedText>
                 </View>
                 <View style={styles.stepContent}>
                   <ThemedText style={styles.stepTitle} i18nKey="notifications.youGetReminders" />
@@ -204,8 +212,8 @@ export default function NotificationsSettingsScreen() {
               </View>
 
               <View style={styles.howItWorksItem}>
-                <View style={[styles.stepNumber, { backgroundColor: '#10B981' + '20' }]}>
-                  <ThemedText style={[styles.stepNumberText, { color: '#10B981' }]}>3</ThemedText>
+                <View style={[styles.stepNumber, { backgroundColor: iconBgColor }]}>
+                  <ThemedText style={[styles.stepNumberText, { color: iconColor }]}>3</ThemedText>
                 </View>
                 <View style={styles.stepContent}>
                   <ThemedText style={styles.stepTitle} i18nKey="notifications.notificationsUpdateAutomatically" />
@@ -282,12 +290,18 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     lineHeight: 20,
   },
+  settingItemContainer: {
+    borderRadius: BORDER_RADIUS.medium,
+    borderWidth: 1,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16,
   },
   settingLeft: {
     flexDirection: 'row',

@@ -43,6 +43,8 @@ export default function TaskDetailsScreen() {
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const BackIcon = APP_ICONS.back;
   const MenuIcon = APP_ICONS.menu;
@@ -298,14 +300,14 @@ export default function TaskDetailsScreen() {
           style={[
             styles.markDoneButton,
             {
-              backgroundColor: completionStatus.isCompleted ? '#6B7280' : '#10B981',
+              backgroundColor: completionStatus.isCompleted ? '#6B7280' : buttonBackgroundColor,
             },
           ]}
           onPress={handleMarkDone}
           disabled={completionStatus.isCompleted}
           activeOpacity={completionStatus.isCompleted ? 1 : 0.8}>
-          <CheckIcon size={24} color="#FFFFFF" />
-          <ThemedText style={styles.markDoneText}>
+          <CheckIcon size={24} color={buttonTextColor} />
+          <ThemedText style={[styles.markDoneText, { color: buttonTextColor }]}>
             {completionStatus.isCompleted ? completionStatus.message : t('task.markDone')}
           </ThemedText>
         </TouchableOpacity>
@@ -561,7 +563,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   markDoneText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

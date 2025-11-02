@@ -23,6 +23,8 @@ export default function FeatureRequestsScreen() {
     { light: '#F5F5F5', dark: '#2A2A2A' },
     'background'
   );
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const BackIcon = APP_ICONS.back;
   const SparklesIcon = LucideIcons.Sparkles;
@@ -155,14 +157,14 @@ export default function FeatureRequestsScreen() {
               style={[
                 styles.submitButton,
                 {
-                  backgroundColor: featureTitle.trim() && featureDescription.trim() ? '#10B981' : '#10B981' + '60',
+                  backgroundColor: featureTitle.trim() && featureDescription.trim() ? buttonBackgroundColor : buttonBackgroundColor + '80',
                 },
               ]}
               onPress={handleSubmit}
               disabled={!featureTitle.trim() || !featureDescription.trim()}
               activeOpacity={0.7}>
-              <SendIcon size={20} color="#FFFFFF" />
-              <ThemedText style={styles.submitButtonText} i18nKey="featureRequests.submit" />
+              <SendIcon size={20} color={buttonTextColor} />
+              <ThemedText style={[styles.submitButtonText, { color: buttonTextColor }]} i18nKey="featureRequests.submit" />
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -261,7 +263,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   submitButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

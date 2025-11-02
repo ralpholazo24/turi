@@ -103,6 +103,7 @@ export async function scheduleTaskNotification(
     await Notifications.scheduleNotificationAsync({
       content: notificationContent,
       trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: notificationDate,
       },
     });

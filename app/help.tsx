@@ -12,11 +12,13 @@ export default function HelpFAQScreen() {
   const { t } = useTranslation();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
-  const iconColor = useThemeColor({}, 'icon');
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const BackIcon = APP_ICONS.back;
   const HelpCircleIcon = LucideIcons.HelpCircle;
@@ -116,10 +118,10 @@ export default function HelpFAQScreen() {
             <ThemedText style={styles.contactTitle} i18nKey="help.stillNeedHelp" />
             <ThemedText style={styles.contactText} i18nKey="help.stillNeedHelpDescription" />
             <TouchableOpacity
-              style={[styles.contactButton, { backgroundColor: '#10B981' }]}
+              style={[styles.contactButton, { backgroundColor: buttonBackgroundColor }]}
               onPress={() => router.push('/settings')}
               activeOpacity={0.7}>
-              <ThemedText style={styles.contactButtonText} i18nKey="help.contactSupport" />
+              <ThemedText style={[styles.contactButtonText, { color: buttonTextColor }]} i18nKey="help.contactSupport" />
             </TouchableOpacity>
           </View>
         </View>
@@ -251,7 +253,6 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.medium,
   },
   contactButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

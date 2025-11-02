@@ -20,7 +20,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -50,6 +49,8 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const CloseIcon = APP_ICONS.close;
   const EditIcon = APP_ICONS.pen;
@@ -118,7 +119,17 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
             <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="group.editGroup" />
-            <View style={styles.headerSpacer} />
+            <TouchableOpacity
+              style={[
+                styles.headerSaveButton,
+                !name.trim() && styles.headerSaveButtonDisabled,
+                { backgroundColor: buttonBackgroundColor },
+              ]}
+              onPress={handleSave}
+              disabled={!name.trim()}
+              activeOpacity={0.8}>
+              <CheckIcon size={20} color={buttonTextColor} />
+            </TouchableOpacity>
           </View>
 
           <ScrollView
@@ -221,20 +232,6 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
               </View>
             </View>
           </ScrollView>
-
-          {/* Save Button */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[
-                styles.saveButton,
-                !name.trim() && styles.saveButtonDisabled,
-                { backgroundColor: '#10B981' },
-              ]}
-              onPress={handleSave}
-              disabled={!name.trim()}>
-              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
-            </TouchableOpacity>
-          </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
     </Modal>
@@ -267,9 +264,18 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
   },
-  headerSpacer: {
-    width: 24,
+  headerSaveButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerSaveButtonDisabled: {
+    opacity: 0.4,
   },
   scrollView: {
     flex: 1,
@@ -361,24 +367,6 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  footer: {
-    padding: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  saveButton: {
-    paddingVertical: 16,
-    borderRadius: BORDER_RADIUS.medium,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    opacity: 0.5,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 

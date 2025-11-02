@@ -86,7 +86,7 @@
     "lastDay": "Último {{day}}",
     "taskNotFound": "Tarea no encontrada",
     "editTask": "Editar Tarea",
-    "schedule": {
+    "scheduleFormat": {
       "dailyAt": "Diario a las {{time}}"
     }
   },

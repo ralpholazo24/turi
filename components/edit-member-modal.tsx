@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Modal,
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -36,6 +35,8 @@ export function EditMemberModal({ visible, onClose, group, member }: EditMemberM
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const CloseIcon = APP_ICONS.close;
 
@@ -72,10 +73,18 @@ export function EditMemberModal({ visible, onClose, group, member }: EditMemberM
             <TouchableOpacity onPress={handleClose}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
-            <ThemedText type="subtitle" style={styles.headerTitle}>
-              Edit Member
-            </ThemedText>
-            <View style={styles.headerSpacer} />
+            <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="member.editMember" />
+            <TouchableOpacity
+              style={[
+                styles.headerSaveButton,
+                !name.trim() && styles.headerSaveButtonDisabled,
+                { backgroundColor: buttonBackgroundColor },
+              ]}
+              onPress={handleSave}
+              disabled={!name.trim()}
+              activeOpacity={0.8}>
+              <APP_ICONS.check size={20} color={buttonTextColor} />
+            </TouchableOpacity>
           </View>
 
           {/* Content */}
@@ -92,20 +101,6 @@ export function EditMemberModal({ visible, onClose, group, member }: EditMemberM
               onChangeText={setName}
               autoFocus
             />
-          </View>
-
-          {/* Save Button */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[
-                styles.saveButton,
-                !name.trim() && styles.saveButtonDisabled,
-                { backgroundColor: '#10B981' },
-              ]}
-              onPress={handleSave}
-              disabled={!name.trim()}>
-              <Text style={styles.saveButtonText}>{t('common.save')}</Text>
-            </TouchableOpacity>
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
@@ -138,9 +133,18 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
   },
-  headerSpacer: {
-    width: 24,
+  headerSaveButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerSaveButtonDisabled: {
+    opacity: 0.4,
   },
   content: {
     padding: 20,
@@ -156,24 +160,6 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     minHeight: 50,
-  },
-  footer: {
-    padding: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  saveButton: {
-    paddingVertical: 16,
-    borderRadius: BORDER_RADIUS.medium,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    opacity: 0.5,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 

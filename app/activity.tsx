@@ -86,6 +86,29 @@ export default function ActivityScreen() {
     'icon'
   );
   const iconColor = useThemeColor({}, 'icon');
+  const tintColor = useThemeColor({}, 'tint');
+  
+  // Theme-aware colors for activity types
+  const completedColor = useThemeColor(
+    { light: '#10B981', dark: '#34D399' },
+    'tint'
+  );
+  const skippedColor = useThemeColor(
+    { light: '#F97316', dark: '#FB923C' },
+    'tint'
+  );
+  const createdColor = useThemeColor(
+    { light: '#3B82F6', dark: '#60A5FA' },
+    'tint'
+  );
+  const dangerColor = useThemeColor(
+    { light: '#EF4444', dark: '#F87171' },
+    'tint'
+  );
+  const purpleColor = useThemeColor(
+    { light: '#8B5CF6', dark: '#A78BFA' },
+    'tint'
+  );
 
   const BackIcon = APP_ICONS.back;
   const CheckIcon = APP_ICONS.check;
@@ -193,19 +216,19 @@ export default function ActivityScreen() {
   const getActivityIconColor = (type: GroupActivity['type']) => {
     switch (type) {
       case 'task_completed':
-        return '#10B981';
+        return completedColor;
       case 'task_skipped':
-        return '#F97316';
+        return skippedColor;
       case 'task_created':
-        return '#3B82F6';
+        return createdColor;
       case 'task_deleted':
-        return '#EF4444';
+        return dangerColor;
       case 'member_added':
-        return '#10B981';
+        return completedColor;
       case 'member_deleted':
-        return '#EF4444';
+        return dangerColor;
       case 'group_created':
-        return '#8B5CF6';
+        return purpleColor;
       default:
         return iconColor;
     }
@@ -280,16 +303,16 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'completed' && { backgroundColor: '#10B981' + '20' },
+              filter === 'completed' && { backgroundColor: completedColor + '20' },
             ]}
             onPress={() => setFilter('completed')}
             activeOpacity={0.7}>
-            <CheckIcon size={12} color={filter === 'completed' ? '#10B981' : iconColor} />
+            <CheckIcon size={12} color={filter === 'completed' ? completedColor : iconColor} />
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'completed' && styles.filterTextActive,
-                  filter === 'completed' && { color: '#10B981' },
+                  filter === 'completed' && { color: completedColor },
                 ]}
                 i18nKey="activity.done"
               />
@@ -297,16 +320,16 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'skipped' && { backgroundColor: '#F97316' + '20' },
+              filter === 'skipped' && { backgroundColor: skippedColor + '20' },
             ]}
             onPress={() => setFilter('skipped')}
             activeOpacity={0.7}>
-            <SkipForwardIcon size={12} color={filter === 'skipped' ? '#F97316' : iconColor} />
+            <SkipForwardIcon size={12} color={filter === 'skipped' ? skippedColor : iconColor} />
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'skipped' && styles.filterTextActive,
-                  filter === 'skipped' && { color: '#F97316' },
+                  filter === 'skipped' && { color: skippedColor },
                 ]}
                 i18nKey="activity.skipped"
               />
@@ -314,16 +337,16 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'created' && { backgroundColor: '#3B82F6' + '20' },
+              filter === 'created' && { backgroundColor: createdColor + '20' },
             ]}
             onPress={() => setFilter('created')}
             activeOpacity={0.7}>
-            <PlusIcon size={12} color={filter === 'created' ? '#3B82F6' : iconColor} />
+            <PlusIcon size={12} color={filter === 'created' ? createdColor : iconColor} />
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'created' && styles.filterTextActive,
-                  filter === 'created' && { color: '#3B82F6' },
+                  filter === 'created' && { color: createdColor },
                 ]}
                 i18nKey="activity.created"
               />
@@ -331,16 +354,16 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'member' && { backgroundColor: '#10B981' + '20' },
+              filter === 'member' && { backgroundColor: completedColor + '20' },
             ]}
             onPress={() => setFilter('member')}
             activeOpacity={0.7}>
-            <UsersIcon size={12} color={filter === 'member' ? '#10B981' : iconColor} />
+            <UsersIcon size={12} color={filter === 'member' ? completedColor : iconColor} />
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'member' && styles.filterTextActive,
-                  filter === 'member' && { color: '#10B981' },
+                  filter === 'member' && { color: completedColor },
                 ]}
                 i18nKey="activity.members"
               />

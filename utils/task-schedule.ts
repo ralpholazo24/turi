@@ -24,7 +24,7 @@ export function formatScheduleInfo(task: Task): string {
   
   if (task.frequency === 'daily') {
     if (task.scheduleTime) {
-      return i18n.t('task.schedule.dailyAt', { time: formatTime(task.scheduleTime) });
+      return i18n.t('task.scheduleFormat.dailyAt', { time: formatTime(task.scheduleTime) });
     }
     return i18n.t('notifications.daily');
   }

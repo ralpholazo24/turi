@@ -27,6 +27,15 @@ export default function SettingsScreen() {
     'icon'
   );
   const iconColor = useThemeColor({}, 'icon');
+  const tintColor = useThemeColor({}, 'tint');
+  
+  // Theme-aware icon colors
+  const iconBgColor = iconColor + '20';
+  const dangerColor = useThemeColor(
+    { light: '#EF4444', dark: '#F87171' },
+    'icon'
+  );
+  const dangerBgColor = dangerColor + '20';
 
   const BackIcon = APP_ICONS.back;
   const BellIcon = LucideIcons.Bell;
@@ -85,7 +94,7 @@ export default function SettingsScreen() {
             text: t('common.ok'),
             onPress: () => {
               // Navigate to home screen
-              router.replace('/(tabs)/');
+              router.replace('/(tabs)' as any);
             },
           },
         ]
@@ -125,153 +134,171 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle} i18nKey="settings.account" />
           
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => router.push('/activity')}
-            activeOpacity={0.7}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' + '20' }]}>
-                <ActivityIcon size={20} color="#3B82F6" />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => router.push('/activity')}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <ActivityIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.activity" />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.activity" />
-            </View>
-            <LucideIcons.ChevronRight size={20} color={iconColor} />
-          </TouchableOpacity>
+              <LucideIcons.ChevronRight size={20} color={iconColor} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Preferences Section */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle} i18nKey="settings.preferences" />
           
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => router.push('/notifications')}
-            activeOpacity={0.7}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
-                <BellIcon size={20} color="#10B981" />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => router.push('/notifications')}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <BellIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.notifications" />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.notifications" />
-            </View>
-            <View style={styles.settingRight}>
-              {permissionStatus === 'denied' && (
-                <ThemedText style={styles.settingValue} i18nKey="settings.permissionRequired" />
-              )}
-              {notificationsEnabled && permissionStatus !== 'denied' && (
-                <ThemedText style={styles.settingValue} i18nKey="settings.notificationsEnabled" />
-              )}
-              <LucideIcons.ChevronRight size={20} color={iconColor} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
-                <MoonIcon size={20} color="#10B981" />
+              <View style={styles.settingRight}>
+                {permissionStatus === 'denied' && (
+                  <ThemedText style={styles.settingValue} i18nKey="settings.permissionRequired" />
+                )}
+                {notificationsEnabled && permissionStatus !== 'denied' && (
+                  <ThemedText style={styles.settingValue} i18nKey="settings.notificationsEnabled" />
+                )}
+                <LucideIcons.ChevronRight size={20} color={iconColor} />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.darkMode" />
-            </View>
-            <Switch
-              value={isDarkMode}
-              onValueChange={handleToggleDarkMode}
-              trackColor={{ false: '#E5E7EB', true: '#10B981' }}
-              thumbColor="#FFFFFF"
-              ios_backgroundColor="#E5E7EB"
-            />
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => router.push('/language')}
-            activeOpacity={0.7}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
-                <GlobeIcon size={20} color="#10B981" />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <MoonIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.darkMode" />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.appLanguage" />
+              <Switch
+                value={isDarkMode}
+                onValueChange={handleToggleDarkMode}
+                trackColor={{ false: borderColor + '60', true: tintColor }}
+                thumbColor={backgroundColor}
+                ios_backgroundColor={borderColor + '60'}
+              />
             </View>
-            <View style={styles.settingRight}>
-              <ThemedText style={styles.settingValue}>
-                {language === 'es' ? t('settings.spanish') : t('settings.english')}
-              </ThemedText>
-              <LucideIcons.ChevronRight size={20} color={iconColor} />
-            </View>
-          </TouchableOpacity>
+          </View>
+
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => router.push('/language')}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <GlobeIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.appLanguage" />
+              </View>
+              <View style={styles.settingRight}>
+                <ThemedText style={styles.settingValue}>
+                  {language === 'es' ? t('settings.spanish') : t('settings.english')}
+                </ThemedText>
+                <LucideIcons.ChevronRight size={20} color={iconColor} />
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Support Section */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle} i18nKey="settings.support" />
           
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => router.push('/feature-requests')}
-            activeOpacity={0.7}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-                <SparklesIcon size={20} color={iconColor} />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => router.push('/feature-requests')}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <SparklesIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.featureRequests" />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.featureRequests" />
-            </View>
-            <LucideIcons.ChevronRight size={20} color={iconColor} />
-          </TouchableOpacity>
+              <LucideIcons.ChevronRight size={20} color={iconColor} />
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => router.push('/help')}
-            activeOpacity={0.7}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-                <HelpCircleIcon size={20} color={iconColor} />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => router.push('/help')}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <HelpCircleIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.helpFAQ" />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.helpFAQ" />
-            </View>
-            <LucideIcons.ChevronRight size={20} color={iconColor} />
-          </TouchableOpacity>
+              <LucideIcons.ChevronRight size={20} color={iconColor} />
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={handleContactSupport}
-            activeOpacity={0.7}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-                <HeadphonesIcon size={20} color={iconColor} />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={handleContactSupport}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <HeadphonesIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.contactSupport" />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.contactSupport" />
-            </View>
-            <LucideIcons.ChevronRight size={20} color={iconColor} />
-          </TouchableOpacity>
+              <LucideIcons.ChevronRight size={20} color={iconColor} />
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => router.push('/about')}
-            activeOpacity={0.7}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-                <InfoIcon size={20} color={iconColor} />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => router.push('/about')}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <InfoIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.aboutApp" />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.aboutApp" />
-            </View>
-            <LucideIcons.ChevronRight size={20} color={iconColor} />
-          </TouchableOpacity>
+              <LucideIcons.ChevronRight size={20} color={iconColor} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Data Section */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle} i18nKey="settings.data" />
           
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => setIsClearDataModalVisible(true)}
-            activeOpacity={0.7}>
-            <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#EF4444' + '20' }]}>
-                <TrashIcon size={20} color="#EF4444" />
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => setIsClearDataModalVisible(true)}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: dangerBgColor }]}>
+                  <TrashIcon size={20} color={dangerColor} />
+                </View>
+                <ThemedText style={[styles.settingText, { color: dangerColor }]} i18nKey="settings.clearData" />
               </View>
-              <ThemedText style={styles.settingText} i18nKey="settings.clearData" />
-            </View>
-            <LucideIcons.ChevronRight size={20} color={iconColor} />
-          </TouchableOpacity>
+              <LucideIcons.ChevronRight size={20} color={iconColor} />
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
@@ -331,11 +358,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     opacity: 0.6,
   },
+  settingItemContainer: {
+    borderRadius: BORDER_RADIUS.medium,
+    borderWidth: 1,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
+    paddingHorizontal: 16,
   },
   settingLeft: {
     flexDirection: 'row',

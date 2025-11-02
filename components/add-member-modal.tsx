@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Modal,
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -35,6 +34,8 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+  const buttonBackgroundColor = useThemeColor({}, 'text');
+  const buttonTextColor = useThemeColor({}, 'background');
 
   const CloseIcon = APP_ICONS.close;
 
@@ -73,7 +74,17 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
             <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="member.addNewMember" />
-            <View style={styles.headerSpacer} />
+            <TouchableOpacity
+              style={[
+                styles.headerSaveButton,
+                !name.trim() && styles.headerSaveButtonDisabled,
+                { backgroundColor: buttonBackgroundColor },
+              ]}
+              onPress={handleSave}
+              disabled={!name.trim()}
+              activeOpacity={0.8}>
+              <APP_ICONS.check size={20} color={buttonTextColor} />
+            </TouchableOpacity>
           </View>
 
           {/* Content */}
@@ -90,20 +101,6 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
               onChangeText={setName}
               autoFocus
             />
-          </View>
-
-          {/* Add Member Button */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[
-                styles.addButton,
-                !name.trim() && styles.addButtonDisabled,
-                { backgroundColor: '#10B981' },
-              ]}
-              onPress={handleSave}
-              disabled={!name.trim()}>
-              <Text style={styles.addButtonText}>{t('member.addMember')}</Text>
-            </TouchableOpacity>
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
@@ -136,9 +133,18 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
   },
-  headerSpacer: {
-    width: 24,
+  headerSaveButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerSaveButtonDisabled: {
+    opacity: 0.4,
   },
   content: {
     padding: 20,
@@ -154,24 +160,6 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     minHeight: 50,
-  },
-  footer: {
-    padding: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  addButton: {
-    paddingVertical: 16,
-    borderRadius: BORDER_RADIUS.medium,
-    alignItems: 'center',
-  },
-  addButtonDisabled: {
-    opacity: 0.5,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 

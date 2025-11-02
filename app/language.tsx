@@ -25,6 +25,10 @@ export default function LanguageScreen() {
     'icon'
   );
   const iconColor = useThemeColor({}, 'icon');
+  const tintColor = useThemeColor({}, 'tint');
+  
+  // Theme-aware icon colors
+  const iconBgColor = iconColor + '20';
 
   const BackIcon = APP_ICONS.back;
   const GlobeIcon = LucideIcons.Globe;
@@ -73,13 +77,13 @@ export default function LanguageScreen() {
               onPress={() => handleLanguageSelect(lang.code)}
               activeOpacity={0.7}>
               <View style={styles.languageLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: '#10B981' + '20' }]}>
-                  <GlobeIcon size={20} color="#10B981" />
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <GlobeIcon size={20} color={iconColor} />
                 </View>
                 <ThemedText style={styles.languageName}>{lang.name}</ThemedText>
               </View>
               {language === lang.code && (
-                <CheckIcon size={20} color="#10B981" />
+                <CheckIcon size={20} color={tintColor} />
               )}
             </TouchableOpacity>
           ))}
@@ -150,7 +154,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: BORDER_RADIUS.medium,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   languageLeft: {
     flexDirection: 'row',
