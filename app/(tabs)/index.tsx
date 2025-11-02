@@ -41,7 +41,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <ThemedText type="title" style={styles.title} i18nKey="home.yourGroups" />
+          <ThemedText type="title" style={styles.title} i18nKey="home.groups" />
           <TouchableOpacity
             onPress={() => router.push('/settings')}
             style={styles.settingsButton}

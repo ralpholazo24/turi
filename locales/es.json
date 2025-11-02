@@ -22,7 +22,7 @@
   },
   "home": {
     "title": "Grupos",
-    "yourGroups": "Tus Grupos",
+    "groups": "Grupos",
     "noGroups": "Aún no hay grupos",
     "noGroupsDescription": "¡Crea tu primer grupo para comenzar a gestionar tareas juntos!",
     "addGroup": "Agregar Grupo"
