@@ -113,6 +113,17 @@ export default function TaskDetailsScreen() {
     return `${months[date.getMonth()]} ${date.getDate()}`;
   };
 
+  // Format time from date string
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    return `${displayHours}:${displayMinutes} ${ampm}`;
+  };
+
   // Get completion history sorted by date (newest first)
   const sortedHistory = [...(task.completionHistory || [])].sort(
     (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
@@ -258,7 +269,7 @@ export default function TaskDetailsScreen() {
                         {member.name}
                       </ThemedText>
                       <ThemedText style={styles.historyDate}>
-                        {formatDate(entry.completedAt)}
+                        {formatDate(entry.completedAt)} • {formatTime(entry.completedAt)}
                       </ThemedText>
                     </View>
                   </View>

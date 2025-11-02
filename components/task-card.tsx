@@ -82,7 +82,6 @@ export function TaskCard({
   const scheduleInfo = formatScheduleInfo(task);
   
   const CheckIcon = APP_ICONS.check;
-  const CalendarIcon = APP_ICONS.calendar;
 
   return (
     <TouchableOpacity
@@ -123,7 +122,7 @@ export function TaskCard({
             </View>
           </View>
 
-          {/* Bottom Section: Assigned Member and Badge */}
+          {/* Bottom Section: Assigned Member and Status Badge */}
           <View style={styles.bottomSection}>
             {assignedMember && !soloMode ? (
               <View style={styles.assignedSection}>
@@ -143,7 +142,8 @@ export function TaskCard({
               </Text>
             )}
 
-            <View style={styles.rightSection}>
+            {/* Status Badge - Lower Right */}
+            <View style={styles.statusBadgeContainer}>
               {completionStatus.isCompleted ? (
                 <View style={styles.completedBadge}>
                   <CheckIcon size={16} color="#FFFFFF" />
@@ -154,11 +154,8 @@ export function TaskCard({
                   <Text style={styles.overdueBadgeText}>Overdue</Text>
                 </View>
               ) : (
-                <View style={styles.frequencyBadge}>
-                  <CalendarIcon size={14} color="#FFFFFF" />
-                  <Text style={styles.frequencyText}>
-                    {task.frequency === 'daily' ? 'Daily' : task.frequency === 'weekly' ? 'Weekly' : 'Monthly'}
-                  </Text>
+                <View style={styles.pendingBadge}>
+                  <Text style={styles.pendingBadgeText}>Pending</Text>
                 </View>
               )}
             </View>
@@ -248,7 +245,7 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     marginLeft: 8,
   },
-  rightSection: {
+  statusBadgeContainer: {
     alignItems: 'flex-end',
   },
   completedBadge: {
@@ -265,16 +262,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  frequencyBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  pendingBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: BORDER_RADIUS.large,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    gap: 4,
   },
-  frequencyText: {
+  pendingBadgeText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
