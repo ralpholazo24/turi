@@ -124,14 +124,20 @@ export default function GroupScreen() {
       {/* Content */}
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {activeTab === 'tasks' ? (
-          <TaskCardList group={group} />
+          <TaskCardList 
+            group={group} 
+            onOpenAddMember={() => {
+              setActiveTab('members');
+              setIsAddMemberModalVisible(true);
+            }}
+          />
         ) : (
           <MemberChipList group={group} />
         )}
       </ScrollView>
 
-      {/* Floating Action Button - Only show on Tasks tab */}
-      {activeTab === 'tasks' && (
+      {/* Floating Action Button - Only show on Tasks tab and when group has members */}
+      {activeTab === 'tasks' && group.members.length > 0 && (
         <TouchableOpacity
           style={styles.fab}
           onPress={() => setIsAddTaskModalVisible(true)}
@@ -155,6 +161,10 @@ export default function GroupScreen() {
         visible={isAddTaskModalVisible}
         onClose={() => setIsAddTaskModalVisible(false)}
         group={group}
+        onOpenAddMember={() => {
+          setIsAddTaskModalVisible(false);
+          setIsAddMemberModalVisible(true);
+        }}
       />
 
       {/* Add Member Modal */}

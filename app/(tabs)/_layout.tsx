@@ -9,7 +9,6 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const HomeIcon = APP_ICONS.home;
-  const ExploreIcon = APP_ICONS.explore;
 
   return (
     <Tabs
@@ -21,7 +20,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Groups',
           headerShown: false,
           tabBarIcon: ({ color }) => <HomeIcon size={28} color={color} />,
         }}
@@ -29,9 +28,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          headerShown: false,
-          tabBarIcon: ({ color }) => <ExploreIcon size={28} color={color} />,
+          href: null, // Hide this tab
         }}
       />
     </Tabs>

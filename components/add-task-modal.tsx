@@ -26,14 +26,16 @@ interface AddTaskModalProps {
   visible: boolean;
   onClose: () => void;
   group: Group;
+  onOpenAddMember?: () => void; // Callback to open Add Member modal
 }
 
-export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
+export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTaskModalProps) {
   const { addTask } = useAppStore();
   const [taskName, setTaskName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<TaskIconName>('Trash2');
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
+  const [showNoMembersModal, setShowNoMembersModal] = useState(false);
   
   // Scheduling options
   const [scheduleWeek, setScheduleWeek] = useState<number | undefined>(undefined); // 1-4 for monthly
@@ -112,6 +114,12 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
   };
 
   const handleSave = async () => {
+    // Check if group has no members
+    if (group.members.length === 0) {
+      setShowNoMembersModal(true);
+      return;
+    }
+
     if (!taskName.trim() || selectedMembers.size === 0) {
       return;
     }
@@ -143,6 +151,12 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
     setScheduleDay(undefined);
     setScheduleTime('');
     onClose();
+  };
+
+  const handleAddMembers = () => {
+    setShowNoMembersModal(false);
+    onClose();
+    onOpenAddMember?.();
   };
 
   const handleClose = () => {
@@ -427,16 +441,49 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
             <TouchableOpacity
               style={[
                 styles.saveButton,
-                (!taskName.trim() || selectedMembers.size === 0) && styles.saveButtonDisabled,
+                (!taskName.trim() || selectedMembers.size === 0 || group.members.length === 0) && styles.saveButtonDisabled,
                 { backgroundColor: '#10B981' },
               ]}
               onPress={handleSave}
-              disabled={!taskName.trim() || selectedMembers.size === 0}>
+              disabled={!taskName.trim() || selectedMembers.size === 0 || group.members.length === 0}>
               <Text style={styles.saveButtonText}>Save Task</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
+
+      {/* No Members Modal */}
+      <Modal
+        visible={showNoMembersModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowNoMembersModal(false)}>
+        <View style={styles.noMembersModalContainer}>
+          <View style={styles.noMembersModalBackdrop} />
+          <View style={[styles.noMembersModalContent, { backgroundColor, borderColor: borderColor + '30' }]}>
+            <ThemedText type="subtitle" style={styles.noMembersTitle}>
+              No Members Yet
+            </ThemedText>
+            <ThemedText style={styles.noMembersMessage}>
+              You don&apos;t have any members yet. Add some first to assign tasks!
+            </ThemedText>
+            <View style={styles.noMembersButtons}>
+              <TouchableOpacity
+                style={[styles.noMembersButton, styles.cancelButton, { borderColor }]}
+                onPress={() => setShowNoMembersModal(false)}
+                activeOpacity={0.7}>
+                <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.noMembersButton, styles.addMembersButton]}
+                onPress={handleAddMembers}
+                activeOpacity={0.7}>
+                <Text style={styles.addMembersButtonText}>Add Members</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 }
@@ -673,6 +720,70 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  noMembersModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noMembersModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  noMembersModalContent: {
+    width: '85%',
+    maxWidth: 400,
+    borderRadius: BORDER_RADIUS.xlarge,
+    padding: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  noMembersTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  noMembersMessage: {
+    fontSize: 16,
+    lineHeight: 22,
+    marginBottom: 24,
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  noMembersButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  noMembersButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: BORDER_RADIUS.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    borderWidth: StyleSheet.hairlineWidth,
+    backgroundColor: 'transparent',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  addMembersButton: {
+    backgroundColor: '#10B981',
+  },
+  addMembersButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
