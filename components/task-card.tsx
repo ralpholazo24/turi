@@ -60,88 +60,85 @@ export function TaskCard({
   
   const CheckIcon = APP_ICONS.check;
   const CalendarIcon = APP_ICONS.calendar;
+  const FlameIcon = APP_ICONS.flame;
 
   return (
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={onPress}
-      activeOpacity={0.7}>
+      activeOpacity={0.8}>
       <LinearGradient
-        colors={[groupColorStart + '15', groupColorEnd + '15']}
+        colors={[groupColorStart, groupColorEnd]}
         start={{ x: 1, y: 1 }}
         end={{ x: 0, y: 0 }}
         style={styles.gradient}>
         <View style={styles.cardContent}>
-          {/* Icon */}
-          <View style={[styles.iconWrapper, { backgroundColor: groupColorStart + '20' }]}>
-            {/* eslint-disable-next-line import/namespace */}
-            {(() => {
-              const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-              return IconComponent ? (
-                <IconComponent size={28} color={groupColorStart} />
-              ) : null;
-            })()}
-          </View>
-
-          {/* Content */}
-          <View style={styles.contentSection}>
-            <View style={styles.topRow}>
-              <Text style={styles.taskName} numberOfLines={1}>
-                {task.name}
-              </Text>
-              {completionStatus.isCompleted && (
-                <View style={styles.completedBadge}>
-                  <CheckIcon size={14} color="#FFFFFF" />
-                </View>
-              )}
-            </View>
-
-            <View style={styles.metaRow}>
-              {/* Frequency Badge */}
-              <View style={[styles.frequencyBadge, { backgroundColor: groupColorStart + '15' }]}>
-                <CalendarIcon size={12} color={groupColorStart} />
-                <Text style={[styles.frequencyText, { color: groupColorStart }]}>
-                  {task.frequency === 'daily' ? 'Daily' : 'Weekly'}
-                </Text>
+          {/* Top Section: Icon and Task Name */}
+          <View style={styles.topSection}>
+            <View style={styles.iconContainer}>
+              <View style={styles.iconBackground}>
+                {/* eslint-disable-next-line import/namespace */}
+                {(() => {
+                  const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
+                  return IconComponent ? (
+                    <IconComponent size={28} color="#FFFFFF" />
+                  ) : null;
+                })()}
               </View>
-
-              {/* Due Date - Only show if not completed */}
+            </View>
+            <View style={styles.textSection}>
+              <Text style={styles.taskName}>{task.name}</Text>
               {!completionStatus.isCompleted && (
-                <Text
-                  style={[
-                    styles.dueDate,
-                    isDueToday && styles.dueDateUrgent,
-                    {
-                      color: isDueToday ? '#EF4444' : '#687076',
-                    },
-                  ]}>
+                <Text style={styles.dueDateText}>
                   {dueDateText}
                 </Text>
               )}
             </View>
+          </View>
 
-            {/* Assigned Member */}
-            {assignedMember && (
-              <View style={styles.assigneeRow}>
-                <View style={styles.memberAvatar}>
+          {/* Bottom Section: Assigned Member and Badge */}
+          <View style={styles.bottomSection}>
+            {assignedMember ? (
+              <View style={styles.assignedSection}>
+                <View style={styles.avatarContainer}>
                   {/* eslint-disable-next-line import/namespace */}
                   {(() => {
                     const MemberIconComponent = LucideIcons[assignedMember.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
                     return MemberIconComponent ? (
-                      <MemberIconComponent size={16} color={groupColorStart} />
+                      <MemberIconComponent size={20} color="#FFFFFF" />
                     ) : null;
                   })()}
                 </View>
-                <Text style={[styles.assigneeText, { color: groupColorStart }]}>
+                <Text style={styles.assignedText}>
                   {assignedMember.name}&apos;s turn
                 </Text>
               </View>
+            ) : (
+              <Text style={styles.assignedText}>
+                No one assigned
+              </Text>
             )}
-          </View>
 
-          {/* Arrow Indicator */}
-          <View style={styles.arrowContainer}>
-            <LucideIcons.ChevronRight size={20} color="#687076" opacity={0.4} />
+            <View style={styles.rightSection}>
+              {completionStatus.isCompleted ? (
+                <View style={styles.completedBadge}>
+                  <CheckIcon size={16} color="#FFFFFF" />
+                  <Text style={styles.completedText}>Done</Text>
+                </View>
+              ) : assignedMember && assignedMember.streakCount > 0 ? (
+                <View style={styles.streakBadge}>
+                  <FlameIcon size={16} color="#FFFFFF" />
+                  <Text style={styles.streakText}>{assignedMember.streakCount} Day Streak</Text>
+                </View>
+              ) : (
+                <View style={styles.frequencyBadge}>
+                  <CalendarIcon size={14} color="#FFFFFF" />
+                  <Text style={styles.frequencyText}>
+                    {task.frequency === 'daily' ? 'Daily' : 'Weekly'}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
       </LinearGradient>
@@ -151,93 +148,123 @@ export function TaskCard({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    marginBottom: 12,
-    borderRadius: BORDER_RADIUS.large,
+    marginBottom: 16,
+    borderRadius: BORDER_RADIUS.xlarge,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   gradient: {
-    borderRadius: BORDER_RADIUS.large,
-    padding: 16,
+    borderRadius: BORDER_RADIUS.xlarge,
+    padding: 20,
   },
   cardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    minHeight: 120,
   },
-  iconWrapper: {
-    width: 56,
-    height: 56,
-    borderRadius: BORDER_RADIUS.medium,
+  topSection: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  iconContainer: {
+    marginRight: 12,
+  },
+  iconBackground: {
+    width: 50,
+    height: 50,
+    borderRadius: BORDER_RADIUS.circular.xlarge,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
-  contentSection: {
+  textSection: {
     flex: 1,
-    gap: 8,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
   },
   taskName: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#11181C',
-    flex: 1,
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
-  completedBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: BORDER_RADIUS.circular.medium,
-    backgroundColor: '#10B981',
-    justifyContent: 'center',
+  dueDateText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.9,
+  },
+  bottomSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  metaRow: {
+  assignedSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    flex: 1,
+  },
+  avatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: BORDER_RADIUS.circular.medium,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  assignedText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.9,
+  },
+  rightSection: {
+    alignItems: 'flex-end',
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.large,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    gap: 6,
+  },
+  completedText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.large,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    gap: 4,
+  },
+  streakText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   frequencyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: BORDER_RADIUS.small,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.large,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     gap: 4,
   },
   frequencyText: {
     fontSize: 12,
     fontWeight: '600',
-  },
-  dueDate: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  dueDateUrgent: {
-    fontWeight: '600',
-  },
-  assigneeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  memberAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: BORDER_RADIUS.circular.small,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  assigneeText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  arrowContainer: {
-    marginLeft: 8,
+    color: '#FFFFFF',
   },
 });
 
