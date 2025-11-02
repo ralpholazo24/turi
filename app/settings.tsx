@@ -182,7 +182,7 @@ export default function SettingsScreen() {
 
           <TouchableOpacity
             style={[styles.settingItem, { borderBottomColor: borderColor + '30' }]}
-            onPress={() => handleSettingPress('Help & FAQ')}
+            onPress={() => router.push('/help')}
             activeOpacity={0.7}>
             <View style={styles.settingLeft}>
               <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>

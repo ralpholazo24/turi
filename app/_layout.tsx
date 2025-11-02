@@ -31,6 +31,7 @@ export default function RootLayout() {
           <Stack.Screen name="notifications" />
           <Stack.Screen name="about" />
           <Stack.Screen name="feature-requests" />
+          <Stack.Screen name="help" />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
