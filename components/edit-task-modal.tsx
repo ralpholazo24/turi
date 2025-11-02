@@ -20,6 +20,7 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { TASK_ICON_OPTIONS, type TaskIconName } from '@/constants/icons-task-member';
 import { MemberAvatar } from '@/components/member-avatar';
+import { TimePicker } from '@/components/time-picker';
 
 interface EditTaskModalProps {
   visible: boolean;
@@ -32,8 +33,13 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   const { updateTask } = useAppStore();
   const [taskName, setTaskName] = useState(task.name);
   const [selectedIcon, setSelectedIcon] = useState<TaskIconName>(task.icon as TaskIconName);
-  const [frequency, setFrequency] = useState<'daily' | 'weekly'>(task.frequency);
+  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>(task.frequency);
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set(task.memberIds));
+  
+  // Scheduling options
+  const [scheduleWeek, setScheduleWeek] = useState<number | undefined>(task.scheduleWeek);
+  const [scheduleDay, setScheduleDay] = useState<number | undefined>(task.scheduleDay);
+  const [scheduleTime, setScheduleTime] = useState<string>(task.scheduleTime || '');
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -46,6 +52,39 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   const EditIcon = APP_ICONS.pen;
   const CalendarIcon = APP_ICONS.calendar;
   const CheckIcon = APP_ICONS.check;
+  
+  // Days of the week
+  const DAYS = [
+    { value: 0, label: 'Sun' },
+    { value: 1, label: 'Mon' },
+    { value: 2, label: 'Tue' },
+    { value: 3, label: 'Wed' },
+    { value: 4, label: 'Thu' },
+    { value: 5, label: 'Fri' },
+    { value: 6, label: 'Sat' },
+  ];
+  
+  // Weeks of the month
+  const WEEKS = [
+    { value: 1, label: 'First' },
+    { value: 2, label: 'Second' },
+    { value: 3, label: 'Third' },
+    { value: 4, label: 'Fourth' },
+  ];
+  
+  // Validate time format (HH:MM)
+  const validateTime = (time: string): boolean => {
+    const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+    return timeRegex.test(time) || time === '';
+  };
+  
+  const handleTimeChange = (time: string) => {
+    setScheduleTime(time);
+  };
+  
+  const handleClearTime = () => {
+    setScheduleTime('');
+  };
 
   // Initialize with task data
   useEffect(() => {
@@ -54,6 +93,9 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       setSelectedIcon(task.icon as TaskIconName);
       setFrequency(task.frequency);
       setSelectedMembers(new Set(task.memberIds));
+      setScheduleWeek(task.scheduleWeek);
+      setScheduleDay(task.scheduleDay);
+      setScheduleTime(task.scheduleTime || '');
     }
   }, [visible, task]);
 
@@ -80,6 +122,11 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       return;
     }
 
+    // Validate time if provided
+    if (scheduleTime && !validateTime(scheduleTime)) {
+      return;
+    }
+
     // Adjust assignedIndex if current assignee is removed
     const newMemberIds = Array.from(selectedMembers);
     const currentMemberId = task.memberIds[task.assignedIndex];
@@ -99,6 +146,9 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       frequency,
       memberIds: newMemberIds,
       assignedIndex: newAssignedIndex,
+      scheduleWeek: frequency === 'monthly' ? scheduleWeek : undefined,
+      scheduleDay: (frequency === 'weekly' || frequency === 'monthly') ? scheduleDay : undefined,
+      scheduleTime: scheduleTime || undefined,
     });
 
     onClose();
@@ -208,6 +258,94 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                     Weekly
                   </Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.frequencyButton,
+                    frequency === 'monthly' && styles.frequencyButtonActive,
+                    { backgroundColor: frequency === 'monthly' ? '#10B981' : borderColor + '30' },
+                  ]}
+                  onPress={() => setFrequency('monthly')}>
+                  <CalendarIcon size={20} color={frequency === 'monthly' ? '#FFFFFF' : '#687076'} />
+                  <Text
+                    style={[
+                      styles.frequencyText,
+                      frequency === 'monthly' && styles.frequencyTextActive,
+                    ]}>
+                    Monthly
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Scheduling Options */}
+            <View style={styles.section}>
+              <ThemedText style={styles.label}>Schedule</ThemedText>
+              
+              {/* Week selector for monthly */}
+              {frequency === 'monthly' && (
+                <View style={styles.scheduleRow}>
+                  <ThemedText style={styles.scheduleLabel}>Week:</ThemedText>
+                  <View style={styles.scheduleButtonGroup}>
+                    {WEEKS.map((week) => (
+                      <TouchableOpacity
+                        key={week.value}
+                        style={[
+                          styles.scheduleButton,
+                          scheduleWeek === week.value && styles.scheduleButtonActive,
+                          { backgroundColor: scheduleWeek === week.value ? '#10B981' : borderColor + '30' },
+                        ]}
+                        onPress={() => setScheduleWeek(week.value)}>
+                        <Text
+                          style={[
+                            styles.scheduleButtonText,
+                            scheduleWeek === week.value && styles.scheduleButtonTextActive,
+                          ]}>
+                          {week.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Day selector for weekly and monthly */}
+              {(frequency === 'weekly' || frequency === 'monthly') && (
+                <View style={styles.scheduleRow}>
+                  <ThemedText style={styles.scheduleLabel}>Day:</ThemedText>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.dayScroll}>
+                    {DAYS.map((day) => (
+                      <TouchableOpacity
+                        key={day.value}
+                        style={[
+                          styles.scheduleButton,
+                          scheduleDay === day.value && styles.scheduleButtonActive,
+                          { backgroundColor: scheduleDay === day.value ? '#10B981' : borderColor + '30' },
+                        ]}
+                        onPress={() => setScheduleDay(day.value)}>
+                        <Text
+                          style={[
+                            styles.scheduleButtonText,
+                            scheduleDay === day.value && styles.scheduleButtonTextActive,
+                          ]}>
+                          {day.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Time selector - Optional for all frequencies */}
+              <View style={styles.scheduleRow}>
+                <ThemedText style={styles.scheduleLabel}>Time (optional):</ThemedText>
+                <TimePicker
+                  value={scheduleTime}
+                  onChange={handleTimeChange}
+                  onClear={handleClearTime}
+                />
               </View>
             </View>
 
@@ -413,6 +551,49 @@ const styles = StyleSheet.create({
     color: '#687076',
   },
   frequencyTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  scheduleRow: {
+    marginBottom: 16,
+  },
+  scheduleLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  scheduleButtonGroup: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  dayScroll: {
+    marginTop: 8,
+  },
+  scheduleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: BORDER_RADIUS.medium,
+    marginRight: 8,
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  scheduleButtonActive: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  scheduleButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#687076',
+  },
+  scheduleButtonTextActive: {
     color: '#FFFFFF',
     fontWeight: '600',
   },

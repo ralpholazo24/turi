@@ -237,12 +237,22 @@ export const useAppStore = create<AppState>((set, get) => ({
           // Already completed today, don't allow another completion
           return;
         }
-      } else {
+      } else if (task.frequency === 'weekly') {
         // For weekly tasks, check if completed this week
         const lastCompletedWeek = getWeekNumber(lastCompleted);
         const currentWeek = getWeekNumber(today);
         if (lastCompletedWeek === currentWeek) {
           // Already completed this week, don't allow another completion
+          return;
+        }
+      } else if (task.frequency === 'monthly') {
+        // For monthly tasks, check if completed this month
+        const lastCompletedMonth = lastCompleted.getMonth();
+        const lastCompletedYear = lastCompleted.getFullYear();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        if (lastCompletedMonth === currentMonth && lastCompletedYear === currentYear) {
+          // Already completed this month, don't allow another completion
           return;
         }
       }

@@ -42,7 +42,7 @@ export function getTaskCompletionStatus(task: Task): {
         message: 'Done for today!',
       };
     }
-  } else {
+  } else if (task.frequency === 'weekly') {
     // For weekly tasks, check if completed this week
     const lastCompletedWeek = getWeekNumber(lastCompleted);
     const currentWeek = getWeekNumber(today);
@@ -50,6 +50,18 @@ export function getTaskCompletionStatus(task: Task): {
       return {
         isCompleted: true,
         message: 'Done for this week!',
+      };
+    }
+  } else if (task.frequency === 'monthly') {
+    // For monthly tasks, check if completed this month
+    const lastCompletedMonth = lastCompleted.getMonth();
+    const lastCompletedYear = lastCompleted.getFullYear();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    if (lastCompletedMonth === currentMonth && lastCompletedYear === currentYear) {
+      return {
+        isCompleted: true,
+        message: 'Done for this month!',
       };
     }
   }

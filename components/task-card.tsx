@@ -2,6 +2,7 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { Member, Task } from '@/types';
 import { getTaskCompletionStatus } from '@/utils/task-completion';
+import { formatScheduleInfo } from '@/utils/task-schedule';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -27,10 +28,12 @@ export function TaskCard({
   // Calculate due date text
   const getDueDateText = () => {
     if (!task.lastCompletedAt) {
-      return task.frequency === 'daily' ? 'Due Today' : 'Due This Week';
+      if (task.frequency === 'daily') return 'Due Today';
+      if (task.frequency === 'weekly') return 'Due This Week';
+      if (task.frequency === 'monthly') return 'Due This Month';
     }
 
-    const lastCompleted = new Date(task.lastCompletedAt);
+    const lastCompleted = new Date(task.lastCompletedAt!);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     lastCompleted.setHours(0, 0, 0, 0);
@@ -42,15 +45,24 @@ export function TaskCard({
     if (task.frequency === 'daily') {
       if (daysSince === 0) return 'Due Tomorrow';
       if (daysSince >= 1) return 'Due Today';
-    } else {
-      // Weekly
+    } else if (task.frequency === 'weekly') {
       const daysUntilNext = 7 - (daysSince % 7);
       if (daysUntilNext === 7) return 'Due Today';
       if (daysUntilNext === 1) return 'Due Tomorrow';
       return `Due in ${daysUntilNext} days`;
+    } else if (task.frequency === 'monthly') {
+      const lastCompletedMonth = lastCompleted.getMonth();
+      const lastCompletedYear = lastCompleted.getFullYear();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      
+      if (lastCompletedMonth === currentMonth && lastCompletedYear === currentYear) {
+        return 'Due Next Month';
+      }
+      return 'Due This Month';
     }
 
-    return task.frequency === 'daily' ? 'Due Today' : 'Due This Week';
+    return task.frequency === 'daily' ? 'Due Today' : task.frequency === 'weekly' ? 'Due This Week' : 'Due This Month';
   };
 
   const dueDateText = getDueDateText();
@@ -58,6 +70,18 @@ export function TaskCard({
   
   // Check if task is already completed
   const completionStatus = getTaskCompletionStatus(task);
+  
+  // Get formatted frequency text
+  const getFrequencyDisplayText = () => {
+    const scheduleInfo = formatScheduleInfo(task);
+    if (scheduleInfo) {
+      // Extract just the frequency part for the badge (e.g., "Daily", "Weekly", "Monthly")
+      if (task.frequency === 'daily') return 'Daily';
+      if (task.frequency === 'weekly') return 'Weekly';
+      if (task.frequency === 'monthly') return 'Monthly';
+    }
+    return task.frequency === 'daily' ? 'Daily' : task.frequency === 'weekly' ? 'Weekly' : 'Monthly';
+  };
   
   const CheckIcon = APP_ICONS.check;
   const CalendarIcon = APP_ICONS.calendar;
@@ -127,7 +151,7 @@ export function TaskCard({
                 <View style={styles.frequencyBadge}>
                   <CalendarIcon size={14} color="#FFFFFF" />
                   <Text style={styles.frequencyText}>
-                    {task.frequency === 'daily' ? 'Daily' : 'Weekly'}
+                    {getFrequencyDisplayText()}
                   </Text>
                 </View>
               )}

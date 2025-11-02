@@ -18,6 +18,7 @@ import { TaskContextMenu } from '@/components/task-context-menu';
 import { ConfirmationModal } from '@/components/confirmation-modal';
 import { Task, Member } from '@/types';
 import { getTaskCompletionStatus } from '@/utils/task-completion';
+import { formatScheduleInfo } from '@/utils/task-schedule';
 import { MemberAvatar } from '@/components/member-avatar';
 
 export default function TaskDetailsScreen() {
@@ -69,11 +70,8 @@ export default function TaskDetailsScreen() {
 
   // Format frequency text
   const getFrequencyText = () => {
-    if (task.frequency === 'daily') {
-      return 'Daily';
-    }
-    // For weekly, we could show the day if we stored it
-    return 'Weekly';
+    const scheduleInfo = formatScheduleInfo(task);
+    return scheduleInfo || (task.frequency === 'daily' ? 'Daily' : task.frequency === 'weekly' ? 'Weekly' : 'Monthly');
   };
 
   // Format completion date
@@ -191,7 +189,7 @@ export default function TaskDetailsScreen() {
                 {task.name}
               </ThemedText>
               <ThemedText style={[styles.frequency, { color: group.colorStart }]}>
-                {getFrequencyText()} {task.frequency === 'weekly' && 'on Wednesday'}
+                {getFrequencyText()}
               </ThemedText>
             </View>
           </View>
