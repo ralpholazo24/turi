@@ -51,7 +51,7 @@ export function ConfirmationModal({
             style={[styles.modalContent, { backgroundColor, borderColor: borderColor + '30' }]}
             onStartShouldSetResponder={() => true}>
             {/* Title */}
-            <View style={styles.header}>
+            <View style={[styles.header, { borderBottomColor: borderColor + '30' }]}>
               <ThemedText type="subtitle" style={styles.title}>
                 {title}
               </ThemedText>
@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   title: {
     fontSize: 20,

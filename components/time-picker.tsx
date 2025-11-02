@@ -15,6 +15,7 @@ interface TimePickerProps {
 export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
@@ -107,11 +108,11 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
                   onPress={() => setShowPicker(false)}
                 />
                 <View style={[styles.modalContent, { backgroundColor }]}>
-                  <View style={styles.modalHeader}>
+                  <View style={[styles.modalHeader, { borderBottomColor: borderColor + '30' }]}>
                     <TouchableOpacity
                       onPress={() => setShowPicker(false)}
                       style={styles.cancelButton}>
-                      <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
+                      <ThemedText style={[styles.cancelButtonText, { color: iconColor }]}>Cancel</ThemedText>
                     </TouchableOpacity>
                     <ThemedText style={styles.modalTitle}>Select Time</ThemedText>
                     <TouchableOpacity
@@ -232,14 +233,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   cancelButton: {
     paddingVertical: 8,
   },
   cancelButtonText: {
     fontSize: 16,
-    color: '#687076',
     fontWeight: '500',
   },
   modalTitle: {

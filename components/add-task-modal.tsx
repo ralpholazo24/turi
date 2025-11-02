@@ -42,6 +42,7 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
@@ -169,7 +170,7 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
         <View style={styles.backdrop} />
         <SafeAreaView style={[styles.modalContent, { backgroundColor }]} edges={['bottom']}>
           {/* Header */}
-          <View style={styles.header}>
+          <View style={[styles.header, { borderBottomColor: borderColor + '30' }]}>
             <TouchableOpacity onPress={handleClose}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
@@ -186,11 +187,11 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
             {/* Task Icon Preview */}
             <View style={styles.section}>
               <View style={styles.iconPreviewContainer}>
-                <View style={styles.iconPreview}>
+                <View style={[styles.iconPreview, { backgroundColor: borderColor + '40' }]}>
                   {/* eslint-disable-next-line import/namespace */}
                   {(() => {
                     const IconComponent = LucideIcons[selectedIcon] as React.ComponentType<{ size?: number; color?: string }>;
-                    return IconComponent ? <IconComponent size={48} color="#11181C" /> : null;
+                    return IconComponent ? <IconComponent size={48} color={textColor} /> : null;
                   })()}
                 </View>
               </View>
@@ -225,11 +226,12 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
                     { backgroundColor: frequency === 'daily' ? '#10B981' : borderColor + '30' },
                   ]}
                   onPress={() => setFrequency('daily')}>
-                  <CalendarIcon size={20} color={frequency === 'daily' ? '#FFFFFF' : '#687076'} />
+                  <CalendarIcon size={20} color={frequency === 'daily' ? '#FFFFFF' : iconColor} />
                   <Text
                     style={[
                       styles.frequencyText,
                       frequency === 'daily' && styles.frequencyTextActive,
+                      { color: frequency === 'daily' ? '#FFFFFF' : iconColor },
                     ]}>
                     Daily
                   </Text>
@@ -241,11 +243,12 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
                     { backgroundColor: frequency === 'weekly' ? '#10B981' : borderColor + '30' },
                   ]}
                   onPress={() => setFrequency('weekly')}>
-                  <CalendarIcon size={20} color={frequency === 'weekly' ? '#FFFFFF' : '#687076'} />
+                  <CalendarIcon size={20} color={frequency === 'weekly' ? '#FFFFFF' : iconColor} />
                   <Text
                     style={[
                       styles.frequencyText,
                       frequency === 'weekly' && styles.frequencyTextActive,
+                      { color: frequency === 'weekly' ? '#FFFFFF' : iconColor },
                     ]}>
                     Weekly
                   </Text>
@@ -257,11 +260,12 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
                     { backgroundColor: frequency === 'monthly' ? '#10B981' : borderColor + '30' },
                   ]}
                   onPress={() => setFrequency('monthly')}>
-                  <CalendarIcon size={20} color={frequency === 'monthly' ? '#FFFFFF' : '#687076'} />
+                  <CalendarIcon size={20} color={frequency === 'monthly' ? '#FFFFFF' : iconColor} />
                   <Text
                     style={[
                       styles.frequencyText,
                       frequency === 'monthly' && styles.frequencyTextActive,
+                      { color: frequency === 'monthly' ? '#FFFFFF' : iconColor },
                     ]}>
                     Monthly
                   </Text>
@@ -291,6 +295,7 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
                           style={[
                             styles.scheduleButtonText,
                             scheduleWeek === week.value && styles.scheduleButtonTextActive,
+                            { color: scheduleWeek === week.value ? '#FFFFFF' : iconColor },
                           ]}>
                           {week.label}
                         </Text>
@@ -321,6 +326,7 @@ export function AddTaskModal({ visible, onClose, group }: AddTaskModalProps) {
                           style={[
                             styles.scheduleButtonText,
                             scheduleDay === day.value && styles.scheduleButtonTextActive,
+                            { color: scheduleDay === day.value ? '#FFFFFF' : iconColor },
                           ]}>
                           {day.label}
                         </Text>
@@ -456,11 +462,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   closeButton: {
     fontSize: 24,
-    color: '#11181C',
     fontWeight: '300',
   },
   headerTitle: {
@@ -540,10 +544,8 @@ const styles = StyleSheet.create({
   frequencyText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#687076',
   },
   frequencyTextActive: {
-    color: '#FFFFFF',
     fontWeight: '600',
   },
   scheduleRow: {
@@ -583,10 +585,8 @@ const styles = StyleSheet.create({
   scheduleButtonText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#687076',
   },
   scheduleButtonTextActive: {
-    color: '#FFFFFF',
     fontWeight: '600',
   },
   iconGrid: {
