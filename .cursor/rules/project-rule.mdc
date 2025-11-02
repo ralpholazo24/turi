@@ -1,0 +1,271 @@
+---
+alwaysApply: true
+---
+
+# 🧾 Product Requirements Document (PRD)
+
+## 📱 Product Name
+
+**Turi**
+
+---
+
+## 🧭 Overview
+
+**Turi** is a fun, lightweight app that helps groups (families, roommates, teams) manage **recurring shared tasks** — like chores, cooking, or cleaning — by showing **whose turn it is** in a friendly, Duolingo-style interface.
+
+Version 1 (MVP) focuses on **local-only functionality** with **no accounts or cloud sync**, just fast and delightful task rotation.
+
+---
+
+## 🎯 Goals
+
+- Simplify managing shared, repetitive tasks.
+- Make task tracking fun, visual, and easy to maintain.
+- Encourage consistency through small gamified elements.
+
+---
+
+## 🚫 Out of Scope (v1)
+
+- User accounts / authentication.
+- Cloud sync or real-time updates.
+- Push notifications.
+- Analytics / detailed reporting.
+
+---
+
+## 🧩 Core Features
+
+### 1. **Groups**
+
+- Create, view, and delete groups.
+- Each group has:
+
+  - Name
+  - Emoji/icon
+  - Member list
+  - Task list
+
+### 2. **Members**
+
+- Add members by name + emoji avatar.
+- Order defines task rotation sequence.
+- Delete or edit member (optional in v1).
+
+### 3. **Tasks**
+
+- Add tasks within a group.
+- Each task has:
+
+  - Task name
+  - Emoji/icon
+  - Frequency (daily / weekly)
+  - Assigned members (rotation follows member list)
+
+- “Mark Done” button rotates to the next member.
+
+### 4. **Rotation Logic**
+
+- Tasks start with the first member in the group list.
+- When “Mark Done” is pressed:
+
+  - Assigned index increases by 1.
+  - If at the end, wraps to the first member.
+
+Example:
+
+```
+Members = [Alice, Bob, Charlie]
+Task: “Wash Dishes”
+CurrentTurn = Alice
+→ Mark Done → NextTurn = Bob
+→ Mark Done → NextTurn = Charlie
+→ Mark Done → NextTurn = Alice
+```
+
+### 5. **Local Storage**
+
+- All data stored using **AsyncStorage** (Expo).
+- Data structure:
+
+  ```ts
+  Group {
+    id: string;
+    name: string;
+    emoji: string;
+    members: Member[];
+    tasks: Task[];
+  }
+
+  Member {
+    id: string;
+    name: string;
+    emoji: string;
+    streakCount: number;
+    lastStreakDate: string | null; // ISO date string
+  }
+
+  Task {
+    id: string;
+    name: string;
+    emoji: string;
+    frequency: 'daily' | 'weekly';
+    assignedIndex: number;
+    memberIds: string[];
+    lastCompletedAt: string | null; // ISO date string for streak calculation
+  }
+  ```
+
+- Storage includes version field for future migrations.
+
+### 6. **Gamification**
+
+- **Streak counter** for completing tasks (per-user).
+- Confetti or celebration animation on completion.
+- Motivational messages like "Nice job!" or "Keep it going!"
+- **Streak logic:** Resets if user misses their turn on a daily/weekly task.
+
+---
+
+## 🧠 User Stories
+
+| #   | As a... | I want to...          | So that I can...                             |
+| --- | ------- | --------------------- | -------------------------------------------- |
+| 1   | User    | Create a group        | Organize shared tasks with my friends/family |
+| 2   | User    | Add members           | Define who participates in tasks             |
+| 3   | User    | Add a new task        | Track who’s responsible next                 |
+| 4   | User    | View who’s turn it is | Know who should do the task today            |
+| 5   | User    | Mark a task as done   | Automatically move turn to the next person   |
+| 6   | User    | Get positive feedback | Stay motivated to keep using the app         |
+
+---
+
+## 📱 Screens & Components
+
+### 1. **Home Screen**
+
+- **Components:**
+
+  - App title/logo
+  - Group list (`GroupCard`)
+  - Add group button (FAB)
+  - `AddGroupModal`
+
+### 2. **Group Screen**
+
+- **Components:**
+
+  - Header with group emoji + name
+  - Tabs: "Tasks" / "Members"
+  - `TaskCardList`
+  - `AddTaskButton` (FAB)
+  - `MemberChipList`
+  - `AddMemberButton`
+  - `StreakDisplay` (optional, per-user streak counter)
+
+### 3. **Task Details Screen**
+
+- **Components:**
+
+  - Task emoji + name
+  - Current member responsible
+  - Frequency display
+  - Mark done button
+  - Optional: small completion history
+
+### 4. **Add Task Modal**
+
+- Task name input
+- Emoji picker
+- Frequency selector (daily/weekly)
+- Member selector (multi-select or default all)
+- Save button
+
+### 5. **Add Member Modal**
+
+- Name input
+- Emoji picker
+- Save button
+
+### 6. **Gamification Layer**
+
+- Confetti animation component
+- Motivational message component
+- Streak counter component (per-user)
+
+---
+
+## 🎨 Design Direction
+
+- Inspired by **Duolingo UI**: bright colors, rounded corners, playful illustrations.
+- Typography: clean and friendly (e.g., Poppins or Nunito).
+- Buttons: large, colorful, with simple icons.
+- Animations: light bounce transitions, cheerful feedback on success.
+
+---
+
+## ⚙️ Tech Stack
+
+- **Framework:** React Native (Expo)
+- **State Management:** React Context or Zustand
+- **Storage:** AsyncStorage
+- **Animations:** Reanimated or Lottie (for confetti)
+- **Navigation:** React Navigation
+
+---
+
+## 🧪 QA & Testing Checklist
+
+- [ ] Can create and delete groups.
+- [ ] Can add members and tasks.
+- [ ] Task rotation correctly cycles through members.
+- [ ] Data persists after app restart.
+- [ ] UI looks correct on iOS and Android.
+- [ ] Confetti triggers on "Mark Done".
+- [ ] Streak counter increases on completion.
+- [ ] Streak resets when user misses their turn.
+
+---
+
+## 🚀 Future Versions (Post-v1 Ideas)
+
+- Login and cloud sync (Firebase or Supabase).
+- Push notifications for due tasks.
+- Custom rotation order.
+- Task history and stats.
+- Shared links to invite members.
+- Themes and advanced gamification (badges, levels, XP system).
+
+---
+
+## 📋 MVP Implementation Decisions
+
+### Task Assignment
+
+- Default to **all members** assigned to a task.
+- Optional subset selection can be added later if needed.
+
+### Frequency Tracking
+
+- Track minimal completion dates (last completed timestamp per task).
+- Use frequency (daily/weekly) for display and streak calculation.
+
+### Gamification
+
+- **Streaks only** (no XP for MVP).
+- Per-user streak tracking.
+- Streak resets if user misses their turn on a daily/weekly task.
+
+### Data Structure
+
+- Use PRD structure with **versioning** for future migrations.
+- Add `lastCompletedAt` timestamp to Task for streak calculation.
+- Add `streakCount` and `lastStreakDate` to Member for tracking.
+
+### UI Build Priority
+
+1. Home Screen → Group List
+2. Group Screen → Tasks & Members
+3. Task Details / Add Modals
+4. Gamification Layer (streaks, confetti, messages)
