@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  Modal,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import * as LucideIcons from 'lucide-react-native';
-import { Group, Task } from '@/types';
-import { useAppStore } from '@/store/use-app-store';
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { MemberAvatar } from '@/components/member-avatar';
 import { ThemedText } from '@/components/themed-text';
+import { TimePicker } from '@/components/time-picker';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { TASK_ICON_OPTIONS, type TaskIconName } from '@/constants/icons-task-member';
-import { MemberAvatar } from '@/components/member-avatar';
-import { TimePicker } from '@/components/time-picker';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAppStore } from '@/store/use-app-store';
+import { Group, Task } from '@/types';
+import * as LucideIcons from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface EditTaskModalProps {
   visible: boolean;
@@ -206,7 +206,6 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
             {/* Task Name Input */}
             <View style={styles.section}>
               <View style={styles.labelRow}>
-                <EditIcon size={20} color={textColor} style={styles.labelIcon} />
                 <ThemedText style={styles.label}>Task name</ThemedText>
               </View>
               <TextInput

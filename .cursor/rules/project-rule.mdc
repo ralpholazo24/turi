@@ -39,19 +39,21 @@ Version 1 (MVP) focuses on **local-only functionality** with **no accounts or cl
 
 ### 1. **Groups**
 
-- Create, view, and delete groups.
+- Create, view, edit, and delete groups.
 - Each group has:
 
   - Name
-  - Emoji/icon
+  - Icon (Lucide icon)
+  - Color theme (gradient start/end colors)
   - Member list
   - Task list
 
 ### 2. **Members**
 
-- Add members by name + emoji avatar.
+- Add members by name (initials-based avatar with random color).
 - Order defines task rotation sequence.
-- Delete or edit member (optional in v1).
+- Delete or edit member (swipe-to-reveal actions).
+- Avatars display member initials with Microsoft Teams-style color palette.
 
 ### 3. **Tasks**
 
@@ -59,11 +61,18 @@ Version 1 (MVP) focuses on **local-only functionality** with **no accounts or cl
 - Each task has:
 
   - Task name
-  - Emoji/icon
-  - Frequency (daily / weekly)
+  - Icon (Lucide icon)
+  - Frequency (daily / weekly / monthly)
+  - Scheduling options (optional):
+    - **For weekly tasks:** Day of week (Sun-Sat), Time (optional)
+    - **For monthly tasks:** Week of month (1st-4th), Day of week (Sun-Sat), Time (optional)
+    - **For daily tasks:** Time (optional)
   - Assigned members (rotation follows member list)
+  - Completion history (tracking who completed when)
 
-- “Mark Done” button rotates to the next member.
+- "Mark Done" button rotates to the next member.
+- Tasks can only be completed once per period (daily/weekly/monthly).
+- Task cards display schedule information prominently.
 
 ### 4. **Rotation Logic**
 
@@ -93,7 +102,9 @@ CurrentTurn = Alice
   Group {
     id: string;
     name: string;
-    emoji: string;
+    icon: string; // Lucide icon name
+    colorStart: string; // Gradient start color
+    colorEnd: string; // Gradient end color
     members: Member[];
     tasks: Task[];
   }
@@ -101,19 +112,30 @@ CurrentTurn = Alice
   Member {
     id: string;
     name: string;
-    emoji: string;
+    avatarColor: string; // Random color assigned for avatar
     streakCount: number;
     lastStreakDate: string | null; // ISO date string
+  }
+
+  TaskCompletion {
+    memberId: string;
+    completedAt: string; // ISO date string
+    memberStreakAtTime: number; // Streak count when completed
   }
 
   Task {
     id: string;
     name: string;
-    emoji: string;
-    frequency: 'daily' | 'weekly';
+    icon: string; // Lucide icon name
+    frequency: 'daily' | 'weekly' | 'monthly';
     assignedIndex: number;
     memberIds: string[];
     lastCompletedAt: string | null; // ISO date string for streak calculation
+    completionHistory: TaskCompletion[]; // History of completions
+    // Scheduling options (optional, only used when frequency is weekly or monthly)
+    scheduleWeek?: number; // For monthly: 1-4 (first, second, third, fourth week)
+    scheduleDay?: number; // 0-6 (Sunday = 0, Monday = 1, ..., Saturday = 6)
+    scheduleTime?: string; // HH:MM format (24-hour), e.g., "14:30" for 2:30 PM
   }
   ```
 
@@ -124,7 +146,8 @@ CurrentTurn = Alice
 - **Streak counter** for completing tasks (per-user).
 - Confetti or celebration animation on completion.
 - Motivational messages like "Nice job!" or "Keep it going!"
-- **Streak logic:** Resets if user misses their turn on a daily/weekly task.
+- **Streak logic:** Resets if user misses their turn on a daily/weekly/monthly task.
+- Streak badges displayed on task cards and in completion history.
 
 ---
 
@@ -148,44 +171,49 @@ CurrentTurn = Alice
 - **Components:**
 
   - App title/logo
-  - Group list (`GroupCard`)
+  - Group list (`GroupCard` with gradient backgrounds)
   - Add group button (FAB)
-  - `AddGroupModal`
+  - `AddGroupModal` (icon picker, color theme selector)
 
 ### 2. **Group Screen**
 
 - **Components:**
 
-  - Header with group emoji + name
+  - Header with group icon + name + context menu (edit/delete)
   - Tabs: "Tasks" / "Members"
-  - `TaskCardList`
+  - `TaskCardList` (displays schedule information on cards)
   - `AddTaskButton` (FAB)
-  - `MemberChipList`
-  - `AddMemberButton`
-  - `StreakDisplay` (optional, per-user streak counter)
+  - `MemberChipList` (swipe-to-reveal edit/delete actions)
+  - `AddMemberButton` (FAB)
+  - Streak badges displayed on member chips and task cards
 
 ### 3. **Task Details Screen**
 
 - **Components:**
 
-  - Task emoji + name
-  - Current member responsible
-  - Frequency display
-  - Mark done button
-  - Optional: small completion history
+  - Task icon + name
+  - Full schedule information display (e.g., "Every Mon at 2:30 PM", "Monthly: First Fri")
+  - Current member responsible (with avatar)
+  - Completion history (with member avatars and streak badges)
+  - Mark done button (disabled when already completed)
+  - Skip turn button (hidden when completed)
+  - Edit/Delete options (context menu)
 
 ### 4. **Add Task Modal**
 
 - Task name input
-- Emoji picker
-- Frequency selector (daily/weekly)
+- Icon picker (Lucide icons)
+- Frequency selector (daily/weekly/monthly)
+- Scheduling options (conditional based on frequency):
+  - **Weekly/Monthly:** Day selector (Sun-Sat)
+  - **Monthly:** Week selector (1st-4th week)
+  - **All frequencies:** Time picker (optional, native iOS/Android picker)
 - Member selector (multi-select or default all)
 - Save button
 
 ### 5. **Add Member Modal**
 
-- Name input
-- Emoji picker
+- Name input only (avatar color assigned automatically)
 - Save button
 
 ### 6. **Gamification Layer**
@@ -208,18 +236,28 @@ CurrentTurn = Alice
 ## ⚙️ Tech Stack
 
 - **Framework:** React Native (Expo)
-- **State Management:** React Context or Zustand
+- **State Management:** Zustand
 - **Storage:** AsyncStorage
-- **Animations:** Reanimated or Lottie (for confetti)
-- **Navigation:** React Navigation
+- **Animations:** react-native-reanimated (for gestures and animations)
+- **Navigation:** Expo Router (file-based routing)
+- **Icons:** Lucide React Native
+- **Gradients:** expo-linear-gradient
+- **Time Picker:** @react-native-community/datetimepicker
+- **Gestures:** react-native-gesture-handler
 
 ---
 
 ## 🧪 QA & Testing Checklist
 
-- [ ] Can create and delete groups.
-- [ ] Can add members and tasks.
+- [ ] Can create, edit, and delete groups.
+- [ ] Can add, edit, and delete members (swipe actions).
+- [ ] Can add, edit, and delete tasks.
 - [ ] Task rotation correctly cycles through members.
+- [ ] Monthly frequency works correctly.
+- [ ] Scheduling options (week, day, time) save and display correctly.
+- [ ] Time picker works on iOS and Android (native picker).
+- [ ] Tasks can only be completed once per period (daily/weekly/monthly).
+- [ ] Schedule information displays correctly on task cards and detail screen.
 - [ ] Data persists after app restart.
 - [ ] UI looks correct on iOS and Android.
 - [ ] Confetti triggers on "Mark Done".
@@ -249,19 +287,27 @@ CurrentTurn = Alice
 ### Frequency Tracking
 
 - Track minimal completion dates (last completed timestamp per task).
-- Use frequency (daily/weekly) for display and streak calculation.
+- Use frequency (daily/weekly/monthly) for display and streak calculation.
+- Tasks can only be completed once per period (prevents duplicate completions).
+- Schedule information (week, day, time) stored for weekly and monthly tasks.
 
 ### Gamification
 
 - **Streaks only** (no XP for MVP).
 - Per-user streak tracking.
-- Streak resets if user misses their turn on a daily/weekly task.
+- Streak resets if user misses their turn on a daily/weekly/monthly task.
+- Streak badges displayed on task cards and in completion history.
 
 ### Data Structure
 
 - Use PRD structure with **versioning** for future migrations.
 - Add `lastCompletedAt` timestamp to Task for streak calculation.
 - Add `streakCount` and `lastStreakDate` to Member for tracking.
+- Add `completionHistory` array to Task for tracking completion history.
+- Add `scheduleWeek`, `scheduleDay`, `scheduleTime` to Task for scheduling (weekly/monthly).
+- Groups use Lucide icons and color themes (gradient start/end).
+- Members use initials-based avatars with random color assignment.
+- Tasks use Lucide icons.
 
 ### UI Build Priority
 

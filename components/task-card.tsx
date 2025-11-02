@@ -71,17 +71,8 @@ export function TaskCard({
   // Check if task is already completed
   const completionStatus = getTaskCompletionStatus(task);
   
-  // Get formatted frequency text
-  const getFrequencyDisplayText = () => {
-    const scheduleInfo = formatScheduleInfo(task);
-    if (scheduleInfo) {
-      // Extract just the frequency part for the badge (e.g., "Daily", "Weekly", "Monthly")
-      if (task.frequency === 'daily') return 'Daily';
-      if (task.frequency === 'weekly') return 'Weekly';
-      if (task.frequency === 'monthly') return 'Monthly';
-    }
-    return task.frequency === 'daily' ? 'Daily' : task.frequency === 'weekly' ? 'Weekly' : 'Monthly';
-  };
+  // Get formatted schedule information
+  const scheduleInfo = formatScheduleInfo(task);
   
   const CheckIcon = APP_ICONS.check;
   const CalendarIcon = APP_ICONS.calendar;
@@ -113,6 +104,11 @@ export function TaskCard({
             </View>
             <View style={styles.textSection}>
               <Text style={styles.taskName}>{task.name}</Text>
+              {scheduleInfo && (
+                <Text style={styles.scheduleText}>
+                  {scheduleInfo}
+                </Text>
+              )}
               {!completionStatus.isCompleted && (
                 <Text style={styles.dueDateText}>
                   {dueDateText}
@@ -151,7 +147,7 @@ export function TaskCard({
                 <View style={styles.frequencyBadge}>
                   <CalendarIcon size={14} color="#FFFFFF" />
                   <Text style={styles.frequencyText}>
-                    {getFrequencyDisplayText()}
+                    {task.frequency === 'daily' ? 'Daily' : task.frequency === 'weekly' ? 'Weekly' : 'Monthly'}
                   </Text>
                 </View>
               )}
@@ -208,6 +204,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 4,
+  },
+  scheduleText: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    opacity: 0.85,
+    marginBottom: 4,
+    fontWeight: '500',
   },
   dueDateText: {
     fontSize: 14,
