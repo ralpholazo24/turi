@@ -158,6 +158,7 @@
     "notificationsEnabled": "Activado",
     "permissionRequired": "Permiso requerido",
     "darkMode": "Modo Oscuro",
+    "theme": "Tema",
     "appLanguage": "Idioma de la App",
     "english": "Inglés",
     "spanish": "Español",
@@ -360,6 +361,12 @@
     "selectLanguage": "Selecciona tu idioma preferido. Todo el texto en la app se mostrará en el idioma seleccionado.",
     "moreLanguagesComing": "Se agregarán más idiomas a medida que estén disponibles las traducciones.",
     "languageChanged": "Idioma cambiado a {{name}}"
+  },
+  "theme": {
+    "selectTheme": "Selecciona tu tema preferido. La app coincidirá con la apariencia de tu dispositivo cuando esté configurado en Sistema.",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
   },
   "taskModal": {
     "taskName": "Nombre de la tarea",

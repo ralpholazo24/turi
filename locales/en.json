@@ -160,6 +160,10 @@
     "notificationsEnabled": "Enabled",
     "permissionRequired": "Permission required",
     "darkMode": "Dark Mode",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
     "appLanguage": "App Language",
     "english": "English",
     "spanish": "Español",
@@ -178,6 +182,12 @@
     "selectLanguage": "Select your preferred language. All text in the app will be displayed in the selected language.",
     "moreLanguagesComing": "More languages will be added as translations become available.",
     "languageChanged": "Language changed to {{name}}"
+  },
+  "theme": {
+    "selectTheme": "Select your preferred theme. The app will match your device's appearance when set to System.",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   },
   "notifications": {
     "title": "Notifications",

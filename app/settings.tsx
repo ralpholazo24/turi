@@ -1,5 +1,5 @@
-import { ThemedText } from '@/components/themed-text';
 import { ConfirmationModal } from '@/components/confirmation-modal';
+import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -10,14 +10,14 @@ import { clearAllData } from '@/utils/clear-data';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
-  const { themePreference, updateThemePreference } = useColorScheme();
+  const { themePreference } = useColorScheme();
   const { notificationsEnabled, permissionStatus } = useNotifications();
   const { language } = useLanguageStore();
   const backgroundColor = useThemeColor({}, 'background');
@@ -50,10 +50,10 @@ export default function SettingsScreen() {
 
   const [isClearDataModalVisible, setIsClearDataModalVisible] = useState(false);
 
-  const isDarkMode = themePreference === 'dark';
-
-  const handleToggleDarkMode = async (value: boolean) => {
-    await updateThemePreference(value ? 'dark' : 'light');
+  const getThemeDisplayName = () => {
+    if (themePreference === 'light') return t('theme.light');
+    if (themePreference === 'dark') return t('theme.dark');
+    return t('theme.system');
   };
 
   const handleContactSupport = () => {
@@ -178,21 +178,23 @@ export default function SettingsScreen() {
           </View>
 
           <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
-            <View style={styles.settingItem}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => router.push('/theme')}
+              activeOpacity={0.7}>
               <View style={styles.settingLeft}>
                 <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
                   <MoonIcon size={20} color={iconColor} />
                 </View>
-                <ThemedText style={styles.settingText} i18nKey="settings.darkMode" />
+                <ThemedText style={styles.settingText} i18nKey="settings.theme" />
               </View>
-              <Switch
-                value={isDarkMode}
-                onValueChange={handleToggleDarkMode}
-                trackColor={{ false: '#E5E5E5', true: '#34C759' }}
-                thumbColor="#FFFFFF"
-                ios_backgroundColor="#E5E5E5"
-              />
-            </View>
+              <View style={styles.settingRight}>
+                <ThemedText style={styles.settingValue}>
+                  {getThemeDisplayName()}
+                </ThemedText>
+                <LucideIcons.ChevronRight size={20} color={iconColor} />
+              </View>
+            </TouchableOpacity>
           </View>
 
           <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
