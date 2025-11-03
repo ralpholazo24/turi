@@ -74,7 +74,8 @@
     "groupName": "Group Name",
     "pickIcon": "Pick an icon",
     "colorTheme": "Color Theme",
-    "newGroup": "New Group"
+    "newGroup": "New Group",
+    "tapToChangeIcon": "Tap to change icon"
   },
   "task": {
     "markDone": "Mark Done",
@@ -355,6 +356,7 @@
     "dayOfMonth": "Day of month",
     "timeOptional": "Time (optional):",
     "pickIcon": "Pick an icon",
+    "tapToChangeIcon": "Tap to change icon",
     "whosIn": "Who's in?",
     "selectAll": "Select All",
     "deselectAll": "Deselect All",

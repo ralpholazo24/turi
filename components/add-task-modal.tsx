@@ -1,3 +1,4 @@
+import { IconPickerModal } from '@/components/icon-picker-modal';
 import { MemberAvatar } from '@/components/member-avatar';
 import { ThemedText } from '@/components/themed-text';
 import { TimePicker } from '@/components/time-picker';
@@ -35,9 +36,10 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
   const { t } = useTranslation();
   const { addTask } = useAppStore();
   const [taskName, setTaskName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState<TaskIconName>('Trash2');
+  const [selectedIcon, setSelectedIcon] = useState<TaskIconName>('Sprout');
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
+  const [showIconPicker, setShowIconPicker] = useState(false);
   
   // Scheduling options
   const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState<number | undefined>(undefined); // 1-31 for monthly
@@ -148,7 +150,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
 
     // Reset form
     setTaskName('');
-    setSelectedIcon('Trash2');
+    setSelectedIcon('Sprout');
     setFrequency('daily');
     if (isSoloMode(group)) {
       setSelectedMembers(new Set([group.members[0].id]));
@@ -208,16 +210,22 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}>
-            {/* Task Icon Preview */}
+            {/* Task Icon Preview - Clickable */}
             <View style={styles.section}>
               <View style={styles.iconPreviewContainer}>
-                <View style={[styles.iconPreview, { backgroundColor: borderColor + '40' }]}>
-                  {/* eslint-disable-next-line import/namespace */}
-                  {(() => {
-                    const IconComponent = LucideIcons[selectedIcon] as React.ComponentType<{ size?: number; color?: string }>;
-                    return IconComponent ? <IconComponent size={48} color={textColor} /> : null;
-                  })()}
-                </View>
+                <TouchableOpacity
+                  onPress={() => setShowIconPicker(true)}
+                  activeOpacity={0.8}
+                  style={styles.iconPreviewTouchable}>
+                  <View style={[styles.iconPreview, styles.iconPreviewClickable, { backgroundColor: borderColor + '40', borderColor: '#10B981' }]}>
+                    {/* eslint-disable-next-line import/namespace */}
+                    {(() => {
+                      const IconComponent = LucideIcons[selectedIcon] as React.ComponentType<{ size?: number; color?: string }>;
+                      return IconComponent ? <IconComponent size={48} color={textColor} /> : null;
+                    })()}
+                  </View>
+                </TouchableOpacity>
+                <ThemedText style={styles.iconPreviewHint} i18nKey="taskModal.tapToChangeIcon" />
               </View>
             </View>
 
@@ -422,34 +430,19 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
               </View>
             </View>
 
-            {/* Icon Picker */}
-            <View style={styles.section}>
-              <ThemedText style={styles.label} i18nKey="taskModal.pickIcon" />
-              <View style={styles.iconGrid}>
-                {TASK_ICON_OPTIONS.map((iconOption) => {
-                  // eslint-disable-next-line import/namespace
-                  const IconComponent = LucideIcons[iconOption.component as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                  const isSelected = selectedIcon === iconOption.component;
-                  return (
-                    <TouchableOpacity
-                      key={iconOption.component}
-                      style={[
-                        styles.iconButton,
-                        isSelected && styles.iconButtonSelected,
-                        { borderColor },
-                      ]}
-                      onPress={() => setSelectedIcon(iconOption.component)}>
-                      {IconComponent && (
-                        <IconComponent size={24} color={isSelected ? '#10B981' : textColor} />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
           </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>
+
+      {/* Icon Picker Modal */}
+      <IconPickerModal
+        visible={showIconPicker}
+        onClose={() => setShowIconPicker(false)}
+        onSelect={(iconName) => setSelectedIcon(iconName as TaskIconName)}
+        icons={[...TASK_ICON_OPTIONS]}
+        selectedIcon={selectedIcon}
+        title={t('taskModal.pickIcon')}
+      />
     </Modal>
   );
 }
@@ -510,6 +503,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  iconPreviewTouchable: {
+    marginBottom: 8,
+  },
   iconPreview: {
     width: 100,
     height: 100,
@@ -517,6 +513,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  iconPreviewClickable: {
+    borderWidth: 3,
+    shadowColor: '#10B981',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  iconPreviewHint: {
+    fontSize: 12,
+    opacity: 0.6,
+    textAlign: 'center',
   },
   labelRow: {
     flexDirection: 'row',
@@ -613,26 +625,6 @@ const styles = StyleSheet.create({
   },
   scheduleButtonTextActive: {
     fontWeight: '600',
-  },
-  iconGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'flex-start',
-  },
-  iconButton: {
-    width: 48,
-    height: 48,
-    borderRadius: BORDER_RADIUS.medium,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  iconButtonSelected: {
-    borderWidth: 3,
-    borderColor: '#10B981',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
   },
   selectAllText: {
     fontSize: 14,

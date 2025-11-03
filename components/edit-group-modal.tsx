@@ -1,3 +1,4 @@
+import { IconPickerModal } from '@/components/icon-picker-modal';
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import {
@@ -15,6 +16,7 @@ import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Dimensions,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -42,15 +44,27 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
       (preset) => preset.start === group.colorStart && preset.end === group.colorEnd
     ) || GROUP_COLOR_PRESETS[0]
   );
+  const [showIconPicker, setShowIconPicker] = useState(false);
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
   const buttonBackgroundColor = useThemeColor({}, 'text');
   const buttonTextColor = useThemeColor({}, 'background');
+  
+  // Calculate spacing for even grid layout (for colors)
+  const screenWidth = Dimensions.get('window').width;
+  const padding = 20;
+  const colorSize = 56;
+  const colorsPerRow = 5;
+  const availableWidth = screenWidth - (padding * 2);
+  const totalColorsWidth = colorsPerRow * colorSize;
+  const remainingColorSpace = availableWidth - totalColorsWidth;
+  const colorSpacing = remainingColorSpace / (colorsPerRow + 1);
 
   const CloseIcon = APP_ICONS.close;
   const EditIcon = APP_ICONS.pen;
@@ -136,20 +150,26 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}>
-            {/* Icon Preview */}
+            {/* Icon Preview - Clickable */}
             <View style={styles.section}>
               <View style={styles.iconPreviewContainer}>
-                <View style={styles.iconPreview}>
-                  <LinearGradient
-                    colors={[selectedColor.start, selectedColor.end]}
-                    start={{ x: 1, y: 1 }}
-                    end={{ x: 0, y: 0 }}
-                    style={styles.previewGradient}>
-                    {IconComponent && (
-                      <IconComponent size={48} color="#FFFFFF" />
-                    )}
-                  </LinearGradient>
-                </View>
+                <TouchableOpacity
+                  onPress={() => setShowIconPicker(true)}
+                  activeOpacity={0.8}
+                  style={styles.iconPreviewTouchable}>
+                  <View style={[styles.iconPreview, styles.iconPreviewClickable]}>
+                    <LinearGradient
+                      colors={[selectedColor.start, selectedColor.end]}
+                      start={{ x: 1, y: 1 }}
+                      end={{ x: 0, y: 0 }}
+                      style={styles.previewGradient}>
+                      {IconComponent && (
+                        <IconComponent size={48} color="#FFFFFF" />
+                      )}
+                    </LinearGradient>
+                  </View>
+                </TouchableOpacity>
+                <ThemedText style={styles.iconPreviewHint} i18nKey="group.tapToChangeIcon" />
               </View>
             </View>
 
@@ -171,69 +191,60 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
               />
             </View>
 
-            {/* Icon Picker */}
+
+            {/* Color Picker */}
             <View style={styles.section}>
-              <ThemedText style={styles.label}>Pick an icon</ThemedText>
-              <View style={styles.iconGrid}>
-                {GROUP_ICON_OPTIONS.map((icon) => {
-                  // eslint-disable-next-line import/namespace
-                  const Icon = LucideIcons[icon.component as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                  const isSelected = selectedIcon === icon.component;
+              <ThemedText style={styles.label} i18nKey="group.colorTheme" />
+              <View style={[styles.colorGrid, { paddingLeft: colorSpacing }]}>
+                {GROUP_COLOR_PRESETS.map((preset, index) => {
+                  const isFirstInRow = index % colorsPerRow === 0;
                   return (
                     <TouchableOpacity
-                      key={icon.name}
+                      key={index}
                       style={[
-                        styles.iconButton,
-                        isSelected && styles.iconButtonSelected,
-                        { borderColor },
+                        styles.colorOption,
+                        {
+                          marginLeft: isFirstInRow ? 0 : colorSpacing,
+                          marginTop: index >= colorsPerRow ? colorSpacing : 0,
+                        },
                       ]}
-                      onPress={() => setSelectedIcon(icon.component as GroupIconName)}>
-                      {Icon && (
-                        <Icon
-                          size={24}
-                          color={isSelected ? '#10B981' : textColor}
-                        />
-                      )}
+                      onPress={() => setSelectedColor(preset)}>
+                      <View
+                        style={[
+                          styles.colorPreview,
+                          selectedColor.start === preset.start &&
+                            selectedColor.end === preset.end &&
+                            styles.colorPreviewSelected,
+                        ]}>
+                        <LinearGradient
+                          colors={[preset.start, preset.end]}
+                          start={{ x: 1, y: 1 }}
+                          end={{ x: 0, y: 0 }}
+                          style={styles.colorGradient}>
+                          {selectedColor.start === preset.start &&
+                            selectedColor.end === preset.end && (
+                              <CheckIcon size={20} color="#FFFFFF" />
+                            )}
+                        </LinearGradient>
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
               </View>
             </View>
-
-            {/* Color Picker */}
-            <View style={styles.section}>
-              <ThemedText style={styles.label} i18nKey="group.colorTheme" />
-              <View style={styles.colorGrid}>
-                {GROUP_COLOR_PRESETS.map((preset, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.colorOption}
-                    onPress={() => setSelectedColor(preset)}>
-                    <View
-                      style={[
-                        styles.colorPreview,
-                        selectedColor.start === preset.start &&
-                          selectedColor.end === preset.end &&
-                          styles.colorPreviewSelected,
-                      ]}>
-                      <LinearGradient
-                        colors={[preset.start, preset.end]}
-                        start={{ x: 1, y: 1 }}
-                        end={{ x: 0, y: 0 }}
-                        style={styles.colorGradient}>
-                        {selectedColor.start === preset.start &&
-                          selectedColor.end === preset.end && (
-                            <CheckIcon size={20} color="#FFFFFF" />
-                          )}
-                      </LinearGradient>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
           </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>
+
+      {/* Icon Picker Modal */}
+      <IconPickerModal
+        visible={showIconPicker}
+        onClose={() => setShowIconPicker(false)}
+        onSelect={(iconName) => setSelectedIcon(iconName as GroupIconName)}
+        icons={[...GROUP_ICON_OPTIONS]}
+        selectedIcon={selectedIcon}
+        title={t('group.pickIcon')}
+      />
     </Modal>
   );
 }
@@ -291,17 +302,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  iconPreviewTouchable: {
+    marginBottom: 8,
+  },
   iconPreview: {
     width: 100,
     height: 100,
     borderRadius: BORDER_RADIUS.xlarge,
     overflow: 'hidden',
   },
+  iconPreviewClickable: {
+    borderWidth: 3,
+    borderColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
   previewGradient: {
     width: '100%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  iconPreviewHint: {
+    fontSize: 12,
+    opacity: 0.6,
+    textAlign: 'center',
   },
   labelRow: {
     flexDirection: 'row',
@@ -323,33 +354,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 50,
   },
-  iconGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  iconButton: {
-    width: 50,
-    height: 50,
-    borderRadius: BORDER_RADIUS.medium,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  iconButtonSelected: {
-    borderWidth: 3,
-    borderColor: '#10B981',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-  },
   colorGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
   },
   colorOption: {
-    width: 60,
-    height: 60,
+    width: 56,
+    height: 56,
   },
   colorPreview: {
     width: '100%',

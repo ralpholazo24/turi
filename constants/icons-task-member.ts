@@ -40,6 +40,15 @@ export const TASK_ICON_OPTIONS = [
   { name: 'Leaf', component: 'Leaf' },
   { name: 'Globe', component: 'Globe' },
   { name: 'Camera', component: 'Camera' },
+  { name: 'Calendar', component: 'Calendar' },
+  { name: 'Clock', component: 'Clock' },
+  { name: 'CheckCircle', component: 'CheckCircle' },
+  { name: 'Home', component: 'Home' },
+  { name: 'Key', component: 'Key' },
+  { name: 'Lock', component: 'Lock' },
+  { name: 'Bell', component: 'Bell' },
+  { name: 'Heart', component: 'Heart' },
+  { name: 'Star', component: 'Star' },
 ] as const;
 
 export type TaskIconName = typeof TASK_ICON_OPTIONS[number]['component'];

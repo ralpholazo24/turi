@@ -74,7 +74,8 @@
     "groupName": "Nombre del Grupo",
     "pickIcon": "Elige un icono",
     "colorTheme": "Tema de Color",
-    "newGroup": "Nuevo Grupo"
+    "newGroup": "Nuevo Grupo",
+    "tapToChangeIcon": "Toca para cambiar el icono"
   },
   "task": {
     "markDone": "Marcar como Hecho",
@@ -353,6 +354,7 @@
     "dayOfMonth": "Día del mes",
     "timeOptional": "Hora (opcional):",
     "pickIcon": "Elige un icono",
+    "tapToChangeIcon": "Toca para cambiar el icono",
     "whosIn": "¿Quién está?",
     "selectAll": "Seleccionar Todo",
     "deselectAll": "Deseleccionar Todo",

@@ -1,3 +1,4 @@
+import { IconPickerModal } from '@/components/icon-picker-modal';
 import { MemberAvatar } from '@/components/member-avatar';
 import { ThemedText } from '@/components/themed-text';
 import { TimePicker } from '@/components/time-picker';
@@ -38,6 +39,7 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   const [selectedIcon, setSelectedIcon] = useState<TaskIconName>(task.icon as TaskIconName);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>(task.frequency);
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set(task.memberIds));
+  const [showIconPicker, setShowIconPicker] = useState(false);
   
   // Scheduling options
   const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState<number | undefined>(
@@ -221,18 +223,72 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}>
-            {/* Task Icon Preview */}
+            {/* Task Icon Preview - Clickable */}
             <View style={styles.section}>
               <View style={styles.iconPreviewContainer}>
-                <View style={[styles.iconPreview, { backgroundColor: borderColor + '40' }]}>
-                  {/* eslint-disable-next-line import/namespace */}
-                  {(() => {
-                    const IconComponent = LucideIcons[selectedIcon] as React.ComponentType<{ size?: number; color?: string }>;
-                    return IconComponent ? <IconComponent size={48} color={textColor} /> : null;
-                  })()}
-                </View>
+                <TouchableOpacity
+                  onPress={() => setShowIconPicker(true)}
+                  activeOpacity={0.8}
+                  style={styles.iconPreviewTouchable}>
+                  <View style={[styles.iconPreview, styles.iconPreviewClickable, { backgroundColor: borderColor + '40', borderColor: '#10B981' }]}>
+                    {(() => {
+                      // eslint-disable-next-line import/namespace
+                      const IconComponent = LucideIcons[selectedIcon] as React.ComponentType<{ size?: number; color?: string }>;
+                      return IconComponent ? <IconComponent size={48} color={textColor} /> : null;
+                    })()}
+                  </View>
+                </TouchableOpacity>
+                <ThemedText style={styles.iconPreviewHint} i18nKey="taskModal.tapToChangeIcon" />
               </View>
             </View>
+
+            {/* Member Selector - Hidden in solo mode */}
+            {!isSoloMode(group) && (
+              <View style={styles.section}>
+                <View style={styles.labelRow}>
+                  <ThemedText style={styles.label} i18nKey="taskModal.whosIn" />
+                  <TouchableOpacity onPress={handleSelectAll}>
+                    <ThemedText style={styles.selectAllText}>
+                      {allSelected ? t('taskModal.deselectAll') : t('taskModal.selectAll')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+                {group.members.length === 0 ? (
+                  <ThemedText style={styles.noMembersText} i18nKey="taskModal.addMembersFirst" />
+                ) : (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.memberScroll}>
+                    {group.members.map((member) => {
+                      const isSelected = selectedMembers.has(member.id);
+                      return (
+                        <TouchableOpacity
+                          key={member.id}
+                          style={styles.memberOption}
+                          onPress={() => handleToggleMember(member.id)}>
+                          <View style={styles.memberAvatarContainer}>
+                            <View
+                              style={[
+                                styles.memberAvatar,
+                                isSelected && styles.memberAvatarSelected,
+                              ]}>
+                              <MemberAvatar member={member} size={40} />
+                            </View>
+                            {isSelected && (
+                              <View style={styles.checkmarkContainer}>
+                                <CheckIcon size={12} color="#FFFFFF" />
+                              </View>
+                            )}
+                          </View>
+                          <ThemedText style={styles.memberName}>{member.name}</ThemedText>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                )}
+              </View>
+            )}
 
             {/* Task Name Input */}
             <View style={styles.section}>
@@ -387,83 +443,19 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                 />
               </View>
             </View>
-
-            {/* Icon Picker */}
-            <View style={styles.section}>
-              <ThemedText style={styles.label} i18nKey="taskModal.pickIcon" />
-              <View style={styles.iconGrid}>
-                {TASK_ICON_OPTIONS.map((iconOption) => {
-                  // eslint-disable-next-line import/namespace
-                  const IconComponent = LucideIcons[iconOption.component as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                  const isSelected = selectedIcon === iconOption.component;
-                  return (
-                    <TouchableOpacity
-                      key={iconOption.component}
-                      style={[
-                        styles.iconButton,
-                        isSelected && styles.iconButtonSelected,
-                        { borderColor },
-                      ]}
-                      onPress={() => setSelectedIcon(iconOption.component)}>
-                      {IconComponent && (
-                        <IconComponent size={24} color={isSelected ? '#10B981' : textColor} />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Member Selector - Hidden in solo mode */}
-            {!isSoloMode(group) && (
-              <View style={styles.section}>
-                <View style={styles.labelRow}>
-                  <ThemedText style={styles.label} i18nKey="taskModal.whosIn" />
-                  <TouchableOpacity onPress={handleSelectAll}>
-                    <ThemedText style={styles.selectAllText}>
-                      {allSelected ? t('taskModal.deselectAll') : t('taskModal.selectAll')}
-                    </ThemedText>
-                  </TouchableOpacity>
-                </View>
-                {group.members.length === 0 ? (
-                  <ThemedText style={styles.noMembersText} i18nKey="taskModal.addMembersFirst" />
-                ) : (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.memberScroll}>
-                    {group.members.map((member) => {
-                      const isSelected = selectedMembers.has(member.id);
-                      return (
-                        <TouchableOpacity
-                          key={member.id}
-                          style={styles.memberOption}
-                          onPress={() => handleToggleMember(member.id)}>
-                          <View style={styles.memberAvatarContainer}>
-                            <View
-                              style={[
-                                styles.memberAvatar,
-                                isSelected && styles.memberAvatarSelected,
-                              ]}>
-                              <MemberAvatar member={member} size={40} />
-                            </View>
-                            {isSelected && (
-                              <View style={styles.checkmarkContainer}>
-                                <CheckIcon size={12} color="#FFFFFF" />
-                              </View>
-                            )}
-                          </View>
-                          <ThemedText style={styles.memberName}>{member.name}</ThemedText>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-                )}
-              </View>
-            )}
           </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>
+
+      {/* Icon Picker Modal */}
+      <IconPickerModal
+        visible={showIconPicker}
+        onClose={() => setShowIconPicker(false)}
+        onSelect={(iconName) => setSelectedIcon(iconName as TaskIconName)}
+        icons={[...TASK_ICON_OPTIONS]}
+        selectedIcon={selectedIcon}
+        title={t('taskModal.pickIcon')}
+      />
     </Modal>
   );
 }
@@ -519,17 +511,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 32,
-  },
-  iconPreviewContainer: {
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  iconPreview: {
-    width: 100,
-    height: 100,
-    borderRadius: BORDER_RADIUS.xlarge,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   labelRow: {
     flexDirection: 'row',
@@ -627,24 +608,36 @@ const styles = StyleSheet.create({
   scheduleButtonTextActive: {
     fontWeight: '600',
   },
-  iconGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+  iconPreviewContainer: {
+    alignItems: 'center',
+    marginBottom: 8,
   },
-  iconButton: {
-    width: 50,
-    height: 50,
-    borderRadius: BORDER_RADIUS.medium,
-    borderWidth: 2,
+  iconPreviewTouchable: {
+    marginBottom: 8,
+  },
+  iconPreview: {
+    width: 100,
+    height: 100,
+    borderRadius: BORDER_RADIUS.xlarge,
+    backgroundColor: '#F0F0F0',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
-  iconButtonSelected: {
+  iconPreviewClickable: {
     borderWidth: 3,
-    borderColor: '#10B981',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    shadowColor: '#10B981',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  iconPreviewHint: {
+    fontSize: 12,
+    opacity: 0.6,
+    textAlign: 'center',
   },
   selectAllText: {
     fontSize: 14,
