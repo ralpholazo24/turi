@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Task, Group } from '@/types';
 import { calculateNotificationDate, getAssignedMemberName, calculateNextDueDate } from './notification-schedule';
 import { formatScheduleInfo } from './task-schedule';
+import { isSameDay, isSameISOWeek, isSameMonth } from './date-helpers';
 import i18n from '@/i18n';
 
 /**
@@ -20,32 +21,16 @@ function isTaskCompletedForDate(task: Task, checkDate: Date): boolean {
 
   if (task.frequency === 'daily') {
     // For daily tasks, check if completed on the same day
-    return checkDateStart.getTime() === lastCompleted.getTime();
+    return isSameDay(checkDateStart, lastCompleted);
   } else if (task.frequency === 'weekly') {
-    // For weekly tasks, check if completed in the same week
-    const checkWeek = getWeekNumber(checkDateStart);
-    const completedWeek = getWeekNumber(lastCompleted);
-    return checkWeek === completedWeek && checkDateStart.getFullYear() === lastCompleted.getFullYear();
+    // For weekly tasks, check if completed in the same week (using ISO week)
+    return isSameISOWeek(checkDateStart, lastCompleted);
   } else if (task.frequency === 'monthly') {
     // For monthly tasks, check if completed in the same month
-    return (
-      checkDateStart.getMonth() === lastCompleted.getMonth() &&
-      checkDateStart.getFullYear() === lastCompleted.getFullYear()
-    );
+    return isSameMonth(checkDateStart, lastCompleted);
   }
 
   return false;
-}
-
-/**
- * Helper function to get week number
- */
-function getWeekNumber(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 /**

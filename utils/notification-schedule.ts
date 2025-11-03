@@ -1,5 +1,11 @@
 import { Task, Group } from '@/types';
 import i18n from '@/i18n';
+import {
+  getValidMonthlyDate,
+  getLastOccurrenceOfDay,
+  parseTime,
+  startOfDay,
+} from './date-helpers';
 
 /**
  * Default time for tasks without a scheduled time
@@ -13,18 +19,17 @@ const DEFAULT_NOTIFICATION_MINUTE = 0;
  */
 export function calculateNextDueDate(task: Task): Date | null {
   const now = new Date();
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
+  const today = startOfDay(now);
 
   // Parse scheduled time if available, otherwise use default time
   let scheduledHour = DEFAULT_NOTIFICATION_HOUR;
   let scheduledMinute = DEFAULT_NOTIFICATION_MINUTE;
   
   if (task.scheduleTime) {
-    const [hours, minutes] = task.scheduleTime.split(':').map(Number);
-    if (!isNaN(hours) && !isNaN(minutes)) {
-      scheduledHour = hours;
-      scheduledMinute = minutes;
+    const parsed = parseTime(task.scheduleTime);
+    if (parsed) {
+      scheduledHour = parsed.hours;
+      scheduledMinute = parsed.minutes;
     }
   }
 
@@ -62,38 +67,73 @@ export function calculateNextDueDate(task: Task): Date | null {
   }
 
   if (task.frequency === 'monthly') {
-    // For monthly tasks, find the next occurrence of scheduled week + day
-    const targetWeek = task.scheduleWeek !== undefined ? task.scheduleWeek : 1; // Default to first week
-    const targetDay = task.scheduleDay !== undefined ? task.scheduleDay : 1; // Default to Monday
+    const scheduleType = task.scheduleType || 'dayOfWeek'; // Default to dayOfWeek for backward compatibility
     
-    const dueDate = new Date(now);
-    dueDate.setDate(1); // Start from first day of current month
-    dueDate.setHours(scheduledHour, scheduledMinute, 0, 0);
-    
-    // Find the first occurrence of target day in the month
-    while (dueDate.getDay() !== targetDay) {
-      dueDate.setDate(dueDate.getDate() + 1);
-    }
-    
-    // Move to the correct week (0 = first week, 1 = second week, etc.)
-    const weekOffset = targetWeek - 1;
-    dueDate.setDate(dueDate.getDate() + weekOffset * 7);
-    
-    // If this date has already passed this month, move to next month
-    if (dueDate.getTime() <= now.getTime()) {
-      dueDate.setMonth(dueDate.getMonth() + 1);
-      dueDate.setDate(1);
+    if (scheduleType === 'dayOfMonth' && task.scheduleDayOfMonth !== undefined) {
+      // Schedule on a specific day of the month (e.g., 15th of every month)
+      const targetDay = task.scheduleDayOfMonth;
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
       
-      // Find the first occurrence of target day in the new month
-      while (dueDate.getDay() !== targetDay) {
-        dueDate.setDate(dueDate.getDate() + 1);
+      // Try current month first
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const validDay = Math.min(targetDay, daysInMonth); // Handle months with fewer days
+      
+      let dueDate = new Date(currentYear, currentMonth, validDay);
+      dueDate.setHours(scheduledHour, scheduledMinute, 0, 0);
+      
+      // If this date has already passed this month, move to next month
+      if (dueDate.getTime() <= now.getTime()) {
+        const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+        const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+        const nextDaysInMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
+        const nextValidDay = Math.min(targetDay, nextDaysInMonth);
+        dueDate = new Date(nextYear, nextMonth, nextValidDay);
+        dueDate.setHours(scheduledHour, scheduledMinute, 0, 0);
       }
       
-      // Move to the correct week
-      dueDate.setDate(dueDate.getDate() + weekOffset * 7);
+      return dueDate;
+    } else if (scheduleType === 'lastDayOfMonth' && task.scheduleDay !== undefined) {
+      // Schedule on the last occurrence of a day in the month (e.g., last Friday)
+      const targetDay = task.scheduleDay;
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      
+      // Try current month first
+      let dueDate = getLastOccurrenceOfDay(currentYear, currentMonth, targetDay);
+      dueDate.setHours(scheduledHour, scheduledMinute, 0, 0);
+      
+      // If this date has already passed this month, move to next month
+      if (dueDate.getTime() <= now.getTime()) {
+        const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+        const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+        dueDate = getLastOccurrenceOfDay(nextYear, nextMonth, targetDay);
+        dueDate.setHours(scheduledHour, scheduledMinute, 0, 0);
+      }
+      
+      return dueDate;
+    } else {
+      // Default: dayOfWeek - nth occurrence of a day (e.g., first Monday, second Friday)
+      const targetWeek = task.scheduleWeek !== undefined ? task.scheduleWeek : 1; // Default to first week
+      const targetDay = task.scheduleDay !== undefined ? task.scheduleDay : 1; // Default to Monday
+      
+      // Try current month first
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      
+      let dueDate = getValidMonthlyDate(currentYear, currentMonth, targetWeek, targetDay);
+      dueDate.setHours(scheduledHour, scheduledMinute, 0, 0);
+      
+      // If this date has already passed this month, move to next month
+      if (dueDate.getTime() <= now.getTime()) {
+        const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+        const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+        dueDate = getValidMonthlyDate(nextYear, nextMonth, targetWeek, targetDay);
+        dueDate.setHours(scheduledHour, scheduledMinute, 0, 0);
+      }
+      
+      return dueDate;
     }
-    
-    return dueDate;
   }
 
   return null;
@@ -135,4 +175,5 @@ export function getAssignedMemberName(task: Task, group: Group): string {
   
   return assignedMember?.name || i18n.t('activity.someone');
 }
+
 

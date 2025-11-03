@@ -7,6 +7,9 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
+import { getDaysDifference, startOfDay } from '@/utils/date-helpers';
+import { formatDetailedNextDueDate, getDueDateCountdown } from '@/utils/due-date-format';
+import { calculateNextDueDate } from '@/utils/notification-schedule';
 import { isSoloMode } from '@/utils/solo-mode';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
@@ -86,6 +89,30 @@ export default function TaskDetailsScreen() {
     if (task.frequency === 'daily') return t('task.daily');
     if (task.frequency === 'weekly') return t('task.weekly');
     return t('task.monthly');
+  };
+
+  // Determine what to show for due date (detailed date or countdown)
+  const getDueDateDisplay = () => {
+    if (isOverdue) {
+      return t('common.overdue');
+    }
+
+    const nextDueDate = calculateNextDueDate(task);
+    if (!nextDueDate) {
+      return formatDetailedNextDueDate(task);
+    }
+
+    const now = new Date();
+    const today = startOfDay(now);
+    const dueDateStart = startOfDay(nextDueDate);
+    const daysDiff = getDaysDifference(today, dueDateStart);
+
+    // Show countdown if within 7 days, otherwise show detailed date
+    if (daysDiff <= 7) {
+      return getDueDateCountdown(task);
+    } else {
+      return formatDetailedNextDueDate(task);
+    }
   };
 
   // Format completion date
@@ -231,8 +258,10 @@ export default function TaskDetailsScreen() {
                 <Text style={styles.frequency}>
                   {getFrequencyText()}
                 </Text>
-                {!completionStatus.isCompleted && isOverdue && (
-                  <Text style={styles.overdueIndicator}>{t('common.overdue')}</Text>
+                {!completionStatus.isCompleted && (
+                  <Text style={[styles.nextDueDate, isOverdue && styles.overdueIndicator]}>
+                    {getDueDateDisplay()}
+                  </Text>
                 )}
               </View>
             </View>
@@ -465,6 +494,21 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#FFFFFF',
     opacity: 0.9,
+    marginBottom: 4,
+  },
+  nextDueDate: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    opacity: 0.95,
+    marginTop: 4,
+  },
+  countdown: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    opacity: 0.85,
+    marginTop: 2,
   },
   overdueIndicator: {
     fontSize: 14,

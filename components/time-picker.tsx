@@ -22,6 +22,7 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
   );
 
   const ClockIcon = APP_ICONS.clock;
+  const XIcon = APP_ICONS.close;
 
   // Parse value to Date object
   const getDateFromValue = (timeString: string): Date => {
@@ -82,6 +83,13 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
     setShowPicker(true);
   };
 
+  const handleClear = (e: any) => {
+    e.stopPropagation();
+    if (onClear) {
+      onClear();
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -91,6 +99,16 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
         <ThemedText style={[styles.timeText, { color: value ? textColor : textColor + '80' }]}>
           {value ? formatTimeDisplay(selectedTime) : 'Select time'}
         </ThemedText>
+        {value && onClear && (
+          <TouchableOpacity
+            style={styles.clearIconButton}
+            onPress={handleClear}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <View style={[styles.clearIconContainer, { backgroundColor: iconColor + '20' }]}>
+              <XIcon size={14} color={iconColor} />
+            </View>
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
 
       {showPicker && (
@@ -157,15 +175,6 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
           )}
         </>
       )}
-
-      {/* Clear Button */}
-      {onClear && value && (
-        <TouchableOpacity
-          style={styles.clearButton}
-          onPress={onClear}>
-          <ThemedText style={styles.clearButtonText}>Clear Time</ThemedText>
-        </TouchableOpacity>
-      )}
     </View>
   );
 }
@@ -182,6 +191,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     minHeight: 50,
+    position: 'relative',
   },
   icon: {
     marginRight: 12,
@@ -191,15 +201,16 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     flex: 1,
   },
-  clearButton: {
-    marginTop: 12,
-    paddingVertical: 8,
-    alignItems: 'center',
+  clearIconButton: {
+    marginLeft: 8,
+    padding: 4,
   },
-  clearButtonText: {
-    fontSize: 14,
-    color: '#EF4444',
-    fontWeight: '600',
+  clearIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: BORDER_RADIUS.circular.small,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContainer: {
     flex: 1,

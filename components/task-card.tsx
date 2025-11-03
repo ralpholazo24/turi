@@ -1,6 +1,7 @@
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { Group, Member, Task } from '@/types';
+import { formatNextDueDate } from '@/utils/due-date-format';
 import { isSoloMode } from '@/utils/solo-mode';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
@@ -31,48 +32,6 @@ export function TaskCard({
 }: TaskCardProps) {
   const { t } = useTranslation();
   const soloMode = isSoloMode(group);
-  // Calculate due date text
-  const getDueDateText = () => {
-    if (!task.lastCompletedAt) {
-      if (task.frequency === 'daily') return t('task.dueToday');
-      if (task.frequency === 'weekly') return t('task.dueThisWeek');
-      if (task.frequency === 'monthly') return t('task.dueThisMonth');
-    }
-
-    const lastCompleted = new Date(task.lastCompletedAt!);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    lastCompleted.setHours(0, 0, 0, 0);
-
-    const daysSince = Math.floor(
-      (today.getTime() - lastCompleted.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (task.frequency === 'daily') {
-      if (daysSince === 0) return t('task.dueTomorrow');
-      if (daysSince >= 1) return t('task.dueToday');
-    } else if (task.frequency === 'weekly') {
-      const daysUntilNext = 7 - (daysSince % 7);
-      if (daysUntilNext === 7) return t('task.dueToday');
-      if (daysUntilNext === 1) return t('task.dueTomorrow');
-      return t('task.dueInDays', { count: daysUntilNext });
-    } else if (task.frequency === 'monthly') {
-      const lastCompletedMonth = lastCompleted.getMonth();
-      const lastCompletedYear = lastCompleted.getFullYear();
-      const currentMonth = today.getMonth();
-      const currentYear = today.getFullYear();
-      
-      if (lastCompletedMonth === currentMonth && lastCompletedYear === currentYear) {
-        return t('task.dueNextMonth');
-      }
-      return t('task.dueThisMonth');
-    }
-
-    return task.frequency === 'daily' ? t('task.dueToday') : task.frequency === 'weekly' ? t('task.dueThisWeek') : t('task.dueThisMonth');
-  };
-
-  const dueDateText = getDueDateText();
-  const isDueToday = dueDateText.includes(t('common.today'));
   
   // Check if task is already completed
   const completionStatus = getTaskCompletionStatus(task);
@@ -82,6 +41,9 @@ export function TaskCard({
   
   // Get formatted schedule information
   const scheduleInfo = formatScheduleInfo(task);
+  
+  // Get next due date text using actual calculation
+  const dueDateText = formatNextDueDate(task);
   
   const CheckIcon = APP_ICONS.check;
 
@@ -287,4 +249,3 @@ const styles = StyleSheet.create({
     color: '#FFB3BA',
   },
 });
-

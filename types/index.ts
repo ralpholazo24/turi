@@ -39,8 +39,10 @@ export interface Task {
   completionHistory: TaskCompletion[]; // History of completions
   skipHistory: TaskSkip[]; // History of skips
   // Scheduling options (optional, only used when frequency is weekly or monthly)
-  scheduleWeek?: number; // For monthly: 1-4 (first, second, third, fourth week)
-  scheduleDay?: number; // 0-6 (Sunday = 0, Monday = 1, ..., Saturday = 6)
+  scheduleType?: 'dayOfWeek' | 'dayOfMonth' | 'lastDayOfMonth'; // For monthly: how to schedule (default: dayOfWeek)
+  scheduleWeek?: number; // For monthly: 1-4 (first, second, third, fourth week) - only used with dayOfWeek
+  scheduleDay?: number; // 0-6 (Sunday = 0, Monday = 1, ..., Saturday = 6) - used for weekly and monthly (dayOfWeek)
+  scheduleDayOfMonth?: number; // 1-31 (day of month) - only used with dayOfMonth scheduleType
   scheduleTime?: string; // HH:MM format (24-hour), e.g., "14:30" for 2:30 PM
 }
 

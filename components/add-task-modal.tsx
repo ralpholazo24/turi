@@ -41,8 +41,8 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
   const [showNoMembersModal, setShowNoMembersModal] = useState(false);
   
   // Scheduling options
-  const [scheduleWeek, setScheduleWeek] = useState<number | undefined>(undefined); // 1-4 for monthly
-  const [scheduleDay, setScheduleDay] = useState<number | undefined>(undefined); // 0-6
+  const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState<number | undefined>(undefined); // 1-31 for monthly
+  const [scheduleDay, setScheduleDay] = useState<number | undefined>(undefined); // 0-6 for weekly
   const [scheduleTime, setScheduleTime] = useState<string>(''); // HH:MM format
 
   const backgroundColor = useThemeColor({}, 'background');
@@ -71,13 +71,8 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
     { value: 6, label: t('task.saturday') },
   ];
   
-  // Weeks of the month
-  const WEEKS = [
-    { value: 1, label: t('task.firstWeek') },
-    { value: 2, label: t('task.secondWeek') },
-    { value: 3, label: t('task.thirdWeek') },
-    { value: 4, label: t('task.fourthWeek') },
-  ];
+  // Days of the month (1-31) for monthly tasks
+  const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1);
   
   // Validate time format (HH:MM)
   const validateTime = (time: string): boolean => {
@@ -153,8 +148,9 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
       lastCompletedAt: null,
       completionHistory: [],
       skipHistory: [],
-      scheduleWeek: frequency === 'monthly' ? scheduleWeek : undefined,
-      scheduleDay: (frequency === 'weekly' || frequency === 'monthly') ? scheduleDay : undefined,
+      scheduleType: frequency === 'monthly' ? 'dayOfMonth' : undefined,
+      scheduleDayOfMonth: frequency === 'monthly' ? scheduleDayOfMonth : undefined,
+      scheduleDay: frequency === 'weekly' ? scheduleDay : undefined,
       scheduleTime: scheduleTime || undefined,
     });
 
@@ -167,7 +163,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
     } else {
       setSelectedMembers(new Set(group.members.map((m) => m.id)));
     }
-    setScheduleWeek(undefined);
+    setScheduleDayOfMonth(undefined);
     setScheduleDay(undefined);
     setScheduleTime('');
     onClose();
@@ -184,7 +180,7 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
     setSelectedIcon('Trash2');
     setFrequency('daily');
     setSelectedMembers(new Set());
-    setScheduleWeek(undefined);
+    setScheduleDayOfMonth(undefined);
     setScheduleDay(undefined);
     setScheduleTime('');
     onClose();
@@ -319,36 +315,8 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
             <View style={styles.section}>
               <ThemedText style={styles.label} i18nKey="taskModal.schedule" />
               
-              {/* Week selector for monthly */}
-              {frequency === 'monthly' && (
-                <View style={styles.scheduleRow}>
-                  <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.week" />
-                  <View style={styles.scheduleButtonGroup}>
-                    {WEEKS.map((week) => (
-                      <TouchableOpacity
-                        key={week.value}
-                        style={[
-                          styles.scheduleButton,
-                          scheduleWeek === week.value && styles.scheduleButtonActive,
-                          { backgroundColor: scheduleWeek === week.value ? '#10B981' : borderColor + '30' },
-                        ]}
-                        onPress={() => setScheduleWeek(week.value)}>
-                        <Text
-                          style={[
-                            styles.scheduleButtonText,
-                            scheduleWeek === week.value && styles.scheduleButtonTextActive,
-                            { color: scheduleWeek === week.value ? '#FFFFFF' : iconColor },
-                          ]}>
-                          {week.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              )}
-
-              {/* Day selector for weekly and monthly */}
-              {(frequency === 'weekly' || frequency === 'monthly') && (
+              {/* Day selector for weekly */}
+              {frequency === 'weekly' && (
                 <View style={styles.scheduleRow}>
                   <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.day" />
                   <ScrollView
@@ -371,6 +339,38 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
                             { color: scheduleDay === day.value ? '#FFFFFF' : iconColor },
                           ]}>
                           {day.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Day of month selector for monthly */}
+              {frequency === 'monthly' && (
+                <View style={styles.scheduleRow}>
+                  <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.dayOfMonth" />
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.dayScroll}
+                    contentContainerStyle={styles.dayOfMonthContainer}>
+                    {DAYS_OF_MONTH.map((day) => (
+                      <TouchableOpacity
+                        key={day}
+                        style={[
+                          styles.scheduleButton,
+                          scheduleDayOfMonth === day && styles.scheduleButtonActive,
+                          { backgroundColor: scheduleDayOfMonth === day ? '#10B981' : borderColor + '30' },
+                        ]}
+                        onPress={() => setScheduleDayOfMonth(day)}>
+                        <Text
+                          style={[
+                            styles.scheduleButtonText,
+                            scheduleDayOfMonth === day && styles.scheduleButtonTextActive,
+                            { color: scheduleDayOfMonth === day ? '#FFFFFF' : iconColor },
+                          ]}>
+                          {day}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -629,6 +629,9 @@ const styles = StyleSheet.create({
   },
   dayScroll: {
     marginTop: 8,
+  },
+  dayOfMonthContainer: {
+    paddingRight: 16,
   },
   scheduleButton: {
     paddingVertical: 10,

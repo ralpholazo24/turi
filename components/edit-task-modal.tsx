@@ -40,8 +40,12 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set(task.memberIds));
   
   // Scheduling options
-  const [scheduleWeek, setScheduleWeek] = useState<number | undefined>(task.scheduleWeek);
-  const [scheduleDay, setScheduleDay] = useState<number | undefined>(task.scheduleDay);
+  const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState<number | undefined>(
+    task.scheduleType === 'dayOfMonth' ? task.scheduleDayOfMonth : undefined
+  );
+  const [scheduleDay, setScheduleDay] = useState<number | undefined>(
+    task.frequency === 'weekly' ? task.scheduleDay : undefined
+  );
   const [scheduleTime, setScheduleTime] = useState<string>(task.scheduleTime || '');
 
   const backgroundColor = useThemeColor({}, 'background');
@@ -70,13 +74,8 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
     { value: 6, label: t('task.saturday') },
   ];
   
-  // Weeks of the month
-  const WEEKS = [
-    { value: 1, label: t('task.firstWeek') },
-    { value: 2, label: t('task.secondWeek') },
-    { value: 3, label: t('task.thirdWeek') },
-    { value: 4, label: t('task.fourthWeek') },
-  ];
+  // Days of the month (1-31) for monthly tasks
+  const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1);
   
   // Validate time format (HH:MM)
   const validateTime = (time: string): boolean => {
@@ -104,8 +103,8 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       } else {
         setSelectedMembers(new Set(task.memberIds));
       }
-      setScheduleWeek(task.scheduleWeek);
-      setScheduleDay(task.scheduleDay);
+      setScheduleDayOfMonth(task.scheduleType === 'dayOfMonth' ? task.scheduleDayOfMonth : undefined);
+      setScheduleDay(task.frequency === 'weekly' ? task.scheduleDay : undefined);
       setScheduleTime(task.scheduleTime || '');
     }
   }, [visible, task, group]);
@@ -166,8 +165,9 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       frequency,
       memberIds: newMemberIds,
       assignedIndex: newAssignedIndex,
-      scheduleWeek: frequency === 'monthly' ? scheduleWeek : undefined,
-      scheduleDay: (frequency === 'weekly' || frequency === 'monthly') ? scheduleDay : undefined,
+      scheduleType: frequency === 'monthly' ? 'dayOfMonth' : undefined,
+      scheduleDayOfMonth: frequency === 'monthly' ? scheduleDayOfMonth : undefined,
+      scheduleDay: frequency === 'weekly' ? scheduleDay : undefined,
       scheduleTime: scheduleTime || undefined,
     });
 
@@ -179,6 +179,9 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
     setSelectedIcon(task.icon as TaskIconName);
     setFrequency(task.frequency);
     setSelectedMembers(new Set(task.memberIds));
+    setScheduleDayOfMonth(task.scheduleType === 'dayOfMonth' ? task.scheduleDayOfMonth : undefined);
+    setScheduleDay(task.frequency === 'weekly' ? task.scheduleDay : undefined);
+    setScheduleTime(task.scheduleTime || '');
     onClose();
   };
 
@@ -311,36 +314,8 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
             <View style={styles.section}>
               <ThemedText style={styles.label} i18nKey="taskModal.schedule" />
               
-              {/* Week selector for monthly */}
-              {frequency === 'monthly' && (
-                <View style={styles.scheduleRow}>
-                  <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.week" />
-                  <View style={styles.scheduleButtonGroup}>
-                    {WEEKS.map((week) => (
-                      <TouchableOpacity
-                        key={week.value}
-                        style={[
-                          styles.scheduleButton,
-                          scheduleWeek === week.value && styles.scheduleButtonActive,
-                          { backgroundColor: scheduleWeek === week.value ? '#10B981' : borderColor + '30' },
-                        ]}
-                        onPress={() => setScheduleWeek(week.value)}>
-                        <Text
-                          style={[
-                            styles.scheduleButtonText,
-                            scheduleWeek === week.value && styles.scheduleButtonTextActive,
-                            { color: scheduleWeek === week.value ? '#FFFFFF' : iconColor },
-                          ]}>
-                          {week.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              )}
-
-              {/* Day selector for weekly and monthly */}
-              {(frequency === 'weekly' || frequency === 'monthly') && (
+              {/* Day selector for weekly */}
+              {frequency === 'weekly' && (
                 <View style={styles.scheduleRow}>
                   <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.day" />
                   <ScrollView
@@ -363,6 +338,38 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                             { color: scheduleDay === day.value ? '#FFFFFF' : iconColor },
                           ]}>
                           {day.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Day of month selector for monthly */}
+              {frequency === 'monthly' && (
+                <View style={styles.scheduleRow}>
+                  <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.dayOfMonth" />
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.dayScroll}
+                    contentContainerStyle={styles.dayOfMonthContainer}>
+                    {DAYS_OF_MONTH.map((day) => (
+                      <TouchableOpacity
+                        key={day}
+                        style={[
+                          styles.scheduleButton,
+                          scheduleDayOfMonth === day && styles.scheduleButtonActive,
+                          { backgroundColor: scheduleDayOfMonth === day ? '#10B981' : borderColor + '30' },
+                        ]}
+                        onPress={() => setScheduleDayOfMonth(day)}>
+                        <Text
+                          style={[
+                            styles.scheduleButtonText,
+                            scheduleDayOfMonth === day && styles.scheduleButtonTextActive,
+                            { color: scheduleDayOfMonth === day ? '#FFFFFF' : iconColor },
+                          ]}>
+                          {day}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -591,6 +598,9 @@ const styles = StyleSheet.create({
   },
   dayScroll: {
     marginTop: 8,
+  },
+  dayOfMonthContainer: {
+    paddingRight: 16,
   },
   scheduleButton: {
     paddingVertical: 10,
