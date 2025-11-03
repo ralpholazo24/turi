@@ -33,6 +33,7 @@ export function GroupCard({ group }: GroupCardProps) {
     : null;
 
   const totalTasksCount = group.tasks.length;
+  const totalMembersCount = group.members.length;
 
   // Get the icon component dynamically
   // eslint-disable-next-line import/namespace
@@ -90,11 +91,16 @@ export function GroupCard({ group }: GroupCardProps) {
             )}
 
             <View style={styles.rightSection}>
-              {totalTasksCount > 0 ? (
-                <View style={styles.taskCountBadge}>
-                  <Text style={styles.taskCountText}>{totalTasksCount}</Text>
+              <View style={styles.badgesContainer}>
+                <View style={styles.badge}>
+                  <APP_ICONS.clipboard size={14} color="#FFFFFF" />
+                  <Text style={styles.badgeText}>{totalTasksCount}</Text>
                 </View>
-              ) : null}
+                <View style={styles.badge}>
+                  <APP_ICONS.users size={14} color="#FFFFFF" />
+                  <Text style={styles.badgeText}>{totalMembersCount}</Text>
+                </View>
+              </View>
             </View>
           </View>
         </View>
@@ -186,18 +192,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 12,
   },
-  taskCountBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: BORDER_RADIUS.xlarge,
-    borderWidth: 2.5,
-    borderColor: '#FFFFFF',
-    justifyContent: 'center',
+  badgesContainer: {
+    flexDirection: 'row',
+    gap: 8,
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
-  taskCountText: {
-    fontSize: 15,
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.large,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    gap: 6,
+  },
+  badgeText: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
