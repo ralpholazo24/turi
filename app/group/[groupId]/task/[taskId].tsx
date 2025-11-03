@@ -10,6 +10,7 @@ import { useAppStore } from '@/store/use-app-store';
 import { isSoloMode } from '@/utils/solo-mode';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
@@ -43,13 +44,13 @@ export default function TaskDetailsScreen() {
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+  const iconColor = useThemeColor({}, 'icon');
   const buttonBackgroundColor = useThemeColor({}, 'text');
   const buttonTextColor = useThemeColor({}, 'background');
 
   const BackIcon = APP_ICONS.back;
   const MenuIcon = APP_ICONS.menu;
   const CheckIcon = APP_ICONS.check;
-  const ClipboardIcon = APP_ICONS.clipboard;
 
   useEffect(() => {
     initialize();
@@ -288,8 +289,14 @@ export default function TaskDetailsScreen() {
         {/* Empty History State */}
         {sortedHistory.length === 0 && (
           <View style={styles.emptyHistory}>
-            <ClipboardIcon size={48} color={textColor} style={styles.emptyHistoryIcon} />
-            <ThemedText style={styles.emptyHistoryText} i18nKey="task.noHistory" />
+            <Image
+              source={require('@/assets/illustrations/beach-boy.svg')}
+              style={styles.emptyIllustration}
+              contentFit="contain"
+              tintColor={iconColor}
+            />
+            <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="task.noHistory" />
+            <ThemedText style={styles.emptyText} i18nKey="task.noHistoryDescription" />
           </View>
         )}
       </ScrollView>
@@ -526,16 +533,22 @@ const styles = StyleSheet.create({
   },
   emptyHistory: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingTop: 20,
+    paddingBottom: 60,
   },
-  emptyHistoryIcon: {
+  emptyIllustration: {
+    width: 280,
+    height: 280,
+    opacity: 0.8,
     marginBottom: 12,
-    opacity: 0.6,
+    marginTop: -20,
   },
-  emptyHistoryText: {
-    fontSize: 14,
-    opacity: 0.6,
+  emptyTitle: {
+    marginBottom: 8,
+  },
+  emptyText: {
     textAlign: 'center',
+    opacity: 0.7,
   },
   actionButtons: {
     position: 'absolute',
