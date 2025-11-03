@@ -67,7 +67,7 @@ export function formatDetailedNextDueDate(task: Task): string {
   // Format time
   const hours = nextDueDate.getHours();
   const minutes = nextDueDate.getMinutes();
-  const period = hours >= 12 ? 'PM' : 'AM';
+  const period = hours >= 12 ? i18n.t('common.pm') : i18n.t('common.am');
   const displayHour = hours % 12 || 12;
   const timeString = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
   
@@ -145,14 +145,14 @@ export function getDueDateCountdown(task: Task): string {
   
   if (days > 0) {
     if (hours > 0) {
-      const key = days === 1 && hours === 1 ? 'dueInDaysAndHours' : 'dueInDaysAndHours_plural';
+      const key = days === 1 && hours === 1 ? 'task.dueInDaysAndHours' : 'task.dueInDaysAndHours_plural';
       return i18n.t(key, { days, hours });
     }
     return i18n.t('task.dueInDays', { count: days });
   } else if (hours > 0) {
     // Only show minutes if task has scheduled time
     if (hasScheduledTime && minutes > 0) {
-      const key = hours === 1 && minutes === 1 ? 'dueInHoursAndMinutes' : 'dueInHoursAndMinutes_plural';
+      const key = hours === 1 && minutes === 1 ? 'task.dueInHoursAndMinutes' : 'task.dueInHoursAndMinutes_plural';
       return i18n.t(key, { hours, minutes });
     }
     return i18n.t('task.dueInHours', { count: hours });

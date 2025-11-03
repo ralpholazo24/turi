@@ -30,7 +30,23 @@
     "september": "September",
     "october": "October",
     "november": "November",
-    "december": "December"
+    "december": "December",
+    "am": "AM",
+    "pm": "PM",
+    "monthAbbr": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
   },
   "home": {
     "title": "Groups",
@@ -85,6 +101,8 @@
     "dueInDaysAndHours_plural": "Due in {{days}} days, {{hours}} hours",
     "dueInHoursAndMinutes": "Due in {{hours}} hour, {{minutes}} minute",
     "dueInHoursAndMinutes_plural": "Due in {{hours}} hours, {{minutes}} minutes",
+    "dueInHoursAndMinutes_one": "Due in {{hours}} hour, {{minutes}} minute",
+    "dueInHoursAndMinutes_other": "Due in {{hours}} hours, {{minutes}} minutes",
     "nextDueAt": "Due: {{date}} at {{time}}",
     "nextDueOn": "Due: {{date}}",
     "noOneAssigned": "No one assigned",
@@ -353,5 +371,11 @@
     "addMembers": "Add Members",
     "taskNamePlaceholder": "e.g., Water the plants",
     "groupNamePlaceholder": "e.g., Family Chores"
+  },
+  "timePicker": {
+    "selectTime": "Select time",
+    "selectTimeTitle": "Select Time",
+    "cancel": "Cancel",
+    "done": "Done"
   }
 }

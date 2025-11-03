@@ -144,9 +144,10 @@ export default function TaskDetailsScreen() {
       return t('task.lastDay', { day: t(`task.${dayKey}`) });
     }
 
-    // Format as "Oct 12" - keep English month names for now as they're commonly understood
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${months[date.getMonth()]} ${date.getDate()}`;
+    // Format as "Oct 12" using translated month abbreviations
+    const monthKeys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const monthAbbr = t(`common.monthAbbr.${monthKeys[date.getMonth()]}`);
+    return `${monthAbbr} ${date.getDate()}`;
   };
 
   // Format time from date string
@@ -154,7 +155,7 @@ export default function TaskDetailsScreen() {
     const date = new Date(dateString);
     const hours = date.getHours();
     const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const ampm = hours >= 12 ? t('common.pm') : t('common.am');
     const displayHours = hours % 12 || 12;
     const displayMinutes = minutes.toString().padStart(2, '0');
     return `${displayHours}:${displayMinutes} ${ampm}`;

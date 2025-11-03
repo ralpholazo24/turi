@@ -1,17 +1,16 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useEffect, useState } from 'react';
-import 'react-native-reanimated';
 import '@/i18n'; // Initialize i18n
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'react-native-reanimated';
 
 import { CustomSplashScreen } from '@/components/splash-screen';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useThemeStore } from '@/store/use-theme-store';
 import { useLanguageStore } from '@/store/use-language-store';
+import { useThemeStore } from '@/store/use-theme-store';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Keep the splash screen visible while we fetch resources
@@ -29,6 +28,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     async function prepare() {
+      const startTime = Date.now();
+      const MIN_SPLASH_DURATION = 3000; // Minimum 3 seconds
+
       try {
         // Initialize theme and language
         await Promise.all([
@@ -38,6 +40,13 @@ export default function RootLayout() {
       } catch (e) {
         console.warn(e);
       } finally {
+        // Ensure splash screen shows for at least MIN_SPLASH_DURATION
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(0, MIN_SPLASH_DURATION - elapsedTime);
+        
+        if (remainingTime > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remainingTime));
+        }
         setIsReady(true);
       }
     }

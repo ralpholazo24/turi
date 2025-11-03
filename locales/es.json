@@ -30,7 +30,23 @@
     "september": "Septiembre",
     "october": "Octubre",
     "november": "Noviembre",
-    "december": "Diciembre"
+    "december": "Diciembre",
+    "am": "AM",
+    "pm": "PM",
+    "monthAbbr": {
+      "jan": "Ene",
+      "feb": "Feb",
+      "mar": "Mar",
+      "abr": "Abr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "ago": "Ago",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dic": "Dic"
+    }
   },
   "home": {
     "title": "Grupos",
@@ -83,6 +99,8 @@
     "dueInDaysAndHours_plural": "Vence en {{days}} días, {{hours}} horas",
     "dueInHoursAndMinutes": "Vence en {{hours}} hora, {{minutes}} minuto",
     "dueInHoursAndMinutes_plural": "Vence en {{hours}} horas, {{minutes}} minutos",
+    "dueInHoursAndMinutes_one": "Vence en {{hours}} hora, {{minutes}} minuto",
+    "dueInHoursAndMinutes_other": "Vence en {{hours}} horas, {{minutes}} minutos",
     "nextDueAt": "Vence: {{date}} a las {{time}}",
     "nextDueOn": "Vence: {{date}}",
     "noOneAssigned": "Nadie asignado",
@@ -351,5 +369,11 @@
     "addMembers": "Agregar Miembros",
     "taskNamePlaceholder": "p. ej., Regar las plantas",
     "groupNamePlaceholder": "p. ej., Tareas Familiares"
+  },
+  "timePicker": {
+    "selectTime": "Seleccionar hora",
+    "selectTimeTitle": "Seleccionar Hora",
+    "cancel": "Cancelar",
+    "done": "Hecho"
   }
 }

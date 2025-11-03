@@ -9,11 +9,9 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const LANGUAGES = [
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Español' },
-  // Add more languages here as translations are added
-];
+// Language codes - names will be translated
+const LANGUAGE_CODES = ['en', 'es'];
+// Add more language codes here as translations are added
 
 export default function LanguageScreen() {
   const { t } = useTranslation();
@@ -66,23 +64,23 @@ export default function LanguageScreen() {
 
         {/* Language List */}
         <View style={styles.languageSection}>
-          {LANGUAGES.map((lang) => (
+          {LANGUAGE_CODES.map((langCode) => (
             <TouchableOpacity
-              key={lang.code}
+              key={langCode}
               style={[
                 styles.languageItem,
                 { backgroundColor: backgroundColor, borderColor: borderColor + '30' },
-                language === lang.code && { backgroundColor: borderColor + '10' },
+                language === langCode && { backgroundColor: borderColor + '10' },
               ]}
-              onPress={() => handleLanguageSelect(lang.code)}
+              onPress={() => handleLanguageSelect(langCode)}
               activeOpacity={0.7}>
               <View style={styles.languageLeft}>
                 <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
                   <GlobeIcon size={20} color={iconColor} />
                 </View>
-                <ThemedText style={styles.languageName}>{lang.name}</ThemedText>
+                <ThemedText style={styles.languageName} i18nKey={`settings.${langCode === 'en' ? 'english' : langCode === 'es' ? 'spanish' : langCode}`} />
               </View>
-              {language === lang.code && (
+              {language === langCode && (
                 <CheckIcon size={20} color={tintColor} />
               )}
             </TouchableOpacity>

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Platform, Modal } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { BORDER_RADIUS } from '@/constants/border-radius';
 import { ThemedText } from '@/components/themed-text';
+import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface TimePickerProps {
   value: string; // HH:MM format
@@ -13,6 +14,7 @@ interface TimePickerProps {
 }
 
 export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
+  const { t } = useTranslation();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'icon');
@@ -74,7 +76,7 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
   const formatTimeDisplay = (date: Date): string => {
     const hours = date.getHours();
     const minutes = date.getMinutes();
-    const period = hours >= 12 ? 'PM' : 'AM';
+    const period = hours >= 12 ? t('common.pm') : t('common.am');
     const displayHour = hours % 12 || 12;
     return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
@@ -97,7 +99,7 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
         onPress={handlePress}>
         <ClockIcon size={20} color={textColor} style={styles.icon} />
         <ThemedText style={[styles.timeText, { color: value ? textColor : textColor + '80' }]}>
-          {value ? formatTimeDisplay(selectedTime) : 'Select time'}
+          {value ? formatTimeDisplay(selectedTime) : t('timePicker.selectTime')}
         </ThemedText>
         {value && onClear && (
           <TouchableOpacity
@@ -130,9 +132,9 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
                     <TouchableOpacity
                       onPress={() => setShowPicker(false)}
                       style={styles.cancelButton}>
-                      <ThemedText style={[styles.cancelButtonText, { color: iconColor }]}>Cancel</ThemedText>
+                      <ThemedText style={[styles.cancelButtonText, { color: iconColor }]} i18nKey="timePicker.cancel" />
                     </TouchableOpacity>
-                    <ThemedText style={styles.modalTitle}>Select Time</ThemedText>
+                    <ThemedText style={styles.modalTitle} i18nKey="timePicker.selectTimeTitle" />
                     <TouchableOpacity
                       onPress={() => {
                         const hours = selectedTime.getHours().toString().padStart(2, '0');
@@ -141,7 +143,7 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
                         setShowPicker(false);
                       }}
                       style={styles.doneButton}>
-                      <ThemedText style={styles.doneButtonText}>Done</ThemedText>
+                      <ThemedText style={styles.doneButtonText} i18nKey="timePicker.done" />
                     </TouchableOpacity>
                   </View>
                   <View style={styles.pickerWrapper}>

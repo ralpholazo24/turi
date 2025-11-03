@@ -117,7 +117,7 @@ export function formatScheduleInfo(task: Task): string {
  */
 function formatTime(time: string): string {
   const [hours, minutes] = time.split(':').map(Number);
-  const period = hours >= 12 ? 'PM' : 'AM';
+  const period = hours >= 12 ? i18n.t('common.pm') : i18n.t('common.am');
   const displayHours = hours % 12 || 12;
   return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
