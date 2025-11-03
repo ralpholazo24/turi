@@ -41,14 +41,29 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set(task.memberIds));
   const [showIconPicker, setShowIconPicker] = useState(false);
   
-  // Scheduling options
-  const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState<number | undefined>(
-    task.scheduleType === 'dayOfMonth' ? task.scheduleDayOfMonth : undefined
-  );
-  const [scheduleDay, setScheduleDay] = useState<number | undefined>(
-    task.frequency === 'weekly' ? task.scheduleDay : undefined
-  );
-  const [scheduleTime, setScheduleTime] = useState<string>(task.scheduleTime || '');
+  // Scheduling options - initialize from task.schedule
+  const getInitialSchedule = () => {
+    if (!task.schedule) return { dayOfMonth: undefined, day: undefined, time: '' };
+    if (task.schedule.frequency === 'daily') {
+      return { dayOfMonth: undefined, day: undefined, time: task.schedule.time || '' };
+    }
+    if (task.schedule.frequency === 'weekly') {
+      return { dayOfMonth: undefined, day: task.schedule.day, time: task.schedule.time || '' };
+    }
+    if (task.schedule.frequency === 'monthly') {
+      if (task.schedule.type === 'dayOfMonth') {
+        return { dayOfMonth: task.schedule.dayOfMonth, day: undefined, time: task.schedule.time || '' };
+      }
+      // For other monthly types, we'll handle separately
+      return { dayOfMonth: undefined, day: task.schedule.dayOfWeek, time: task.schedule.time || '' };
+    }
+    return { dayOfMonth: undefined, day: undefined, time: '' };
+  };
+  
+  const initialSchedule = getInitialSchedule();
+  const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState<number | undefined>(initialSchedule.dayOfMonth);
+  const [scheduleDay, setScheduleDay] = useState<number | undefined>(initialSchedule.day);
+  const [scheduleTime, setScheduleTime] = useState<string>(initialSchedule.time);
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -105,9 +120,31 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       } else {
         setSelectedMembers(new Set(task.memberIds));
       }
-      setScheduleDayOfMonth(task.scheduleType === 'dayOfMonth' ? task.scheduleDayOfMonth : undefined);
-      setScheduleDay(task.frequency === 'weekly' ? task.scheduleDay : undefined);
-      setScheduleTime(task.scheduleTime || '');
+      const schedule = task.schedule;
+      if (schedule) {
+        if (schedule.frequency === 'daily') {
+          setScheduleDayOfMonth(undefined);
+          setScheduleDay(undefined);
+          setScheduleTime(schedule.time || '');
+        } else if (schedule.frequency === 'weekly') {
+          setScheduleDayOfMonth(undefined);
+          setScheduleDay(schedule.day);
+          setScheduleTime(schedule.time || '');
+        } else if (schedule.frequency === 'monthly') {
+          if (schedule.type === 'dayOfMonth') {
+            setScheduleDayOfMonth(schedule.dayOfMonth);
+            setScheduleDay(undefined);
+          } else {
+            setScheduleDayOfMonth(undefined);
+            setScheduleDay(schedule.dayOfWeek);
+          }
+          setScheduleTime(schedule.time || '');
+        }
+      } else {
+        setScheduleDayOfMonth(undefined);
+        setScheduleDay(undefined);
+        setScheduleTime('');
+      }
     }
   }, [visible, task, group]);
 
@@ -161,16 +198,36 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       newAssignedIndex = newMemberIds.indexOf(currentMemberId);
     }
 
+    // Build schedule object based on frequency
+    let schedule: import('@/types').TaskSchedule | undefined;
+    if (frequency === 'daily') {
+      schedule = scheduleTime ? { frequency: 'daily', time: scheduleTime } : undefined;
+    } else if (frequency === 'weekly') {
+      if (scheduleDay !== undefined) {
+        schedule = {
+          frequency: 'weekly',
+          day: scheduleDay,
+          time: scheduleTime || undefined,
+        };
+      }
+    } else if (frequency === 'monthly') {
+      if (scheduleDayOfMonth !== undefined) {
+        schedule = {
+          frequency: 'monthly',
+          type: 'dayOfMonth',
+          dayOfMonth: scheduleDayOfMonth,
+          time: scheduleTime || undefined,
+        };
+      }
+    }
+
     await updateTask(group.id, task.id, {
       name: taskName.trim(),
       icon: selectedIcon,
       frequency,
       memberIds: newMemberIds,
       assignedIndex: newAssignedIndex,
-      scheduleType: frequency === 'monthly' ? 'dayOfMonth' : undefined,
-      scheduleDayOfMonth: frequency === 'monthly' ? scheduleDayOfMonth : undefined,
-      scheduleDay: frequency === 'weekly' ? scheduleDay : undefined,
-      scheduleTime: scheduleTime || undefined,
+      schedule,
     });
 
     onClose();
@@ -181,9 +238,31 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
     setSelectedIcon(task.icon as TaskIconName);
     setFrequency(task.frequency);
     setSelectedMembers(new Set(task.memberIds));
-    setScheduleDayOfMonth(task.scheduleType === 'dayOfMonth' ? task.scheduleDayOfMonth : undefined);
-    setScheduleDay(task.frequency === 'weekly' ? task.scheduleDay : undefined);
-    setScheduleTime(task.scheduleTime || '');
+    const schedule = task.schedule;
+    if (schedule) {
+      if (schedule.frequency === 'daily') {
+        setScheduleDayOfMonth(undefined);
+        setScheduleDay(undefined);
+        setScheduleTime(schedule.time || '');
+      } else if (schedule.frequency === 'weekly') {
+        setScheduleDayOfMonth(undefined);
+        setScheduleDay(schedule.day);
+        setScheduleTime(schedule.time || '');
+      } else if (schedule.frequency === 'monthly') {
+        if (schedule.type === 'dayOfMonth') {
+          setScheduleDayOfMonth(schedule.dayOfMonth);
+          setScheduleDay(undefined);
+        } else {
+          setScheduleDayOfMonth(undefined);
+          setScheduleDay(schedule.dayOfWeek);
+        }
+        setScheduleTime(schedule.time || '');
+      }
+    } else {
+      setScheduleDayOfMonth(undefined);
+      setScheduleDay(undefined);
+      setScheduleTime('');
+    }
     onClose();
   };
 

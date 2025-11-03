@@ -1,57 +1,76 @@
 export interface Member {
   id: string;
   name: string;
-  icon: string; // Kept for backward compatibility, but we'll use avatarColor
   avatarColor: string; // Color for initials avatar
 }
 
-export interface TaskCompletion {
+export interface TaskHistoryEntry {
   memberId: string;
-  completedAt: string; // ISO date string
+  timestamp: string; // ISO date string
 }
 
-export interface TaskSkip {
-  memberId: string;
-  skippedAt: string; // ISO date string
+export interface TaskCompletion extends TaskHistoryEntry {
+  type: "completed";
 }
+
+export interface TaskSkip extends TaskHistoryEntry {
+  type: "skipped";
+}
+
+export type GroupActivityMetadata =
+  | {
+      type: "task_completed" | "task_skipped" | "task_created" | "task_deleted";
+      taskName: string;
+      taskIcon: string;
+    }
+  | { type: "member_added" | "member_deleted"; memberName: string }
+  | { type: "group_created" };
 
 export interface GroupActivity {
   id: string;
-  type: 'task_completed' | 'task_skipped' | 'task_created' | 'task_deleted' | 'member_added' | 'member_deleted' | 'group_created';
+  type:
+    | "task_completed"
+    | "task_skipped"
+    | "task_created"
+    | "task_deleted"
+    | "member_added"
+    | "member_deleted"
+    | "group_created";
   timestamp: string; // ISO date string
   actorId?: string; // Member ID who performed the action (optional)
   targetId?: string; // Task ID or Member ID that was affected
-  metadata?: {
-    taskName?: string;
-    taskIcon?: string;
-    memberName?: string;
-  };
+  metadata?: GroupActivityMetadata;
 }
+
+export type TaskSchedule =
+  | { frequency: "daily"; time?: string }
+  | { frequency: "weekly"; day: number; time?: string }
+  | {
+      frequency: "monthly";
+      type: "dayOfWeek" | "dayOfMonth" | "lastDayOfMonth";
+      dayOfWeek?: number; // when type is 'dayOfWeek' or 'lastDayOfMonth' (0-6, Sunday = 0)
+      week?: number; // when type is 'dayOfWeek' (1-4)
+      dayOfMonth?: number; // when type is 'dayOfMonth' (1-31)
+      time?: string;
+    };
 
 export interface Task {
   id: string;
   name: string;
   icon: string; // Icon name from lucide-react-native
-  frequency: 'daily' | 'weekly' | 'monthly';
+  frequency: "daily" | "weekly" | "monthly";
   assignedIndex: number;
   memberIds: string[];
-  lastCompletedAt: string | null; // ISO date string for completion tracking
   completionHistory: TaskCompletion[]; // History of completions
   skipHistory: TaskSkip[]; // History of skips
-  // Scheduling options (optional, only used when frequency is weekly or monthly)
-  scheduleType?: 'dayOfWeek' | 'dayOfMonth' | 'lastDayOfMonth'; // For monthly: how to schedule (default: dayOfWeek)
-  scheduleWeek?: number; // For monthly: 1-4 (first, second, third, fourth week) - only used with dayOfWeek
-  scheduleDay?: number; // 0-6 (Sunday = 0, Monday = 1, ..., Saturday = 6) - used for weekly and monthly (dayOfWeek)
-  scheduleDayOfMonth?: number; // 1-31 (day of month) - only used with dayOfMonth scheduleType
-  scheduleTime?: string; // HH:MM format (24-hour), e.g., "14:30" for 2:30 PM
+  schedule?: TaskSchedule; // Scheduling options
 }
 
 export interface Group {
   id: string;
   name: string;
   icon: string; // Icon name from lucide-react-native
-  colorStart: string; // Gradient start color
-  colorEnd: string; // Gradient end color
+  colorPreset: string; // Name of the color preset (e.g., 'Red-Orange')
   members: Member[];
   tasks: Task[];
   createdAt: string; // ISO date string - when group was created

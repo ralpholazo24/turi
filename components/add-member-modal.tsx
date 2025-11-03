@@ -44,8 +44,7 @@ export function AddMemberModal({ visible, onClose, group }: AddMemberModalProps)
       return;
     }
 
-    // Use 'User' as default icon since we're showing initials instead
-    await addMember(group.id, name.trim(), 'User');
+    await addMember(group.id, name.trim());
 
     // Reset form
     setName('');
@@ -120,7 +119,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: BORDER_RADIUS.xlarge,
     borderTopRightRadius: BORDER_RADIUS.xlarge,
     marginTop: 'auto',
-    maxHeight: '50%',
+    maxHeight: '70%',
+    minHeight: 300,
   },
   header: {
     flexDirection: 'row',

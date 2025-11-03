@@ -8,6 +8,7 @@ import { ThemedText } from './themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { APP_ICONS } from '@/constants/icons';
 import { BORDER_RADIUS } from '@/constants/border-radius';
+import { getColorsFromPreset } from '@/utils/group-colors';
 
 interface TaskCardListProps {
   group: Group;
@@ -70,6 +71,9 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
     );
   }
 
+  // Get colors from preset
+  const colors = getColorsFromPreset(group.colorPreset);
+
   return (
     <View style={styles.container}>
       {group.tasks.map((task) => {
@@ -86,8 +90,8 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
             assignedMember={assignedMember || null}
             onMarkDone={() => {}} // No longer used, but kept for compatibility
             onPress={() => handleTaskPress(task.id)}
-            groupColorStart={group.colorStart}
-            groupColorEnd={group.colorEnd}
+            groupColorStart={colors.start}
+            groupColorEnd={colors.end}
             groupId={group.id}
             group={group}
           />

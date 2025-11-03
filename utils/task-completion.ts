@@ -2,6 +2,22 @@ import { Task } from '@/types';
 import { getDaysDifference, isSameDay, isSameISOWeek, isSameMonth, startOfDay } from './date-helpers';
 
 /**
+ * Get the last completed date from completion history
+ * @param task - The task to check
+ * @returns ISO date string or null if never completed
+ */
+export function getLastCompletedAt(task: Task): string | null {
+  if (!task.completionHistory || task.completionHistory.length === 0) {
+    return null;
+  }
+  // Sort by timestamp descending and get the most recent
+  const sorted = [...task.completionHistory].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+  return sorted[0]?.timestamp || null;
+}
+
+/**
  * Check if a task is already completed in the current period
  * @param task - The task to check
  * @returns Object with isCompleted flag and status message
@@ -10,14 +26,15 @@ export function getTaskCompletionStatus(task: Task): {
   isCompleted: boolean;
   message: string;
 } {
-  if (!task.lastCompletedAt) {
+  const lastCompletedAt = getLastCompletedAt(task);
+  if (!lastCompletedAt) {
     return { isCompleted: false, message: '' };
   }
 
   const now = new Date();
   const today = startOfDay(now);
 
-  const lastCompleted = startOfDay(new Date(task.lastCompletedAt));
+  const lastCompleted = startOfDay(new Date(lastCompletedAt));
 
   if (task.frequency === 'daily') {
     // For daily tasks, check if completed today
@@ -55,7 +72,8 @@ export function getTaskCompletionStatus(task: Task): {
  * @returns true if the task is overdue, false otherwise
  */
 export function isTaskOverdue(task: Task): boolean {
-  if (!task.lastCompletedAt) {
+  const lastCompletedAt = getLastCompletedAt(task);
+  if (!lastCompletedAt) {
     // If never completed, don't mark as overdue immediately
     // Could check if task creation date + one period has passed, but for now keep it simple
     return false;
@@ -65,7 +83,7 @@ export function isTaskOverdue(task: Task): boolean {
   const { calculateNextDueDate } = require('./notification-schedule');
   
   const now = new Date();
-  const lastCompleted = new Date(task.lastCompletedAt);
+  const lastCompleted = new Date(lastCompletedAt);
   const lastCompletedStart = startOfDay(lastCompleted);
   
   // Calculate the next due date based on the current task state

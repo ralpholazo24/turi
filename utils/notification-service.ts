@@ -3,20 +3,22 @@ import { Task, Group } from '@/types';
 import { calculateNotificationDate, getAssignedMemberName, calculateNextDueDate } from './notification-schedule';
 import { formatScheduleInfo } from './task-schedule';
 import { isSameDay, isSameISOWeek, isSameMonth } from './date-helpers';
+import { getLastCompletedAt } from './task-completion';
 import i18n from '@/i18n';
 
 /**
  * Helper function to check if a task is completed for a specific date's period
  */
 function isTaskCompletedForDate(task: Task, checkDate: Date): boolean {
-  if (!task.lastCompletedAt) {
+  const lastCompletedAt = getLastCompletedAt(task);
+  if (!lastCompletedAt) {
     return false;
   }
 
   const checkDateStart = new Date(checkDate);
   checkDateStart.setHours(0, 0, 0, 0);
 
-  const lastCompleted = new Date(task.lastCompletedAt);
+  const lastCompleted = new Date(lastCompletedAt);
   lastCompleted.setHours(0, 0, 0, 0);
 
   if (task.frequency === 'daily') {

@@ -13,15 +13,15 @@ import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -133,19 +133,38 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
       return;
     }
 
+    // Build schedule object based on frequency
+    let schedule: import('@/types').TaskSchedule | undefined;
+    if (frequency === 'daily') {
+      schedule = scheduleTime ? { frequency: 'daily', time: scheduleTime } : undefined;
+    } else if (frequency === 'weekly') {
+      if (scheduleDay !== undefined) {
+        schedule = {
+          frequency: 'weekly',
+          day: scheduleDay,
+          time: scheduleTime || undefined,
+        };
+      }
+    } else if (frequency === 'monthly') {
+      if (scheduleDayOfMonth !== undefined) {
+        schedule = {
+          frequency: 'monthly',
+          type: 'dayOfMonth',
+          dayOfMonth: scheduleDayOfMonth,
+          time: scheduleTime || undefined,
+        };
+      }
+    }
+
     await addTask(group.id, {
       name: taskName.trim(),
       icon: selectedIcon,
       frequency,
       assignedIndex: 0,
       memberIds: Array.from(finalSelectedMembers),
-      lastCompletedAt: null,
       completionHistory: [],
       skipHistory: [],
-      scheduleType: frequency === 'monthly' ? 'dayOfMonth' : undefined,
-      scheduleDayOfMonth: frequency === 'monthly' ? scheduleDayOfMonth : undefined,
-      scheduleDay: frequency === 'weekly' ? scheduleDay : undefined,
-      scheduleTime: scheduleTime || undefined,
+      schedule,
     });
 
     // Reset form

@@ -5,6 +5,7 @@ import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
 import { GroupActivity } from '@/types';
+import { getColorsFromPreset } from '@/utils/group-colors';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useMemo, useState } from 'react';
@@ -136,19 +137,32 @@ export default function ActivityScreen() {
               )
             : undefined;
 
+        // Type guard to check if metadata has task properties
+        const hasTaskMetadata = 
+          activity.type === 'task_completed' ||
+          activity.type === 'task_skipped' ||
+          activity.type === 'task_created' ||
+          activity.type === 'task_deleted';
+        
+        const taskMetadata = hasTaskMetadata && activity.metadata 
+          ? activity.metadata as { taskName: string; taskIcon: string }
+          : null;
+
         items.push({
           id: activity.id,
           type: activity.type,
           groupId: group.id,
           groupName: group.name,
           groupIcon: group.icon,
-          groupColorStart: group.colorStart,
-          groupColorEnd: group.colorEnd,
+          groupColorStart: getColorsFromPreset(group.colorPreset).start,
+          groupColorEnd: getColorsFromPreset(group.colorPreset).end,
           taskId: task?.id,
-          taskName: activity.metadata?.taskName || task?.name,
-          taskIcon: activity.metadata?.taskIcon || task?.icon,
+          taskName: taskMetadata?.taskName || task?.name,
+          taskIcon: taskMetadata?.taskIcon || task?.icon,
           memberId: member?.id || activity.actorId,
-          memberName: activity.metadata?.memberName || member?.name,
+          memberName: activity.metadata && 'memberName' in activity.metadata 
+            ? activity.metadata.memberName 
+            : member?.name,
           memberAvatarColor: member?.avatarColor,
           timestamp: activity.timestamp,
           date: new Date(activity.timestamp),
@@ -457,7 +471,6 @@ export default function ActivityScreen() {
                           id: item.memberId,
                           name: item.memberName || 'Unknown',
                           avatarColor: item.memberAvatarColor,
-                          icon: '',
                         }}
                         size={40}
                       />

@@ -120,7 +120,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: BORDER_RADIUS.xlarge,
     borderTopRightRadius: BORDER_RADIUS.xlarge,
     marginTop: 'auto',
-    maxHeight: '50%',
+    maxHeight: '70%',
+    minHeight: 300,
   },
   header: {
     flexDirection: 'row',

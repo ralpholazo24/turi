@@ -110,7 +110,13 @@ export function formatDetailedNextDueDate(task: Task): string {
     dateString = `${monthName} ${nextDueDate.getDate()}`;
   }
   
-  if (task.scheduleTime) {
+  const hasScheduledTime = task.schedule && (
+    (task.schedule.frequency === 'daily' && task.schedule.time) ||
+    (task.schedule.frequency === 'weekly' && task.schedule.time) ||
+    (task.schedule.frequency === 'monthly' && task.schedule.time)
+  );
+  
+  if (hasScheduledTime) {
     return i18n.t('task.nextDueAt', { date: dateString, time: timeString });
   } else {
     return i18n.t('task.nextDueOn', { date: dateString });
@@ -141,7 +147,11 @@ export function getDueDateCountdown(task: Task): string {
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
   
   // If task has no scheduled time, don't show minutes precision
-  const hasScheduledTime = !!task.scheduleTime;
+  const hasScheduledTime = task.schedule && (
+    (task.schedule.frequency === 'daily' && task.schedule.time) ||
+    (task.schedule.frequency === 'weekly' && task.schedule.time) ||
+    (task.schedule.frequency === 'monthly' && task.schedule.time)
+  );
   
   if (days > 0) {
     if (hours > 0) {

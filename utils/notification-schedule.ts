@@ -20,16 +20,22 @@ const DEFAULT_NOTIFICATION_MINUTE = 0;
 export function calculateNextDueDate(task: Task): Date | null {
   const now = new Date();
   const today = startOfDay(now);
+  const schedule = task.schedule;
 
   // Parse scheduled time if available, otherwise use default time
   let scheduledHour = DEFAULT_NOTIFICATION_HOUR;
   let scheduledMinute = DEFAULT_NOTIFICATION_MINUTE;
   
-  if (task.scheduleTime) {
-    const parsed = parseTime(task.scheduleTime);
-    if (parsed) {
-      scheduledHour = parsed.hours;
-      scheduledMinute = parsed.minutes;
+  if (schedule) {
+    const time = schedule.frequency === 'daily' ? schedule.time 
+      : schedule.frequency === 'weekly' ? schedule.time
+      : schedule.time;
+    if (time) {
+      const parsed = parseTime(time);
+      if (parsed) {
+        scheduledHour = parsed.hours;
+        scheduledMinute = parsed.minutes;
+      }
     }
   }
 
@@ -48,7 +54,7 @@ export function calculateNextDueDate(task: Task): Date | null {
 
   if (task.frequency === 'weekly') {
     // For weekly tasks, find the next occurrence of the scheduled day
-    const targetDay = task.scheduleDay !== undefined ? task.scheduleDay : now.getDay();
+    const targetDay = schedule && schedule.frequency === 'weekly' ? schedule.day : now.getDay();
     
     const dueDate = new Date(today);
     dueDate.setHours(scheduledHour, scheduledMinute, 0, 0);
@@ -67,11 +73,13 @@ export function calculateNextDueDate(task: Task): Date | null {
   }
 
   if (task.frequency === 'monthly') {
-    const scheduleType = task.scheduleType || 'dayOfWeek'; // Default to dayOfWeek for backward compatibility
+    if (!schedule || schedule.frequency !== 'monthly') {
+      return null;
+    }
     
-    if (scheduleType === 'dayOfMonth' && task.scheduleDayOfMonth !== undefined) {
+    if (schedule.type === 'dayOfMonth' && schedule.dayOfMonth !== undefined) {
       // Schedule on a specific day of the month (e.g., 15th of every month)
-      const targetDay = task.scheduleDayOfMonth;
+      const targetDay = schedule.dayOfMonth;
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth();
       
@@ -93,9 +101,9 @@ export function calculateNextDueDate(task: Task): Date | null {
       }
       
       return dueDate;
-    } else if (scheduleType === 'lastDayOfMonth' && task.scheduleDay !== undefined) {
+    } else if (schedule.type === 'lastDayOfMonth' && schedule.dayOfWeek !== undefined) {
       // Schedule on the last occurrence of a day in the month (e.g., last Friday)
-      const targetDay = task.scheduleDay;
+      const targetDay = schedule.dayOfWeek;
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth();
       
@@ -114,8 +122,8 @@ export function calculateNextDueDate(task: Task): Date | null {
       return dueDate;
     } else {
       // Default: dayOfWeek - nth occurrence of a day (e.g., first Monday, second Friday)
-      const targetWeek = task.scheduleWeek !== undefined ? task.scheduleWeek : 1; // Default to first week
-      const targetDay = task.scheduleDay !== undefined ? task.scheduleDay : 1; // Default to Monday
+      const targetWeek = schedule.week !== undefined ? schedule.week : 1; // Default to first week
+      const targetDay = schedule.dayOfWeek !== undefined ? schedule.dayOfWeek : 1; // Default to Monday
       
       // Try current month first
       const currentYear = now.getFullYear();

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Group } from '@/types';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
+import { getColorsFromPreset } from '@/utils/group-colors';
 import { MemberAvatar } from './member-avatar';
 
 interface GroupCardProps {
@@ -37,13 +38,16 @@ export function GroupCard({ group }: GroupCardProps) {
   // eslint-disable-next-line import/namespace
   const IconComponent = LucideIcons[group.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
 
+  // Get colors from preset
+  const colors = getColorsFromPreset(group.colorPreset);
+
   return (
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={handlePress}
       activeOpacity={0.8}>
       <LinearGradient
-        colors={[group.colorStart, group.colorEnd]}
+        colors={[colors.start, colors.end]}
         start={{ x: 1, y: 1 }}
         end={{ x: 0, y: 0 }}
         style={styles.gradient}>

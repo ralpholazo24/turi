@@ -74,8 +74,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
     await createGroup(
       name.trim(),
       selectedIcon,
-      selectedColor.start,
-      selectedColor.end
+      selectedColor.name
     );
 
     // Reset form

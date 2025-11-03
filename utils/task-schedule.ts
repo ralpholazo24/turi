@@ -52,55 +52,60 @@ export function formatScheduleInfo(task: Task): string {
   const dayNames = DAY_NAMES[lang as keyof typeof DAY_NAMES] || DAY_NAMES.en;
   const weekNames = WEEK_NAMES[lang as keyof typeof WEEK_NAMES] || WEEK_NAMES.en;
   
+  const schedule = task.schedule;
+  
   if (task.frequency === 'daily') {
-    if (task.scheduleTime) {
-      return i18n.t('task.scheduleFormat.dailyAt', { time: formatTime(task.scheduleTime) });
+    if (schedule && schedule.frequency === 'daily' && schedule.time) {
+      return i18n.t('task.scheduleFormat.dailyAt', { time: formatTime(schedule.time) });
     }
     return i18n.t('notifications.daily');
   }
 
   if (task.frequency === 'weekly') {
     const parts: string[] = [];
-    if (task.scheduleDay !== undefined) {
-      parts.push(i18n.t('notifications.every') + ' ' + dayNames[task.scheduleDay]);
+    if (schedule && schedule.frequency === 'weekly') {
+      parts.push(i18n.t('notifications.every') + ' ' + dayNames[schedule.day]);
+      if (schedule.time) {
+        parts.push(i18n.t('notifications.at') + ' ' + formatTime(schedule.time));
+      }
     } else {
       parts.push(i18n.t('notifications.weekly'));
-    }
-    if (task.scheduleTime) {
-      parts.push(i18n.t('notifications.at') + ' ' + formatTime(task.scheduleTime));
     }
     return parts.join(' ');
   }
 
   if (task.frequency === 'monthly') {
-    const scheduleType = task.scheduleType || 'dayOfWeek'; // Default for backward compatibility
+    if (!schedule || schedule.frequency !== 'monthly') {
+      return i18n.t('notifications.monthly');
+    }
+    
     const parts: string[] = [];
     
-    if (scheduleType === 'dayOfMonth' && task.scheduleDayOfMonth !== undefined) {
+    if (schedule.type === 'dayOfMonth' && schedule.dayOfMonth !== undefined) {
       // e.g., "Every 5th day of the month"
-      const ordinalDay = formatOrdinalDay(task.scheduleDayOfMonth);
+      const ordinalDay = formatOrdinalDay(schedule.dayOfMonth);
       parts.push(i18n.t('notifications.everyNthDayOfMonth', { day: ordinalDay }));
-      if (task.scheduleTime) {
-        parts.push(i18n.t('notifications.at') + ' ' + formatTime(task.scheduleTime));
+      if (schedule.time) {
+        parts.push(i18n.t('notifications.at') + ' ' + formatTime(schedule.time));
       }
       return parts.join(' ');
-    } else if (scheduleType === 'lastDayOfMonth' && task.scheduleDay !== undefined) {
+    } else if (schedule.type === 'lastDayOfMonth' && schedule.dayOfWeek !== undefined) {
       // e.g., "Monthly: Last Friday"
-      parts.push(i18n.t('notifications.monthly') + ': ' + i18n.t('common.last') + ' ' + dayNames[task.scheduleDay]);
-      if (task.scheduleTime) {
-        parts.push(i18n.t('notifications.at') + ' ' + formatTime(task.scheduleTime));
+      parts.push(i18n.t('notifications.monthly') + ': ' + i18n.t('common.last') + ' ' + dayNames[schedule.dayOfWeek]);
+      if (schedule.time) {
+        parts.push(i18n.t('notifications.at') + ' ' + formatTime(schedule.time));
       }
       return parts.join(' ');
     } else {
       // Default: dayOfWeek - nth occurrence
-      if (task.scheduleWeek !== undefined) {
-        parts.push(weekNames[task.scheduleWeek - 1]);
+      if (schedule.week !== undefined) {
+        parts.push(weekNames[schedule.week - 1]);
       }
-      if (task.scheduleDay !== undefined) {
-        parts.push(dayNames[task.scheduleDay]);
+      if (schedule.dayOfWeek !== undefined) {
+        parts.push(dayNames[schedule.dayOfWeek]);
       }
-      if (task.scheduleTime) {
-        parts.push(i18n.t('notifications.at') + ' ' + formatTime(task.scheduleTime));
+      if (schedule.time) {
+        parts.push(i18n.t('notifications.at') + ' ' + formatTime(schedule.time));
       }
       if (parts.length === 0) {
         return i18n.t('notifications.monthly');

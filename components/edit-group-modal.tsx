@@ -41,7 +41,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
   const [selectedIcon, setSelectedIcon] = useState<GroupIconName>(group.icon as GroupIconName);
   const [selectedColor, setSelectedColor] = useState<GroupColorPreset>(
     GROUP_COLOR_PRESETS.find(
-      (preset) => preset.start === group.colorStart && preset.end === group.colorEnd
+      (preset) => preset.name === group.colorPreset
     ) || GROUP_COLOR_PRESETS[0]
   );
   const [showIconPicker, setShowIconPicker] = useState(false);
@@ -76,7 +76,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
       setName(group.name);
       setSelectedIcon(group.icon as GroupIconName);
       const matchingColor = GROUP_COLOR_PRESETS.find(
-        (preset) => preset.start === group.colorStart && preset.end === group.colorEnd
+        (preset) => preset.name === group.colorPreset
       );
       if (matchingColor) {
         setSelectedColor(matchingColor);
@@ -92,8 +92,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
     await updateGroup(group.id, {
       name: name.trim(),
       icon: selectedIcon,
-      colorStart: selectedColor.start,
-      colorEnd: selectedColor.end,
+      colorPreset: selectedColor.name,
     });
 
     onClose();
@@ -103,7 +102,7 @@ export function EditGroupModal({ visible, onClose, group }: EditGroupModalProps)
     setName(group.name);
     setSelectedIcon(group.icon as GroupIconName);
     const matchingColor = GROUP_COLOR_PRESETS.find(
-      (preset) => preset.start === group.colorStart && preset.end === group.colorEnd
+      (preset) => preset.name === group.colorPreset
     );
     if (matchingColor) {
       setSelectedColor(matchingColor);

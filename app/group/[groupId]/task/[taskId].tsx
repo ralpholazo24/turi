@@ -9,6 +9,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
 import { getDaysDifference, startOfDay } from '@/utils/date-helpers';
 import { formatDetailedNextDueDate, getDueDateCountdown } from '@/utils/due-date-format';
+import { getColorsFromPreset } from '@/utils/group-colors';
 import { calculateNextDueDate } from '@/utils/notification-schedule';
 import { isSoloMode } from '@/utils/solo-mode';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
@@ -164,7 +165,7 @@ export default function TaskDetailsScreen() {
 
   // Get completion history sorted by date (newest first)
   const sortedHistory = [...(task.completionHistory || [])].sort(
-    (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
   // Check if task is already completed
@@ -175,6 +176,9 @@ export default function TaskDetailsScreen() {
   
   // Check if group is in solo mode
   const soloMode = isSoloMode(group);
+
+  // Get colors from preset (cache to avoid multiple calls)
+  const groupColors = getColorsFromPreset(group.colorPreset);
 
   const handleMarkDone = async () => {
     if (completionStatus.isCompleted) {
@@ -282,7 +286,7 @@ export default function TaskDetailsScreen() {
         {/* Task Overview Card */}
         <View style={styles.taskCardContainer}>
           <LinearGradient
-            colors={[group.colorStart, group.colorEnd]}
+            colors={[groupColors.start, groupColors.end]}
             start={{ x: 1, y: 1 }}
             end={{ x: 0, y: 0 }}
             style={styles.taskCardGradient}>
@@ -350,7 +354,7 @@ export default function TaskDetailsScreen() {
                         {member.name}
                       </ThemedText>
                       <ThemedText style={styles.historyDate}>
-                        {formatDate(entry.completedAt)} • {formatTime(entry.completedAt)}
+                        {formatDate(entry.timestamp)} • {formatTime(entry.timestamp)}
                       </ThemedText>
                     </View>
                   </View>
@@ -398,7 +402,7 @@ export default function TaskDetailsScreen() {
             style={[styles.skipButton, { backgroundColor: backgroundColor, borderColor: borderColor + '50' }]}
             onPress={handleSkipTurn}
             activeOpacity={0.8}>
-            <ThemedText style={[styles.skipText, { color: group.colorStart }]} i18nKey="common.skip" />
+            <ThemedText style={[styles.skipText, { color: groupColors.start }]} i18nKey="common.skip" />
           </TouchableOpacity>
         )}
       </View>
