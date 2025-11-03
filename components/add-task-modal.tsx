@@ -38,7 +38,6 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
   const [selectedIcon, setSelectedIcon] = useState<TaskIconName>('Trash2');
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
-  const [showNoMembersModal, setShowNoMembersModal] = useState(false);
   
   // Scheduling options
   const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState<number | undefined>(undefined); // 1-31 for monthly
@@ -56,7 +55,6 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
   const buttonTextColor = useThemeColor({}, 'background');
 
   const CloseIcon = APP_ICONS.close;
-  const EditIcon = APP_ICONS.pen;
   const CalendarIcon = APP_ICONS.calendar;
   const CheckIcon = APP_ICONS.check;
   
@@ -119,12 +117,6 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
   };
 
   const handleSave = async () => {
-    // Check if group has no members
-    if (group.members.length === 0) {
-      setShowNoMembersModal(true);
-      return;
-    }
-
     // In solo mode, automatically assign to the solo member
     const finalSelectedMembers = isSoloMode(group) 
       ? new Set([group.members[0].id])
@@ -169,15 +161,9 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
     onClose();
   };
 
-  const handleAddMembers = () => {
-    setShowNoMembersModal(false);
-    onClose();
-    onOpenAddMember?.();
-  };
-
   const handleClose = () => {
     setTaskName('');
-    setSelectedIcon('Trash2');
+    setSelectedIcon('Sprout');
     setFrequency('daily');
     setSelectedMembers(new Set());
     setScheduleDayOfMonth(undefined);
@@ -235,6 +221,54 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
               </View>
             </View>
 
+            {/* Member Selector - Hidden in solo mode */}
+            {!isSoloMode(group) && (
+              <View style={styles.section}>
+                <View style={styles.labelRow}>
+                  <ThemedText style={styles.label} i18nKey="taskModal.whosIn" />
+                  <TouchableOpacity onPress={handleSelectAll}>
+                    <ThemedText style={styles.selectAllText}>
+                      {allSelected ? t('taskModal.deselectAll') : t('taskModal.selectAll')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+                {group.members.length === 0 ? (
+                  <ThemedText style={styles.noMembersText} i18nKey="taskModal.addMembersFirst" />
+                ) : (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.memberScroll}>
+                    {group.members.map((member) => {
+                      const isSelected = selectedMembers.has(member.id);
+                      return (
+                        <TouchableOpacity
+                          key={member.id}
+                          style={styles.memberOption}
+                          onPress={() => handleToggleMember(member.id)}>
+                          <View style={styles.memberAvatarContainer}>
+                            <View
+                              style={[
+                                styles.memberAvatar,
+                                isSelected && styles.memberAvatarSelected,
+                              ]}>
+                              <MemberAvatar member={member} size={40} />
+                            </View>
+                            {isSelected && (
+                              <View style={styles.checkmarkContainer}>
+                                <CheckIcon size={12} color="#FFFFFF" />
+                              </View>
+                            )}
+                          </View>
+                          <ThemedText style={styles.memberName}>{member.name}</ThemedText>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                )}
+              </View>
+            )}
+
             {/* Task Name Input */}
             <View style={styles.section}>
               <View style={styles.labelRow}>
@@ -249,7 +283,6 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
                 placeholderTextColor={textColor + '80'}
                 value={taskName}
                 onChangeText={setTaskName}
-                autoFocus
               />
             </View>
 
@@ -414,86 +447,9 @@ export function AddTaskModal({ visible, onClose, group, onOpenAddMember }: AddTa
                 })}
               </View>
             </View>
-
-            {/* Member Selector - Hidden in solo mode */}
-            {!isSoloMode(group) && (
-              <View style={styles.section}>
-                <View style={styles.labelRow}>
-                  <ThemedText style={styles.label} i18nKey="taskModal.whosIn" />
-                  <TouchableOpacity onPress={handleSelectAll}>
-                    <ThemedText style={styles.selectAllText}>
-                      {allSelected ? t('taskModal.deselectAll') : t('taskModal.selectAll')}
-                    </ThemedText>
-                  </TouchableOpacity>
-                </View>
-                {group.members.length === 0 ? (
-                  <ThemedText style={styles.noMembersText} i18nKey="taskModal.addMembersFirst" />
-                ) : (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.memberScroll}>
-                    {group.members.map((member) => {
-                      const isSelected = selectedMembers.has(member.id);
-                      return (
-                        <TouchableOpacity
-                          key={member.id}
-                          style={styles.memberOption}
-                          onPress={() => handleToggleMember(member.id)}>
-                          <View style={styles.memberAvatarContainer}>
-                            <View
-                              style={[
-                                styles.memberAvatar,
-                                isSelected && styles.memberAvatarSelected,
-                              ]}>
-                              <MemberAvatar member={member} size={40} />
-                            </View>
-                            {isSelected && (
-                              <View style={styles.checkmarkContainer}>
-                                <CheckIcon size={12} color="#FFFFFF" />
-                              </View>
-                            )}
-                          </View>
-                          <ThemedText style={styles.memberName}>{member.name}</ThemedText>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-                )}
-              </View>
-            )}
           </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>
-
-      {/* No Members Modal */}
-      <Modal
-        visible={showNoMembersModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowNoMembersModal(false)}>
-        <View style={styles.noMembersModalContainer}>
-          <View style={styles.noMembersModalBackdrop} />
-          <View style={[styles.noMembersModalContent, { backgroundColor, borderColor: borderColor + '30' }]}>
-            <ThemedText type="subtitle" style={styles.noMembersTitle} i18nKey="taskModal.noMembersYet" />
-            <ThemedText style={styles.noMembersMessage} i18nKey="taskModal.noMembersYetMessage" />
-            <View style={styles.noMembersButtons}>
-              <TouchableOpacity
-                style={[styles.noMembersButton, styles.cancelButton, { borderColor }]}
-                onPress={() => setShowNoMembersModal(false)}
-                activeOpacity={0.7}>
-                <ThemedText style={styles.cancelButtonText} i18nKey="common.cancel" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.noMembersButton, styles.addMembersButton, { backgroundColor: buttonBackgroundColor }]}
-                onPress={handleAddMembers}
-                activeOpacity={0.7}>
-                <Text style={[styles.addMembersButtonText, { color: buttonTextColor }]}>{t('taskModal.addMembers')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </Modal>
   );
 }
@@ -661,11 +617,12 @@ const styles = StyleSheet.create({
   iconGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
+    justifyContent: 'flex-start',
   },
   iconButton: {
-    width: 50,
-    height: 50,
+    width: 48,
+    height: 48,
     borderRadius: BORDER_RADIUS.medium,
     borderWidth: 2,
     justifyContent: 'center',
@@ -727,69 +684,6 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 12,
     textAlign: 'center',
-  },
-  noMembersModalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noMembersModalBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  noMembersModalContent: {
-    width: '85%',
-    maxWidth: 400,
-    borderRadius: BORDER_RADIUS.xlarge,
-    padding: 24,
-    borderWidth: StyleSheet.hairlineWidth,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  noMembersTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  noMembersMessage: {
-    fontSize: 16,
-    lineHeight: 22,
-    marginBottom: 24,
-    textAlign: 'center',
-    opacity: 0.8,
-  },
-  noMembersButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  noMembersButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: BORDER_RADIUS.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelButton: {
-    borderWidth: StyleSheet.hairlineWidth,
-    backgroundColor: 'transparent',
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  addMembersButton: {
-    // backgroundColor will be set inline
-  },
-  addMembersButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 

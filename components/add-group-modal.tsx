@@ -148,7 +148,6 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
                 placeholderTextColor={textColor + '80'}
                 value={name}
                 onChangeText={setName}
-                autoFocus
               />
             </View>
 
@@ -307,11 +306,12 @@ const styles = StyleSheet.create({
   iconGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
+    justifyContent: 'flex-start',
   },
   iconButton: {
-    width: 50,
-    height: 50,
+    width: 48,
+    height: 48,
     borderRadius: BORDER_RADIUS.medium,
     borderWidth: 2,
     justifyContent: 'center',
@@ -326,11 +326,12 @@ const styles = StyleSheet.create({
   colorGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
+    justifyContent: 'flex-start',
   },
   colorOption: {
-    width: 60,
-    height: 60,
+    width: 56,
+    height: 56,
   },
   colorPreview: {
     width: '100%',

@@ -3,8 +3,8 @@
  * Common icons for tasks/chores
  */
 export const TASK_ICON_OPTIONS = [
-  { name: 'Trash', component: 'Trash2' },
   { name: 'Sprout', component: 'Sprout' },
+  { name: 'Trash', component: 'Trash2' },
   { name: 'Utensils', component: 'UtensilsCrossed' },
   { name: 'Shopping Cart', component: 'ShoppingCart' },
   { name: 'Droplet', component: 'Droplet' },
@@ -19,6 +19,27 @@ export const TASK_ICON_OPTIONS = [
   { name: 'Film', component: 'Film' },
   { name: 'Cup', component: 'Coffee' },
   { name: 'Sparkles', component: 'Sparkles' },
+  { name: 'Vacuum', component: 'Wind' },
+  { name: 'Bed', component: 'BedDouble' },
+  { name: 'Bath', component: 'Bath' },
+  { name: 'Brush', component: 'Paintbrush' },
+  { name: 'Broom', component: 'Wand2' },
+  { name: 'Cutlery', component: 'Utensils' },
+  { name: 'Microwave', component: 'Microwave' },
+  { name: 'Refrigerator', component: 'Refrigerator' },
+  { name: 'Iron', component: 'Zap' },
+  { name: 'Plants', component: 'Flower2' },
+  { name: 'Mail', component: 'Mail' },
+  { name: 'Pills', component: 'Pill' },
+  { name: 'Baby Bottle', component: 'Baby' },
+  { name: 'Dog Walk', component: 'Dog' },
+  { name: 'Cat Care', component: 'Cat' },
+  { name: 'Grocery', component: 'ShoppingBag' },
+  { name: 'Gas', component: 'Fuel' },
+  { name: 'Maintenance', component: 'Wrench' },
+  { name: 'Leaf', component: 'Leaf' },
+  { name: 'Globe', component: 'Globe' },
+  { name: 'Camera', component: 'Camera' },
 ] as const;
 
 export type TaskIconName = typeof TASK_ICON_OPTIONS[number]['component'];

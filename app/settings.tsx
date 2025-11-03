@@ -220,7 +220,8 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle} i18nKey="settings.support" />
           
-          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+          {/* Feature Requests - Hidden for now */}
+          {/* <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
             <TouchableOpacity
               style={styles.settingItem}
               onPress={() => router.push('/feature-requests')}
@@ -233,7 +234,7 @@ export default function SettingsScreen() {
               </View>
               <LucideIcons.ChevronRight size={20} color={iconColor} />
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
             <TouchableOpacity

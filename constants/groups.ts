@@ -21,6 +21,21 @@ export const GROUP_ICON_OPTIONS = [
   { name: 'Coffee', component: 'Coffee' },
   { name: 'Heart', component: 'Heart' },
   { name: 'Sun', component: 'Sun' },
+  { name: 'ShoppingCart', component: 'ShoppingCart' },
+  { name: 'Car', component: 'Car' },
+  { name: 'Droplet', component: 'Droplet' },
+  { name: 'Shirt', component: 'Shirt' },
+  { name: 'GraduationCap', component: 'GraduationCap' },
+  { name: 'Stethoscope', component: 'Stethoscope' },
+  { name: 'ChefHat', component: 'ChefHat' },
+  { name: 'TreePine', component: 'TreePine' },
+  { name: 'Plane', component: 'Plane' },
+  { name: 'Ship', component: 'Ship' },
+  { name: 'Bike', component: 'Bike' },
+  { name: 'Dog', component: 'Dog' },
+  { name: 'Cat', component: 'Cat' },
+  { name: 'Baby', component: 'Baby' },
+  { name: 'Cake', component: 'CakeSlice' },
 ] as const;
 
 export type GroupIconName = typeof GROUP_ICON_OPTIONS[number]['component'];

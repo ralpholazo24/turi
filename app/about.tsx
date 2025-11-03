@@ -90,43 +90,6 @@ export default function AboutScreen() {
           </View>
         </View>
 
-        {/* Features Section */}
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle} i18nKey="about.features" />
-          
-          <View style={styles.featureList}>
-            <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
-              <ThemedText style={styles.featureText} i18nKey="about.feature1" />
-            </View>
-            
-            <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
-              <ThemedText style={styles.featureText} i18nKey="about.feature2" />
-            </View>
-            
-            <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
-              <ThemedText style={styles.featureText} i18nKey="about.feature3" />
-            </View>
-            
-            <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
-              <ThemedText style={styles.featureText} i18nKey="about.feature4" />
-            </View>
-            
-            <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
-              <ThemedText style={styles.featureText} i18nKey="about.feature5" />
-            </View>
-            
-            <View style={styles.featureItem}>
-              <View style={[styles.featureDot, { backgroundColor: featureDotColor }]} />
-              <ThemedText style={styles.featureText} i18nKey="about.feature6" />
-            </View>
-          </View>
-        </View>
-
         {/* Footer */}
         <View style={styles.footer}>
           <ThemedText style={styles.footerText} i18nKey="about.footer" />

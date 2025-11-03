@@ -31,7 +31,6 @@ export function GroupCard({ group }: GroupCardProps) {
     ? group.members.find((m) => m.id === nextTask.memberIds[nextTask.assignedIndex])
     : null;
 
-  const completedTasksCount = group.tasks.filter((task) => task.lastCompletedAt).length;
   const totalTasksCount = group.tasks.length;
 
   // Get the icon component dynamically
@@ -88,13 +87,8 @@ export function GroupCard({ group }: GroupCardProps) {
 
             <View style={styles.rightSection}>
               {totalTasksCount > 0 ? (
-                <View style={styles.progressBadge}>
-                  <View style={styles.progressCircle}>
-                    <Text style={styles.progressText}>
-                      {completedTasksCount}/{totalTasksCount}
-                    </Text>
-                  </View>
-                  <Text style={styles.progressLabel}>{t('common.done')}</Text>
+                <View style={styles.taskCountBadge}>
+                  <Text style={styles.taskCountText}>{totalTasksCount}</Text>
                 </View>
               ) : null}
             </View>
@@ -129,7 +123,7 @@ const styles = StyleSheet.create({
   topSection: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   iconContainer: {
     marginRight: 12,
@@ -163,11 +157,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    minHeight: 48,
   },
   assignedSection: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    minHeight: 40,
   },
   assignedText: {
     fontSize: 14,
@@ -176,12 +172,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   rightSection: {
-    alignItems: 'flex-end',
-  },
-  progressBadge: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  progressCircle: {
+  taskCountBadge: {
     width: 40,
     height: 40,
     borderRadius: BORDER_RADIUS.xlarge,
@@ -189,16 +183,10 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
   },
-  progressText: {
-    fontSize: 12,
+  taskCountText: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
-  },
-  progressLabel: {
-    fontSize: 11,
-    color: '#FFFFFF',
-    opacity: 0.9,
   },
 });
