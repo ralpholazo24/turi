@@ -75,7 +75,8 @@
     "pickIcon": "Pick an icon",
     "colorTheme": "Color Theme",
     "newGroup": "New Group",
-    "tapToChangeIcon": "Tap to change icon"
+    "tapToChangeIcon": "Tap to change icon",
+    "notFound": "Group not found"
   },
   "task": {
     "markDone": "Mark Done",
@@ -168,7 +169,9 @@
     "aboutApp": "About App",
     "clearData": "Clear Data",
     "dataCleared": "All data cleared",
-    "dataClearedMessage": "All data has been successfully cleared."
+    "dataClearedMessage": "All data has been successfully cleared.",
+    "emailError": "Unable to open email client. Please email your support request to: ralpholazo@gmail.com",
+    "emailErrorTitle": "Email Error"
   },
   "language": {
     "title": "App Language",
@@ -333,6 +336,19 @@
       "question": "How do I customize group colors and icons?",
       "answer": "When creating or editing a group, you can choose from a variety of icons and color themes. Each group can have its own unique look!"
     }
+  },
+  "errors": {
+    "title": "Error",
+    "taskNotFound": "Task not found",
+    "groupNotFound": "Group not found",
+    "memberNotFound": "Member not found",
+    "taskNoMembers": "This task has no assigned members. Please edit the task to assign members.",
+    "cannotCompleteTask": "Cannot complete task",
+    "cannotSkipTurn": "Cannot skip turn",
+    "storageError": "Failed to save data. Please try again.",
+    "storageErrorTitle": "Storage Error",
+    "unknownError": "An unexpected error occurred. Please try again.",
+    "unknownErrorTitle": "Error"
   },
   "confirmation": {
     "skipTitle": "Skip",

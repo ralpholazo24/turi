@@ -88,7 +88,7 @@ export default function GroupScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.content}>
-          <ThemedText type="title">Group not found</ThemedText>
+          <ThemedText type="title" i18nKey="group.notFound" />
         </View>
       </SafeAreaView>
     );

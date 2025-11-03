@@ -75,7 +75,8 @@
     "pickIcon": "Elige un icono",
     "colorTheme": "Tema de Color",
     "newGroup": "Nuevo Grupo",
-    "tapToChangeIcon": "Toca para cambiar el icono"
+    "tapToChangeIcon": "Toca para cambiar el icono",
+    "notFound": "Grupo no encontrado"
   },
   "task": {
     "markDone": "Marcar como Hecho",
@@ -166,7 +167,9 @@
     "aboutApp": "Acerca de la App",
     "clearData": "Borrar Datos",
     "dataCleared": "Todos los datos borrados",
-    "dataClearedMessage": "Todos los datos se han borrado exitosamente."
+    "dataClearedMessage": "Todos los datos se han borrado exitosamente.",
+    "emailError": "No se puede abrir el cliente de correo. Por favor, envía tu solicitud de soporte a: ralpholazo@gmail.com",
+    "emailErrorTitle": "Error de Correo"
   },
   "notifications": {
     "title": "Notificaciones",
@@ -325,6 +328,19 @@
       "question": "¿Cómo personalizo los colores e iconos de los grupos?",
       "answer": "Al crear o editar un grupo, puedes elegir entre una variedad de iconos y temas de color. ¡Cada grupo puede tener su propio aspecto único!"
     }
+  },
+  "errors": {
+    "title": "Error",
+    "taskNotFound": "Tarea no encontrada",
+    "groupNotFound": "Grupo no encontrado",
+    "memberNotFound": "Miembro no encontrado",
+    "taskNoMembers": "Esta tarea no tiene miembros asignados. Por favor, edita la tarea para asignar miembros.",
+    "cannotCompleteTask": "No se puede completar la tarea",
+    "cannotSkipTurn": "No se puede saltar el turno",
+    "storageError": "Error al guardar los datos. Por favor, intenta de nuevo.",
+    "storageErrorTitle": "Error de Almacenamiento",
+    "unknownError": "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
+    "unknownErrorTitle": "Error"
   },
   "confirmation": {
     "skipTitle": "Saltar",

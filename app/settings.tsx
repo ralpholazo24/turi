@@ -67,16 +67,16 @@ export default function SettingsScreen() {
           Linking.openURL(emailUrl);
         } else {
           Alert.alert(
-            t('common.close'),
-            'Please email your support request to: ralpholazo@gmail.com',
+            t('settings.emailErrorTitle'),
+            t('settings.emailError'),
             [{ text: t('common.done') }]
           );
         }
       })
       .catch(() => {
         Alert.alert(
-          t('common.close'),
-          'Unable to open email client. Please email your support request to: ralpholazo@gmail.com',
+          t('settings.emailErrorTitle'),
+          t('settings.emailError'),
           [{ text: t('common.done') }]
         );
       });

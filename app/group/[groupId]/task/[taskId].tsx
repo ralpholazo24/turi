@@ -20,6 +20,7 @@ import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
   Dimensions,
   ScrollView,
   StyleSheet,
@@ -179,14 +180,36 @@ export default function TaskDetailsScreen() {
     if (completionStatus.isCompleted) {
       return; // Already completed, don't do anything
     }
-    // Trigger confetti animation
-    setConfettiKey(prev => prev + 1);
-    setShowConfetti(true);
-    await markTaskDone(group.id, task.id);
-    // Hide confetti after animation completes
-    setTimeout(() => {
+    
+    // Check if task has assigned members
+    const assignedMembers = group.members.filter((m) => task.memberIds.includes(m.id));
+    if (assignedMembers.length === 0) {
+      Alert.alert(
+        t('errors.cannotCompleteTask'),
+        t('errors.taskNoMembers'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+    
+    try {
+      // Trigger confetti animation
+      setConfettiKey(prev => prev + 1);
+      setShowConfetti(true);
+      await markTaskDone(group.id, task.id);
+      // Hide confetti after animation completes
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 4000);
+    } catch (error) {
+      console.error('Error marking task as done:', error);
+      Alert.alert(
+        t('errors.cannotCompleteTask'),
+        t('errors.unknownError'),
+        [{ text: t('common.ok') }]
+      );
       setShowConfetti(false);
-    }, 4000);
+    }
   };
 
   const handleSkipTurn = async () => {
@@ -195,7 +218,28 @@ export default function TaskDetailsScreen() {
 
   const handleSkipConfirm = async () => {
     setIsSkipConfirmationVisible(false);
-    await skipTurn(group.id, task.id);
+    
+    // Check if task has assigned members
+    const assignedMembers = group.members.filter((m) => task.memberIds.includes(m.id));
+    if (assignedMembers.length === 0) {
+      Alert.alert(
+        t('errors.cannotSkipTurn'),
+        t('errors.taskNoMembers'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+    
+    try {
+      await skipTurn(group.id, task.id);
+    } catch (error) {
+      console.error('Error skipping turn:', error);
+      Alert.alert(
+        t('errors.cannotSkipTurn'),
+        t('errors.unknownError'),
+        [{ text: t('common.ok') }]
+      );
+    }
   };
 
   const handleDelete = () => {

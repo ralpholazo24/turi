@@ -206,15 +206,44 @@ export const useAppStore = create<AppState>((set, get) => ({
       },
     };
     
+    // Get remaining members after deletion
+    const remainingMembers = group.members.filter((member) => member.id !== memberId);
+    
     const updatedGroup = get().groups.map((group) =>
       group.id === groupId
         ? {
             ...group,
-            members: group.members.filter((member) => member.id !== memberId),
-            tasks: group.tasks.map((task) => ({
-              ...task,
-              memberIds: task.memberIds.filter((id) => id !== memberId),
-            })),
+            members: remainingMembers,
+            tasks: group.tasks.map((task) => {
+              // Remove deleted member from task assignments
+              const updatedMemberIds = task.memberIds.filter((id) => id !== memberId);
+              
+              // If task would have 0 members, assign to first available member (if any)
+              let finalMemberIds = updatedMemberIds;
+              let finalAssignedIndex = task.assignedIndex;
+              
+              if (updatedMemberIds.length === 0 && remainingMembers.length > 0) {
+                // Task has no members, assign to first available
+                finalMemberIds = [remainingMembers[0].id];
+                finalAssignedIndex = 0;
+              } else if (updatedMemberIds.length > 0) {
+                // Ensure assignedIndex is within bounds
+                finalAssignedIndex = Math.min(task.assignedIndex, updatedMemberIds.length - 1);
+                // If current assigned member was deleted, reset to first member
+                if (!updatedMemberIds.includes(task.memberIds[task.assignedIndex] || '')) {
+                  finalAssignedIndex = 0;
+                } else {
+                  // Find new index for the current member
+                  finalAssignedIndex = updatedMemberIds.indexOf(task.memberIds[task.assignedIndex]);
+                }
+              }
+              
+              return {
+                ...task,
+                memberIds: finalMemberIds,
+                assignedIndex: finalAssignedIndex,
+              };
+            }),
             activities: [...(group.activities || []), activity],
           }
         : group
@@ -256,10 +285,29 @@ export const useAppStore = create<AppState>((set, get) => ({
       };
     }
     
+    // Ensure task has at least one member assigned
+    if (!finalTaskData.memberIds || finalTaskData.memberIds.length === 0) {
+      if (group.members.length > 0) {
+        // Auto-assign to first member if none selected
+        finalTaskData.memberIds = [group.members[0].id];
+        finalTaskData.assignedIndex = 0;
+      } else {
+        // No members in group, cannot create task
+        console.error('Cannot create task: group has no members');
+        return;
+      }
+    }
+    
+    // Ensure assignedIndex is within bounds
+    const validAssignedIndex = Math.min(
+      finalTaskData.assignedIndex ?? 0,
+      finalTaskData.memberIds.length - 1
+    );
+    
     const newTask: Task = {
       id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       ...finalTaskData,
-      assignedIndex: finalTaskData.assignedIndex ?? 0,
+      assignedIndex: validAssignedIndex,
       lastCompletedAt: null,
       completionHistory: finalTaskData.completionHistory || [],
       skipHistory: [],
@@ -311,6 +359,53 @@ export const useAppStore = create<AppState>((set, get) => ({
   updateTask: async (groupId: string, taskId: string, updates: Partial<Task>) => {
     const group = get().groups.find((g) => g.id === groupId);
     if (!group) return;
+    
+    const task = group.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    
+    // Validate memberIds - ensure at least one member is assigned
+    if (updates.memberIds !== undefined) {
+      if (updates.memberIds.length === 0) {
+        // Cannot have task with 0 members - auto-assign to first member if available
+        if (group.members.length > 0) {
+          updates.memberIds = [group.members[0].id];
+          updates.assignedIndex = 0;
+        } else {
+          console.error('Cannot update task: group has no members');
+          return;
+        }
+      }
+    }
+    
+    // Ensure assignedIndex is within bounds if memberIds are being updated
+    if (updates.memberIds !== undefined) {
+      const finalMemberIds = updates.memberIds;
+      let finalAssignedIndex = updates.assignedIndex ?? task.assignedIndex;
+      
+      // If assignedIndex is being updated, validate it
+      if (updates.assignedIndex !== undefined) {
+        finalAssignedIndex = Math.min(updates.assignedIndex, finalMemberIds.length - 1);
+      } else {
+        // If memberIds changed but assignedIndex didn't, ensure it's still valid
+        finalAssignedIndex = Math.min(task.assignedIndex, finalMemberIds.length - 1);
+        
+        // If current assigned member is not in new list, reset to first member
+        const currentMemberId = task.memberIds[task.assignedIndex];
+        if (!finalMemberIds.includes(currentMemberId)) {
+          finalAssignedIndex = 0;
+        } else {
+          // Find new index for current member
+          finalAssignedIndex = finalMemberIds.indexOf(currentMemberId);
+        }
+      }
+      
+      updates.assignedIndex = finalAssignedIndex;
+      updates.memberIds = finalMemberIds;
+    } else if (updates.assignedIndex !== undefined) {
+      // Only assignedIndex is being updated, validate it against current memberIds
+      const currentMemberIds = task.memberIds;
+      updates.assignedIndex = Math.min(updates.assignedIndex, currentMemberIds.length - 1);
+    }
     
     // Cancel old notification before updating
     await cancelTaskNotification(taskId);
