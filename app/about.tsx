@@ -50,8 +50,13 @@ export default function AboutScreen() {
         {/* App Info Section */}
         <View style={styles.section}>
           <View style={styles.logoContainer}>
-            <View style={[styles.logoCircle, { backgroundColor: accentBgColor }]}>
-              <ThemedText style={[styles.logoText, { color: accentColor }]}>T</ThemedText>
+            <View style={styles.logoCircle}>
+              <Image
+                source={require('@/assets/illustrations/icon.svg')}
+                style={styles.logoImage}
+                contentFit="contain"
+                tintColor={textColor}
+              />
             </View>
           </View>
           
@@ -175,9 +180,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoText: {
-    fontSize: 48,
-    fontWeight: 'bold',
+  logoImage: {
+    width: 64,
+    height: 64,
   },
   appName: {
     fontSize: 32,
