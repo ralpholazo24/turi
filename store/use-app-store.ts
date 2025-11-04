@@ -13,6 +13,7 @@ import { getTaskCompletionStatus } from "@/utils/task-completion";
 import * as Notifications from "expo-notifications";
 import { create } from "zustand";
 import { useNotificationStore } from "./use-notification-store";
+import { useUserStore } from "./use-user-store";
 
 // Helper function to get week number for weekly task validation
 function getWeekNumber(date: Date): number {
@@ -70,12 +71,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const data = await loadData();
       // Migrate groups from colorStart/colorEnd to colorPreset if needed
+      // Also ensure ownerId exists for backward compatibility
       const migratedGroups = data.groups.map((group) => {
         // Check if group has old format (colorStart/colorEnd) or missing colorPreset
         const oldGroup = group as Group & {
           colorStart?: string;
           colorEnd?: string;
+          ownerId?: string;
         };
+
+        let updatedGroup = oldGroup;
+
+        // Migrate color preset
         if (
           (oldGroup.colorStart && oldGroup.colorEnd && !oldGroup.colorPreset) ||
           !oldGroup.colorPreset
@@ -93,19 +100,34 @@ export const useAppStore = create<AppState>((set, get) => ({
 
           if (matchingPreset) {
             const { colorStart, colorEnd, ...rest } = oldGroup;
-            return {
+            updatedGroup = {
               ...rest,
               colorPreset: matchingPreset.name,
-            } as Group;
+            } as Group & { ownerId?: string };
+          } else {
+            // Default to first preset if no match found or no old colors
+            const { colorStart, colorEnd, ...rest } = oldGroup;
+            updatedGroup = {
+              ...rest,
+              colorPreset: DEFAULT_GROUP_COLOR.name,
+            } as Group & { ownerId?: string };
           }
-          // Default to first preset if no match found or no old colors
-          const { colorStart, colorEnd, ...rest } = oldGroup;
-          return {
-            ...rest,
-            colorPreset: DEFAULT_GROUP_COLOR.name,
-          } as Group;
         }
-        return group;
+
+        // Ensure ownerId exists (migration for existing groups)
+        if (!updatedGroup.ownerId) {
+          updatedGroup = {
+            ...updatedGroup,
+            ownerId:
+              updatedGroup.members.length > 0
+                ? updatedGroup.members[0].id
+                : `user_${Date.now()}_${Math.random()
+                    .toString(36)
+                    .substr(2, 9)}`,
+          };
+        }
+
+        return updatedGroup as Group;
       });
 
       // Save migrated data if migration occurred
@@ -163,12 +185,30 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   createGroup: async (name: string, icon: string, colorPreset: string) => {
     const nowISO = new Date().toISOString();
+    const user = useUserStore.getState().user;
+
+    // Ensure user exists before creating group
+    if (!user) {
+      console.error(
+        "Cannot create group: user not set. Please complete onboarding first."
+      );
+      return;
+    }
+
+    // Auto-add user as first member and owner
+    const ownerMember: Member = {
+      id: user.id,
+      name: user.name,
+      avatarColor: user.avatarColor,
+    };
+
     const newGroup: Group = {
       id: `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
       icon,
       colorPreset,
-      members: [],
+      ownerId: user.id,
+      members: [ownerMember],
       tasks: [],
       createdAt: nowISO,
       activities: [

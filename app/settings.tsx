@@ -1,4 +1,5 @@
 import { ConfirmationModal } from '@/components/confirmation-modal';
+import { ProfileModal } from '@/components/profile-modal';
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
@@ -6,6 +7,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useLanguageStore } from '@/store/use-language-store';
+import { useUserStore } from '@/store/use-user-store';
 import { clearAllData } from '@/utils/clear-data';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
@@ -47,8 +49,11 @@ export default function SettingsScreen() {
   const ActivityIcon = LucideIcons.Activity;
   const SparklesIcon = LucideIcons.Sparkles;
   const TrashIcon = LucideIcons.Trash2;
+  const UserIcon = LucideIcons.User;
 
+  const { user } = useUserStore();
   const [isClearDataModalVisible, setIsClearDataModalVisible] = useState(false);
+  const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
 
   const getThemeDisplayName = () => {
     if (themePreference === 'light') return t('theme.light');
@@ -134,6 +139,28 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle} i18nKey="settings.account" />
           
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => setIsProfileModalVisible(true)}
+              activeOpacity={0.7}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+                  <UserIcon size={20} color={iconColor} />
+                </View>
+                <ThemedText style={styles.settingText} i18nKey="settings.profile" />
+              </View>
+              <View style={styles.settingRight}>
+                {user && (
+                  <ThemedText style={styles.settingValue}>
+                    {user.name}
+                  </ThemedText>
+                )}
+                <LucideIcons.ChevronRight size={20} color={iconColor} />
+              </View>
+            </TouchableOpacity>
+          </View>
+
           <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
             <TouchableOpacity
               style={styles.settingItem}
@@ -315,6 +342,12 @@ export default function SettingsScreen() {
         confirmColor="#EF4444"
         onConfirm={handleClearData}
         onCancel={() => setIsClearDataModalVisible(false)}
+      />
+
+      {/* Profile Modal */}
+      <ProfileModal
+        visible={isProfileModalVisible}
+        onClose={() => setIsProfileModalVisible(false)}
       />
     </SafeAreaView>
   );

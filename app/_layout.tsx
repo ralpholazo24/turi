@@ -8,9 +8,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { CustomSplashScreen } from '@/components/splash-screen';
+import { OnboardingModal } from '@/components/onboarding-modal';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useLanguageStore } from '@/store/use-language-store';
 import { useThemeStore } from '@/store/use-theme-store';
+import { useUserStore } from '@/store/use-user-store';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Keep the splash screen visible while we fetch resources
@@ -24,7 +26,10 @@ export default function RootLayout() {
   const { colorScheme } = useColorScheme();
   const initializeTheme = useThemeStore((state) => state.initializeTheme);
   const initializeLanguage = useLanguageStore((state) => state.initializeLanguage);
+  const initializeUser = useUserStore((state) => state.initialize);
+  const { onboardingCompleted, isLoading: userLoading } = useUserStore();
   const [isReady, setIsReady] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     async function prepare() {
@@ -32,10 +37,11 @@ export default function RootLayout() {
       const MIN_SPLASH_DURATION = 3000; // Minimum 3 seconds
 
       try {
-        // Initialize theme and language
+        // Initialize theme, language, and user
         await Promise.all([
           initializeTheme(),
           initializeLanguage(),
+          initializeUser(),
         ]);
       } catch (e) {
         console.warn(e);
@@ -52,7 +58,14 @@ export default function RootLayout() {
     }
 
     prepare();
-  }, [initializeTheme, initializeLanguage]);
+  }, [initializeTheme, initializeLanguage, initializeUser]);
+
+  // Check if onboarding is needed after user store is initialized
+  useEffect(() => {
+    if (!userLoading && isReady) {
+      setShowOnboarding(!onboardingCompleted);
+    }
+  }, [userLoading, isReady, onboardingCompleted]);
 
   // Hide the native splash screen once React is ready
   useEffect(() => {
@@ -115,6 +128,10 @@ export default function RootLayout() {
     return <CustomSplashScreen />;
   }
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -130,6 +147,7 @@ export default function RootLayout() {
           <Stack.Screen name="language" />
         </Stack>
         <StatusBar style="auto" />
+        <OnboardingModal visible={showOnboarding} onComplete={handleOnboardingComplete} />
       </ThemeProvider>
     </GestureHandlerRootView>
   );

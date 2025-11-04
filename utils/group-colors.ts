@@ -14,3 +14,4 @@ export function getColorsFromPreset(presetName: string): { start: string; end: s
   return { start: GROUP_COLOR_PRESETS[0].start, end: GROUP_COLOR_PRESETS[0].end };
 }
 
+

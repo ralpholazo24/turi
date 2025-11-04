@@ -56,14 +56,26 @@ export async function saveData(data: AppData): Promise<void> {
  */
 function migrateData(data: AppData): AppData {
   // Migrate members to include avatarColor
-  const migratedGroups = data.groups.map((group) => ({
-    ...group,
-    members: group.members.map((member: Member) => ({
-      ...member,
-      // Add avatarColor if it doesn't exist (backward compatibility)
-      avatarColor: member.avatarColor || getColorFromName(member.name),
-    })),
-  }));
+  // Migrate groups to include ownerId (if missing)
+  const migratedGroups = data.groups.map((group) => {
+    const oldGroup = group as Group & { ownerId?: string };
+    
+    // Add ownerId if missing - use first member's ID or generate a placeholder
+    const ownerId = oldGroup.ownerId || 
+      (oldGroup.members.length > 0 
+        ? oldGroup.members[0].id 
+        : `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+
+    return {
+      ...oldGroup,
+      ownerId,
+      members: oldGroup.members.map((member: Member) => ({
+        ...member,
+        // Add avatarColor if it doesn't exist (backward compatibility)
+        avatarColor: member.avatarColor || getColorFromName(member.name),
+      })),
+    };
+  });
 
   return {
     ...data,

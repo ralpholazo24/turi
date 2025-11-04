@@ -52,7 +52,8 @@
     "title": "Groups",
     "groups": "Groups",
     "noGroups": "No groups yet",
-    "noGroupsDescription": "Create your first group to start managing tasks together!",
+    "noGroupsPersonalized": "Welcome, {{name}}!",
+    "noGroupsDescription": "Tap the + button to create your first group and start organizing tasks together.",
     "addGroup": "Add Group"
   },
   "group": {
@@ -147,7 +148,9 @@
     "addMember": "Add Member",
     "addNewMember": "Add New Member",
     "editMember": "Edit Member",
-    "deleteMember": "Delete Member"
+    "deleteMember": "Delete Member",
+    "you": "You",
+    "owner": "Owner"
   },
   "settings": {
     "title": "Settings",
@@ -155,6 +158,7 @@
     "preferences": "PREFERENCES",
     "support": "SUPPORT",
     "data": "DATA",
+    "profile": "Profile",
     "activity": "Activity",
     "notifications": "Notifications",
     "notificationsEnabled": "Enabled",
@@ -398,5 +402,22 @@
     "selectTimeTitle": "Select Time",
     "cancel": "Cancel",
     "done": "Done"
+  },
+  "onboarding": {
+    "welcome": "Hi there!",
+    "subtitle": "What should we call you?",
+    "yourName": "Your Name",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "Enter your name...",
+    "colorLabel": "Pick an avatar color",
+    "avatarPreview": "This is how you'll appear in groups",
+    "continue": "Continue"
+  },
+  "profile": {
+    "title": "Profile",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "Enter your name...",
+    "colorLabel": "Avatar Color",
+    "avatarPreview": "This is how you'll appear in groups"
   }
 }

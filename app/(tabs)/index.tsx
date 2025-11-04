@@ -5,6 +5,7 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
+import { useUserStore } from '@/store/use-user-store';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
@@ -16,6 +17,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { groups, isLoading, initialize } = useAppStore();
+  const { user } = useUserStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const insets = useSafeAreaInsets();
 
@@ -65,7 +67,11 @@ export default function HomeScreen() {
               contentFit="contain"
               tintColor={iconColor}
             />
-            <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="home.noGroups" />
+            <ThemedText type="subtitle" style={styles.emptyTitle}>
+              {user 
+                ? t('home.noGroupsPersonalized', { name: user.name })
+                : t('home.noGroups')}
+            </ThemedText>
             <ThemedText style={styles.emptyText} i18nKey="home.noGroupsDescription" />
           </View>
         ) : (

@@ -4,6 +4,7 @@ import { useAppStore } from '@/store/use-app-store';
 import { useNotificationStore } from '@/store/use-notification-store';
 import { useLanguageStore } from '@/store/use-language-store';
 import { useThemeStore } from '@/store/use-theme-store';
+import { useUserStore } from '@/store/use-user-store';
 
 // Storage keys
 const STORAGE_KEYS = [
@@ -12,6 +13,8 @@ const STORAGE_KEYS = [
   '@turi_notification_reminder_minutes',
   '@turi:language',
   '@turi_theme_preference',
+  '@turi_user',
+  '@turi_onboarding_completed',
 ];
 
 /**
@@ -51,6 +54,9 @@ export async function clearAllData(): Promise<void> {
 
     // Reset theme preference
     await useThemeStore.getState().setThemePreference('system');
+
+    // Reset user data
+    await useUserStore.getState().clearUser();
   } catch (error) {
     console.error('Error clearing data:', error);
     throw error;

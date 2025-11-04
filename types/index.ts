@@ -4,6 +4,12 @@ export interface Member {
   avatarColor: string; // Color for initials avatar
 }
 
+export interface User {
+  id: string;
+  name: string;
+  avatarColor: string; // Color for initials avatar
+}
+
 export interface TaskHistoryEntry {
   memberId: string;
   timestamp: string; // ISO date string
@@ -71,6 +77,7 @@ export interface Group {
   name: string;
   icon: string; // Icon name from lucide-react-native
   colorPreset: string; // Name of the color preset (e.g., 'Red-Orange')
+  ownerId: string; // User ID of the group owner/creator
   members: Member[];
   tasks: Task[];
   createdAt: string; // ISO date string - when group was created
@@ -80,4 +87,6 @@ export interface Group {
 export interface AppData {
   version: string;
   groups: Group[];
+  user?: User; // Current user identity
+  onboardingCompleted?: boolean; // Whether user has completed onboarding
 }

@@ -2,6 +2,7 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
+import { useUserStore } from '@/store/use-user-store';
 import { Group, Member } from '@/types';
 import { Image } from 'expo-image';
 import { useState } from 'react';
@@ -26,6 +27,7 @@ interface MemberChipListProps {
 interface SwipeableMemberCardProps {
   member: Member;
   group: Group;
+  isOwner: boolean;
   backgroundColor: string;
   textColor: string;
   borderColor: string;
@@ -38,14 +40,21 @@ const ACTION_WIDTH = 160; // Width for both action buttons combined
 function SwipeableMemberCard({
   member,
   group,
+  isOwner,
   backgroundColor,
   textColor,
   borderColor,
   onEdit,
   onDelete,
 }: SwipeableMemberCardProps) {
+  const { t } = useTranslation();
   const translateX = useSharedValue(0);
   const [isOpen, setIsOpen] = useState(false);
+  const chipBackgroundColor = useThemeColor(
+    { light: '#F5F5F5', dark: '#2A2A2A' },
+    'background'
+  );
+  const chipTextColor = useThemeColor({}, 'text');
 
   const EditIcon = APP_ICONS.edit;
   const DeleteIcon = APP_ICONS.delete;
@@ -139,8 +148,22 @@ function SwipeableMemberCard({
 
             {/* Member Info */}
             <View style={styles.memberInfo}>
-              <ThemedText style={styles.memberName}>{member.name}</ThemedText>
+              <ThemedText style={styles.memberName}>
+                {isOwner ? t('member.you') : member.name}
+              </ThemedText>
             </View>
+
+            {/* Owner Chip - Right side */}
+            {isOwner && (
+              <View style={[styles.ownerChip, { 
+                backgroundColor: chipBackgroundColor, 
+                borderColor: borderColor 
+              }]}>
+                <ThemedText style={[styles.ownerChipText, { color: chipTextColor }]}>
+                  {t('member.owner')}
+                </ThemedText>
+              </View>
+            )}
           </View>
         </Animated.View>
       </GestureDetector>
@@ -151,9 +174,15 @@ function SwipeableMemberCard({
 export function MemberChipList({ group }: MemberChipListProps) {
   const { t } = useTranslation();
   const { deleteMember } = useAppStore();
+  const { user } = useUserStore();
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+  
+  // Check if a member is the owner
+  const isOwner = (member: Member) => {
+    return user && member.id === user.id && group.ownerId === user.id;
+  };
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -210,6 +239,7 @@ export function MemberChipList({ group }: MemberChipListProps) {
             key={member.id}
             member={member}
             group={group}
+            isOwner={isOwner(member)}
             backgroundColor={backgroundColor}
             textColor={textColor}
             borderColor={borderColor}
@@ -315,6 +345,7 @@ const styles = StyleSheet.create({
   memberContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   memberInfo: {
     flex: 1,
@@ -323,6 +354,16 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 4,
+  },
+  ownerChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.small,
+    marginLeft: 12,
+    borderWidth: 1,
+  },
+  ownerChipText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
