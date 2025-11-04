@@ -37,7 +37,7 @@ export function formatNextDueDate(task: Task): string {
       return i18n.t('task.dueInWeeks', { count: weeks });
     } else {
       // Use pluralization handling
-      const weekKey = weeks === 1 ? 'dueInWeeksAndDays' : 'dueInWeeksAndDays_plural';
+      const weekKey = weeks === 1 ? 'task.dueInWeeksAndDays' : 'task.dueInWeeksAndDays_plural';
       return i18n.t(weekKey, { weeks, days: remainingDays });
     }
   } else {

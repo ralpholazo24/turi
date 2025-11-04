@@ -145,7 +145,10 @@
     "editTask": "Edit Task",
     "scheduleFormat": {
       "dailyAt": "Daily at {{time}}"
-    }
+    },
+    "doneForToday": "Done for today!",
+    "doneForThisWeek": "Done for this week!",
+    "doneForThisMonth": "Done for this month!"
   },
   "member": {
     "name": "Member Name",
@@ -185,7 +188,9 @@
     "dataCleared": "All data cleared",
     "dataClearedMessage": "All data has been successfully cleared.",
     "emailError": "Unable to open email client. Please email your support request to: ralpholazo@gmail.com",
-    "emailErrorTitle": "Email Error"
+    "emailErrorTitle": "Email Error",
+    "supportEmailSubject": "Support Request - Turi App",
+    "supportEmailBody": "Hello,\n\nI need help with the following:\n\n"
   },
   "language": {
     "title": "App Language",
@@ -368,7 +373,8 @@
     "storageError": "Failed to save data. Please try again.",
     "storageErrorTitle": "Storage Error",
     "unknownError": "An unexpected error occurred. Please try again.",
-    "unknownErrorTitle": "Error"
+    "unknownErrorTitle": "Error",
+    "clearDataError": "An error occurred while clearing data. Please try again."
   },
   "confirmation": {
     "skipTitle": "Skip",

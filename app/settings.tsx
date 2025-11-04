@@ -62,8 +62,8 @@ export default function SettingsScreen() {
   };
 
   const handleContactSupport = () => {
-    const subject = encodeURIComponent('Support Request - Turi App');
-    const body = encodeURIComponent('Hello,\n\nI need help with the following:\n\n');
+    const subject = encodeURIComponent(t('settings.supportEmailSubject'));
+    const body = encodeURIComponent(t('settings.supportEmailBody'));
     const emailUrl = `mailto:ralpholazo@gmail.com?subject=${subject}&body=${body}`;
 
     Linking.canOpenURL(emailUrl)
@@ -108,7 +108,7 @@ export default function SettingsScreen() {
       console.error('Error clearing data:', error);
       Alert.alert(
         t('common.close'),
-        'An error occurred while clearing data. Please try again.',
+        t('errors.clearDataError'),
         [{ text: t('common.ok') }]
       );
     }

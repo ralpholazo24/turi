@@ -1,4 +1,5 @@
 import { Task } from '@/types';
+import i18n from '@/i18n';
 import { getDaysDifference, isSameDay, isSameISOWeek, isSameMonth, startOfDay } from './date-helpers';
 
 /**
@@ -41,7 +42,7 @@ export function getTaskCompletionStatus(task: Task): {
     if (isSameDay(lastCompleted, today)) {
       return {
         isCompleted: true,
-        message: 'Done for today!',
+        message: i18n.t('task.doneForToday'),
       };
     }
   } else if (task.frequency === 'weekly') {
@@ -49,7 +50,7 @@ export function getTaskCompletionStatus(task: Task): {
     if (isSameISOWeek(lastCompleted, today)) {
       return {
         isCompleted: true,
-        message: 'Done for this week!',
+        message: i18n.t('task.doneForThisWeek'),
       };
     }
   } else if (task.frequency === 'monthly') {
@@ -57,7 +58,7 @@ export function getTaskCompletionStatus(task: Task): {
     if (isSameMonth(lastCompleted, today)) {
       return {
         isCompleted: true,
-        message: 'Done for this month!',
+        message: i18n.t('task.doneForThisMonth'),
       };
     }
   }

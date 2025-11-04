@@ -143,7 +143,10 @@
     "editTask": "Editar Tarea",
     "scheduleFormat": {
       "dailyAt": "Diario a las {{time}}"
-    }
+    },
+    "doneForToday": "¡Hecho por hoy!",
+    "doneForThisWeek": "¡Hecho por esta semana!",
+    "doneForThisMonth": "¡Hecho por este mes!"
   },
   "member": {
     "name": "Nombre del Miembro",
@@ -180,7 +183,9 @@
     "dataCleared": "Todos los datos borrados",
     "dataClearedMessage": "Todos los datos se han borrado exitosamente.",
     "emailError": "No se puede abrir el cliente de correo. Por favor, envía tu solicitud de soporte a: ralpholazo@gmail.com",
-    "emailErrorTitle": "Error de Correo"
+    "emailErrorTitle": "Error de Correo",
+    "supportEmailSubject": "Solicitud de Soporte - App Turi",
+    "supportEmailBody": "Hola,\n\nNecesito ayuda con lo siguiente:\n\n"
   },
   "notifications": {
     "title": "Notificaciones",
@@ -351,7 +356,8 @@
     "storageError": "Error al guardar los datos. Por favor, intenta de nuevo.",
     "storageErrorTitle": "Error de Almacenamiento",
     "unknownError": "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
-    "unknownErrorTitle": "Error"
+    "unknownErrorTitle": "Error",
+    "clearDataError": "Ocurrió un error al borrar los datos. Por favor, intenta de nuevo."
   },
   "confirmation": {
     "skipTitle": "Saltar",
