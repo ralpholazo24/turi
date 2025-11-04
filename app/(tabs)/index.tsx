@@ -62,7 +62,7 @@ export default function HomeScreen() {
         ) : groups.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Image
-              source={require('@/assets/illustrations/man-fishing.svg')}
+              source={require('@/assets/illustrations/chill-girl.svg')}
               style={styles.emptyIllustration}
               contentFit="contain"
               tintColor={iconColor}

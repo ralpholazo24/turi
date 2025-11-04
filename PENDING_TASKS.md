@@ -4,7 +4,7 @@
 
 ### 1. **Empty State Illustrations**
 
-- ✅ Added `man-fishing.svg` for "no groups" empty state (home screen)
+- ✅ Added `chill-girl.svg` for "no groups" empty state (home screen)
 - ✅ Added `cat-and-woman.svg` for "no tasks" empty state (when members exist)
 - ✅ Added `boy-sipping.svg` for "no members" empty state
 - ✅ All illustrations are theme-aware using `tintColor` prop

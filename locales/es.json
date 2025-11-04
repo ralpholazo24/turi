@@ -175,6 +175,7 @@
     "helpFAQ": "Ayuda y Preguntas Frecuentes",
     "contactSupport": "Contactar Soporte",
     "aboutApp": "Acerca de la App",
+    "viewOnboarding": "Ver Introducción",
     "clearData": "Borrar Datos",
     "dataCleared": "Todos los datos borrados",
     "dataClearedMessage": "Todos los datos se han borrado exitosamente.",
@@ -411,7 +412,28 @@
     "namePlaceholder": "Ingresa tu nombre...",
     "colorLabel": "Elige un color de avatar",
     "avatarPreview": "Así aparecerás en los grupos",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "screen1": {
+      "headline": "¿Cansado de discutir sobre los turnos?",
+      "subtext": "Ya sea tareas domésticas, cocinar o pagar facturas, Turi mantiene las cosas justas y pacíficas para todos.",
+      "cta": "¡Arreglemos esto!"
+    },
+    "screen2": {
+      "headline": "Rastrea turnos de forma justa y automática",
+      "subtext": "Turi rastrea los turnos de todos automáticamente sin trampas, sin olvidos y sin confusiones.",
+      "cta": "¡Suena justo!"
+    },
+    "screen3": {
+      "headline": "Perfecto para usuarios solos también",
+      "subtext": "Gestiona tus tareas recurrentes, entrenamientos y hábitos todo en un solo lugar organizado.",
+      "cta": "¡Organicémonos!"
+    },
+    "screen4": {
+      "headline": "Organiza tus tareas recurrentes",
+      "subtext": "Rastrea turnos, mantén a todos responsables y haz que las responsabilidades compartidas sean más fáciles de gestionar.",
+      "cta": "Comenzar",
+      "ctaSecondary": "Aprende cómo funciona"
+    }
   },
   "profile": {
     "title": "Perfil",

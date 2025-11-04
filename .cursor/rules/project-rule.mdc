@@ -252,7 +252,7 @@ CurrentTurn = Alice
 ### 13. **Empty States with Illustrations**
 
 - Empty states display theme-aware SVG illustrations:
-  - **No groups:** `man-fishing.svg` illustration on home screen
+  - **No groups:** `chill-girl.svg` illustration on home screen
   - **No tasks:** `cat-and-woman.svg` illustration when group has members but no tasks
   - **No members:** `boy-sipping.svg` illustration when group has no members
 - Illustrations adapt to theme (light/dark mode) using `tintColor` prop
@@ -319,7 +319,7 @@ CurrentTurn = Alice
   - Group list (`GroupCard` with gradient backgrounds)
   - Add group button (FAB)
   - `AddGroupModal` (icon picker, color theme selector)
-  - Empty state with `man-fishing.svg` illustration when no groups exist (theme-aware)
+  - Empty state with `chill-girl.svg` illustration when no groups exist (theme-aware)
 
 ### 2. **Group Screen**
 

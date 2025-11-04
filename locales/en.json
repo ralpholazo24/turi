@@ -180,6 +180,7 @@
     "helpFAQ": "Help & FAQ",
     "contactSupport": "Contact Support",
     "aboutApp": "About App",
+    "viewOnboarding": "View Onboarding",
     "clearData": "Clear Data",
     "dataCleared": "All data cleared",
     "dataClearedMessage": "All data has been successfully cleared.",
@@ -416,7 +417,28 @@
     "namePlaceholder": "Enter your name...",
     "colorLabel": "Pick an avatar color",
     "avatarPreview": "This is how you'll appear in groups",
-    "continue": "Continue"
+    "continue": "Continue",
+    "screen1": {
+      "headline": "Tired of turn-taking arguments?",
+      "subtext": "Whether it's chores, cooking, or paying bills, Turi keeps things fair and peaceful for everyone.",
+      "cta": "Let's fix this!"
+    },
+    "screen2": {
+      "headline": "Fair turn tracking, automatically",
+      "subtext": "Turi tracks everyone's turns automatically with no cheating, no forgetting, and no confusion.",
+      "cta": "Sounds fair!"
+    },
+    "screen3": {
+      "headline": "Perfect for solo users too",
+      "subtext": "Manage your recurring chores, workouts, and habits all in one organized place.",
+      "cta": "Let's get organized!"
+    },
+    "screen4": {
+      "headline": "Organize your recurring tasks",
+      "subtext": "Track turns, keep everyone accountable, and make shared responsibilities easier to manage.",
+      "cta": "Get Started",
+      "ctaSecondary": "Learn how it works"
+    }
   },
   "profile": {
     "title": "Profile",

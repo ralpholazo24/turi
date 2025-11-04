@@ -16,6 +16,7 @@ interface UserState {
   setUser: (name: string, avatarColor?: string) => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  resetOnboarding: () => Promise<void>;
   clearUser: () => Promise<void>;
 }
 
@@ -89,6 +90,16 @@ export const useUserStore = create<UserState>((set, get) => ({
       set({ onboardingCompleted: true });
     } catch (error) {
       console.error("Error completing onboarding:", error);
+      throw error;
+    }
+  },
+
+  resetOnboarding: async () => {
+    try {
+      await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, "false");
+      set({ onboardingCompleted: false });
+    } catch (error) {
+      console.error("Error resetting onboarding:", error);
       throw error;
     }
   },

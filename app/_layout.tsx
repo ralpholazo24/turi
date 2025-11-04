@@ -8,7 +8,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { CustomSplashScreen } from '@/components/splash-screen';
-import { OnboardingModal } from '@/components/onboarding-modal';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useLanguageStore } from '@/store/use-language-store';
 import { useThemeStore } from '@/store/use-theme-store';
@@ -34,7 +33,7 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       const startTime = Date.now();
-      const MIN_SPLASH_DURATION = 3000; // Minimum 3 seconds
+      const MIN_SPLASH_DURATION = 4000; // Minimum 4 seconds
 
       try {
         // Initialize theme, language, and user
@@ -60,10 +59,10 @@ export default function RootLayout() {
     prepare();
   }, [initializeTheme, initializeLanguage, initializeUser]);
 
-  // Check if onboarding is needed after user store is initialized
+  // Navigate to onboarding if needed after user store is initialized
   useEffect(() => {
-    if (!userLoading && isReady) {
-      setShowOnboarding(!onboardingCompleted);
+    if (!userLoading && isReady && !onboardingCompleted) {
+      router.replace('/onboarding');
     }
   }, [userLoading, isReady, onboardingCompleted]);
 
@@ -128,14 +127,11 @@ export default function RootLayout() {
     return <CustomSplashScreen />;
   }
 
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-  };
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="onboarding" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
@@ -147,7 +143,6 @@ export default function RootLayout() {
           <Stack.Screen name="language" />
         </Stack>
         <StatusBar style="auto" />
-        <OnboardingModal visible={showOnboarding} onComplete={handleOnboardingComplete} />
       </ThemeProvider>
     </GestureHandlerRootView>
   );

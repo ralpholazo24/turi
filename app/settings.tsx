@@ -349,6 +349,7 @@ export default function SettingsScreen() {
         visible={isProfileModalVisible}
         onClose={() => setIsProfileModalVisible(false)}
       />
+
     </SafeAreaView>
   );
 }
