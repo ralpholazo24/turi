@@ -6,18 +6,18 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/store/use-user-store';
 import { getRandomAvatarColor } from '@/utils/member-avatar';
 import { router } from 'expo-router';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Animated,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -142,9 +142,7 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
       headlineKey: 'onboarding.screen4.headline',
       subtextKey: 'onboarding.screen4.subtext',
       ctaKey: 'onboarding.screen4.cta',
-      ctaSecondaryKey: 'onboarding.screen4.ctaSecondary',
       onCtaPress: handleGetStarted,
-      onCtaSecondaryPress: handleLearnMore,
     },
   ];
 

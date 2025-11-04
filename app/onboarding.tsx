@@ -127,9 +127,7 @@ export default function OnboardingScreen() {
       headlineKey: 'onboarding.screen4.headline',
       subtextKey: 'onboarding.screen4.subtext',
       ctaKey: 'onboarding.screen4.cta',
-      ctaSecondaryKey: 'onboarding.screen4.ctaSecondary',
       onCtaPress: handleGetStarted,
-      onCtaSecondaryPress: handleLearnMore,
     },
   ];
 
