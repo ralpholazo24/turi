@@ -52,57 +52,52 @@ export function GroupCard({ group }: GroupCardProps) {
         start={{ x: 1, y: 1 }}
         end={{ x: 0, y: 0 }}
         style={styles.gradient}>
+        {/* Background Icon */}
+        {IconComponent && (
+          <View style={styles.backgroundIconContainer}>
+            <IconComponent size={120} color="rgba(255, 255, 255, 0.25)" />
+          </View>
+        )}
         <View style={styles.cardContent}>
-          {/* Top Section: Icon and Title */}
+          {/* Top Section: Title */}
           <View style={styles.topSection}>
-            <View style={styles.iconContainer}>
-              <View style={styles.iconBackground}>
-                {IconComponent ? (
-                  <IconComponent size={28} color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.fallbackIcon}>🏠</Text>
-                )}
-              </View>
-            </View>
             <View style={styles.textSection}>
               <Text style={styles.groupName}>{group.name}</Text>
-              {nextTask && (
-                <Text style={styles.nextTask}>
-                  {nextTask.assignedIndex === 0 ? t('group.next') : t('group.nextUp')}
-                  {nextTask.name}
-                </Text>
-              )}
+              {/* Info Chips under group name */}
+              <View style={styles.infoChipsRow}>
+                <View style={styles.infoChip}>
+                  <APP_ICONS.clipboard size={12} color="#FFFFFF" />
+                  <Text style={styles.infoChipText}>
+                    {totalTasksCount} {totalTasksCount === 1 ? t('group.task') : t('group.tasks')}
+                  </Text>
+                </View>
+                <View style={styles.infoChip}>
+                  <APP_ICONS.users size={12} color="#FFFFFF" />
+                  <Text style={styles.infoChipText}>
+                    {totalMembersCount} {totalMembersCount === 1 ? t('group.member') : t('group.members')}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
 
-          {/* Bottom Section: Assigned User and Badge */}
-          <View style={styles.bottomSection}>
-            {assignedMember ? (
-              <View style={styles.assignedSection}>
-                <MemberAvatar member={assignedMember} size={32} />
-                <Text style={styles.assignedText}>
-                  {t('group.assignedTo')}{assignedMember.name}
-                </Text>
+          {/* Middle Section: Next Task */}
+          {nextTask && assignedMember ? (
+            <View style={styles.taskSection}>
+              <Text style={styles.taskLabel}>{t('group.nextTask')}</Text>
+              <Text style={styles.taskName}>{nextTask.name}</Text>
+              <View style={styles.assigneeRow}>
+                <Text style={styles.assignedLabel}>{t('group.assignedTo')}</Text>
+                <Text style={styles.assigneeName}>{assignedMember.name}</Text>
               </View>
-            ) : (
-              <Text style={styles.assignedText}>
+            </View>
+          ) : (
+            <View style={styles.taskSection}>
+              <Text style={styles.noTaskText}>
                 {group.members.length === 0 ? t('group.noMembers') : t('group.noTasksAssigned')}
               </Text>
-            )}
-
-            <View style={styles.rightSection}>
-              <View style={styles.badgesContainer}>
-                <View style={styles.badge}>
-                  <APP_ICONS.clipboard size={14} color="#FFFFFF" />
-                  <Text style={styles.badgeText}>{totalTasksCount}</Text>
-                </View>
-                <View style={styles.badge}>
-                  <APP_ICONS.users size={14} color="#FFFFFF" />
-                  <Text style={styles.badgeText}>{totalMembersCount}</Text>
-                </View>
-              </View>
             </View>
-          </View>
+          )}
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -125,92 +120,95 @@ const styles = StyleSheet.create({
   },
   gradient: {
     borderRadius: BORDER_RADIUS.xlarge,
-    padding: 20,
+    padding: 16,
+    overflow: 'hidden',
+  },
+  backgroundIconContainer: {
+    position: 'absolute',
+    right: -10,
+    top: -10,
+    opacity: 1,
   },
   cardContent: {
-    minHeight: 140,
-    justifyContent: 'space-between',
+    minHeight: 120,
+    zIndex: 1,
   },
   topSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  iconContainer: {
-    marginRight: 14,
-  },
-  iconBackground: {
-    width: 48,
-    height: 48,
-    borderRadius: BORDER_RADIUS.circular.xlarge,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  fallbackIcon: {
-    fontSize: 26,
+    marginBottom: 14,
   },
   textSection: {
     flex: 1,
-    justifyContent: 'center',
+    minWidth: 0,
   },
   groupName: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 6,
     lineHeight: 28,
+    flexShrink: 1,
+    marginBottom: 8,
   },
-  nextTask: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.9,
-    lineHeight: 20,
-  },
-  bottomSection: {
+  infoChipsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 12,
+    gap: 12,
+    marginTop: 4,
+  },
+  taskSection: {
+    marginTop: 14,
+    paddingTop: 14,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.2)',
   },
-  assignedSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  assignedText: {
-    fontSize: 14,
+  taskLabel: {
+    fontSize: 10,
     color: '#FFFFFF',
-    opacity: 0.9,
-    marginLeft: 10,
+    opacity: 0.75,
+    marginBottom: 6,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  taskName: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    lineHeight: 22,
+    marginBottom: 10,
     flexShrink: 1,
   },
-  rightSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 12,
-  },
-  badgesContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-  },
-  badge: {
+  assigneeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     gap: 6,
   },
-  badgeText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+  assignedLabel: {
+    fontSize: 12,
     color: '#FFFFFF',
+    opacity: 0.75,
+    fontWeight: '500',
+  },
+  assigneeName: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    opacity: 1,
+  },
+  noTaskText: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    opacity: 0.75,
+    fontStyle: 'italic',
+  },
+  infoChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  infoChipText: {
+    fontSize: 11,
+    color: '#FFFFFF',
+    opacity: 0.9,
+    fontWeight: '500',
   },
 });
