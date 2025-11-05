@@ -36,6 +36,7 @@ interface SwipeableMemberCardProps {
 }
 
 const ACTION_WIDTH = 160; // Width for both action buttons combined
+const DELETE_ACTION_WIDTH = 80; // Width for delete button only
 
 function SwipeableMemberCard({
   member,
@@ -59,6 +60,9 @@ function SwipeableMemberCard({
   const EditIcon = APP_ICONS.edit;
   const DeleteIcon = APP_ICONS.delete;
 
+  // Calculate action width based on whether owner can edit
+  const actionWidth = isOwner ? DELETE_ACTION_WIDTH : ACTION_WIDTH;
+
   const closeCard = () => {
     setIsOpen(false);
   };
@@ -67,7 +71,7 @@ function SwipeableMemberCard({
     .onUpdate((e) => {
       // Only allow swiping left (negative values)
       if (e.translationX < 0) {
-        translateX.value = Math.max(e.translationX, -ACTION_WIDTH);
+        translateX.value = Math.max(e.translationX, -actionWidth);
       } else if (translateX.value < 0) {
         // Allow swiping back to close
         translateX.value = Math.min(e.translationX + translateX.value, 0);
@@ -75,8 +79,8 @@ function SwipeableMemberCard({
     })
     .onEnd((e) => {
       // If swiped more than half the action width, open
-      if (translateX.value < -ACTION_WIDTH / 2) {
-        translateX.value = withSpring(-ACTION_WIDTH, {
+      if (translateX.value < -actionWidth / 2) {
+        translateX.value = withSpring(-actionWidth, {
           damping: 20,
           stiffness: 300,
         });
@@ -117,14 +121,16 @@ function SwipeableMemberCard({
   return (
     <View style={styles.swipeableContainer}>
       {/* Action Buttons (behind the card) */}
-      <View style={styles.actionButtonsContainer}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={handleEdit}
-          activeOpacity={0.8}>
-          <EditIcon size={20} color="#FFFFFF" />
-          <ThemedText style={styles.actionButtonText}>Edit</ThemedText>
-        </TouchableOpacity>
+      <View style={[styles.actionButtonsContainer, { width: actionWidth }]}>
+        {!isOwner && (
+          <TouchableOpacity
+            style={[styles.actionButton, styles.editButton]}
+            onPress={handleEdit}
+            activeOpacity={0.8}>
+            <EditIcon size={20} color="#FFFFFF" />
+            <ThemedText style={styles.actionButtonText}>Edit</ThemedText>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={[styles.actionButton, styles.deleteButton]}
           onPress={handleDelete}
@@ -309,7 +315,6 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     flexDirection: 'row',
-    width: ACTION_WIDTH,
   },
   actionButton: {
     flex: 1,
