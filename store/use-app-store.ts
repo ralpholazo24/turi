@@ -440,15 +440,16 @@ export const useAppStore = create<AppState>((set, get) => ({
       finalTaskData.memberIds.length - 1
     );
 
+    const nowISO = new Date().toISOString();
     const newTask: Task = {
       id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       ...finalTaskData,
       assignedIndex: validAssignedIndex,
       completionHistory: finalTaskData.completionHistory || [],
       skipHistory: [],
+      createdAt: nowISO,
     };
 
-    const nowISO = new Date().toISOString();
     const activity: GroupActivity = {
       id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type: "task_created",

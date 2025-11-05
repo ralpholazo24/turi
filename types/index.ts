@@ -70,6 +70,7 @@ export interface Task {
   completionHistory: TaskCompletion[]; // History of completions
   skipHistory: TaskSkip[]; // History of skips
   schedule?: TaskSchedule; // Scheduling options
+  createdAt: string; // ISO date string - when task was created
 }
 
 export interface Group {

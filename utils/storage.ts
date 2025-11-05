@@ -1,9 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppData, Group, Member } from '@/types';
-import { getColorFromName } from './member-avatar';
+import { AppData, Group, Member } from "@/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getColorFromName } from "./member-avatar";
 
-const STORAGE_KEY = '@turi_app_data';
-const CURRENT_VERSION = '1.0.0';
+const STORAGE_KEY = "@turi_app_data";
+const CURRENT_VERSION = "1.0.0";
 
 /**
  * Initialize storage with default empty data
@@ -25,15 +25,15 @@ export async function loadData(): Promise<AppData> {
       return getDefaultData();
     }
     const data = JSON.parse(jsonValue) as AppData;
-    
+
     // Migrate data if version is different
     if (data.version !== CURRENT_VERSION) {
       return migrateData(data);
     }
-    
+
     return data;
   } catch (error) {
-    console.error('Error loading data:', error);
+    console.error("Error loading data:", error);
     return getDefaultData();
   }
 }
@@ -46,7 +46,7 @@ export async function saveData(data: AppData): Promise<void> {
     const jsonValue = JSON.stringify(data);
     await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
   } catch (error) {
-    console.error('Error saving data:', error);
+    console.error("Error saving data:", error);
     throw error;
   }
 }
@@ -59,11 +59,12 @@ function migrateData(data: AppData): AppData {
   // Migrate groups to include ownerId (if missing)
   const migratedGroups = data.groups.map((group) => {
     const oldGroup = group as Group & { ownerId?: string };
-    
+
     // Add ownerId if missing - use first member's ID or generate a placeholder
-    const ownerId = oldGroup.ownerId || 
-      (oldGroup.members.length > 0 
-        ? oldGroup.members[0].id 
+    const ownerId =
+      oldGroup.ownerId ||
+      (oldGroup.members.length > 0
+        ? oldGroup.members[0].id
         : `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
     return {
@@ -73,6 +74,12 @@ function migrateData(data: AppData): AppData {
         ...member,
         // Add avatarColor if it doesn't exist (backward compatibility)
         avatarColor: member.avatarColor || getColorFromName(member.name),
+      })),
+      tasks: oldGroup.tasks.map((task) => ({
+        ...task,
+        // Add createdAt if it doesn't exist (backward compatibility)
+        // Use Unix epoch as fallback so overdue detection still works
+        createdAt: (task as any).createdAt || "1970-01-01T00:00:00.000Z",
       })),
     };
   });
@@ -91,8 +98,7 @@ export async function clearData(): Promise<void> {
   try {
     await AsyncStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error('Error clearing data:', error);
+    console.error("Error clearing data:", error);
     throw error;
   }
 }
-
