@@ -115,6 +115,8 @@
     "turn": "{{name}}'s turn",
     "yourTurn": "You",
     "itYourTurn": "It's your turn",
+    "assignedMembersCount_one": "{{count}} member assigned",
+    "assignedMembersCount_other": "{{count}} members assigned",
     "completionHistory": "Completion History",
     "noHistory": "No completion history yet",
     "noHistoryDescription": "Complete the task to see it here!",

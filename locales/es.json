@@ -115,6 +115,8 @@
     "turn": "Turno de {{name}}",
     "yourTurn": "Tú",
     "itYourTurn": "Es tu turno",
+    "assignedMembersCount_one": "{{count}} miembro asignado",
+    "assignedMembersCount_other": "{{count}} miembros asignados",
     "completionHistory": "Historial de Completados",
     "noHistory": "Aún no hay historial de completados",
     "noHistoryDescription": "¡Completa la tarea para verlo aquí!",

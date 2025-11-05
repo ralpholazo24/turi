@@ -307,6 +307,9 @@ export default function TaskDetailsScreen() {
                 <Text style={styles.frequency}>
                   {getFrequencyText()}
                 </Text>
+                <Text style={styles.assignedMembersCountCard}>
+                  {t('task.assignedMembersCount', { count: assignedMembers.length })}
+                </Text>
                 {!completionStatus.isCompleted && (
                   <Text style={[styles.nextDueDate, isOverdue && styles.overdueIndicator]}>
                     {getDueDateDisplay()}
@@ -516,14 +519,15 @@ const styles = StyleSheet.create({
   },
   taskCardContent: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   iconContainer: {
-    marginRight: 16,
+    marginRight: 20,
+    marginTop: 2,
   },
   iconBackground: {
-    width: 80,
-    height: 80,
+    width: 72,
+    height: 72,
     borderRadius: BORDER_RADIUS.circular.xlarge,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
@@ -531,18 +535,27 @@ const styles = StyleSheet.create({
   },
   taskInfo: {
     flex: 1,
+    paddingTop: 2,
   },
   taskName: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 8,
+    marginBottom: 6,
+    lineHeight: 32,
   },
   frequency: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
     color: '#FFFFFF',
     opacity: 0.9,
+    marginBottom: 6,
+  },
+  assignedMembersCountCard: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    opacity: 0.85,
     marginBottom: 4,
   },
   nextDueDate: {
@@ -550,7 +563,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     opacity: 0.95,
-    marginTop: 4,
+    marginTop: 2,
   },
   countdown: {
     fontSize: 13,
