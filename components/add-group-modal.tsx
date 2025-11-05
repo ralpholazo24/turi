@@ -2,12 +2,12 @@ import { IconPickerModal } from '@/components/icon-picker-modal';
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import {
-    DEFAULT_GROUP_COLOR,
-    DEFAULT_GROUP_ICON,
-    GROUP_COLOR_PRESETS,
-    GROUP_ICON_OPTIONS,
-    type GroupColorPreset,
-    type GroupIconName,
+  DEFAULT_GROUP_COLOR,
+  DEFAULT_GROUP_ICON,
+  GROUP_COLOR_PRESETS,
+  GROUP_ICON_OPTIONS,
+  type GroupColorPreset,
+  type GroupIconName,
 } from '@/constants/groups';
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -17,15 +17,14 @@ import * as LucideIcons from 'lucide-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Dimensions,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -42,15 +41,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
   const [selectedColor, setSelectedColor] = useState<GroupColorPreset>(DEFAULT_GROUP_COLOR);
   const [showIconPicker, setShowIconPicker] = useState(false);
   
-  // Calculate spacing for even grid layout (for colors)
-  const screenWidth = Dimensions.get('window').width;
-  const padding = 20; // Modal padding
-  const colorSize = 56;
-  const colorsPerRow = 5; // Fixed 5 colors per row for consistency
-  const availableWidth = screenWidth - (padding * 2);
-  const totalColorsWidth = colorsPerRow * colorSize;
-  const remainingColorSpace = availableWidth - totalColorsWidth;
-  const colorSpacing = remainingColorSpace / (colorsPerRow + 1);
+  const colorSpacing = 12;
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -173,42 +164,42 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
             {/* Color Picker */}
             <View style={styles.section}>
               <ThemedText style={styles.label} i18nKey="group.colorTheme" />
-              <View style={[styles.colorGrid, { paddingLeft: colorSpacing }]}>
-                {GROUP_COLOR_PRESETS.map((preset, index) => {
-                  const isFirstInRow = index % colorsPerRow === 0;
-                  return (
-                    <TouchableOpacity
-                      key={index}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.colorScrollContent}
+                style={styles.colorScrollView}>
+                {GROUP_COLOR_PRESETS.map((preset, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.colorOption,
+                      {
+                        marginRight: index < GROUP_COLOR_PRESETS.length - 1 ? colorSpacing : 0,
+                      },
+                    ]}
+                    onPress={() => setSelectedColor(preset)}>
+                    <View
                       style={[
-                        styles.colorOption,
-                        {
-                          marginLeft: isFirstInRow ? 0 : colorSpacing,
-                          marginTop: index >= colorsPerRow ? colorSpacing : 0,
-                        },
-                      ]}
-                      onPress={() => setSelectedColor(preset)}>
-                      <View
-                        style={[
-                          styles.colorPreview,
-                          selectedColor.start === preset.start &&
-                            selectedColor.end === preset.end &&
-                            styles.colorPreviewSelected,
-                        ]}>
-                        <LinearGradient
-                          colors={[preset.start, preset.end]}
-                          start={{ x: 1, y: 1 }}
-                          end={{ x: 0, y: 0 }}
-                          style={styles.colorGradient}>
-                          {selectedColor.start === preset.start &&
-                            selectedColor.end === preset.end && (
-                              <CheckIcon size={20} color="#FFFFFF" />
-                            )}
-                        </LinearGradient>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+                        styles.colorPreview,
+                        selectedColor.start === preset.start &&
+                          selectedColor.end === preset.end &&
+                          styles.colorPreviewSelected,
+                      ]}>
+                      <LinearGradient
+                        colors={[preset.start, preset.end]}
+                        start={{ x: 1, y: 1 }}
+                        end={{ x: 0, y: 0 }}
+                        style={styles.colorGradient}>
+                        {selectedColor.start === preset.start &&
+                          selectedColor.end === preset.end && (
+                            <CheckIcon size={20} color="#FFFFFF" />
+                          )}
+                      </LinearGradient>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -332,18 +323,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 50,
   },
-  colorGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  colorScrollView: {
+    marginHorizontal: -20,
+  },
+  colorScrollContent: {
+    paddingHorizontal: 20,
   },
   colorOption: {
     width: 56,
     height: 56,
+    borderRadius: 28,
+    overflow: 'hidden',
   },
   colorPreview: {
     width: '100%',
     height: '100%',
-    borderRadius: BORDER_RADIUS.medium,
+    borderRadius: 999,
     overflow: 'hidden',
     borderWidth: 3,
     borderColor: 'transparent',
@@ -354,6 +349,7 @@ const styles = StyleSheet.create({
   colorGradient: {
     width: '100%',
     height: '100%',
+    borderRadius: 999,
     justifyContent: 'center',
     alignItems: 'center',
   },
