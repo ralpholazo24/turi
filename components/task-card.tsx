@@ -57,32 +57,40 @@ export function TaskCard({
         start={{ x: 1, y: 1 }}
         end={{ x: 0, y: 0 }}
         style={styles.gradient}>
-        <View style={styles.cardContent}>
-          {/* Top Section: Icon and Task Name */}
-          <View style={styles.topSection}>
-            <View style={styles.iconContainer}>
-              <View style={styles.iconBackground}>
-                {/* eslint-disable-next-line import/namespace */}
-                {(() => {
-                  const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                  return IconComponent ? (
-                    <IconComponent size={28} color="#FFFFFF" />
-                  ) : null;
-                })()}
-              </View>
+        {/* Background Icon */}
+        {(() => {
+          // eslint-disable-next-line import/namespace
+          const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+          return IconComponent ? (
+            <View style={styles.backgroundIconContainer}>
+              <IconComponent size={100} color="rgba(255, 255, 255, 0.25)" />
             </View>
+          ) : null;
+        })()}
+        <View style={styles.cardContent}>
+          {/* Top Section: Task Name and Info */}
+          <View style={styles.topSection}>
             <View style={styles.textSection}>
               <Text style={styles.taskName}>{task.name}</Text>
-              {scheduleInfo && (
-                <Text style={styles.scheduleText}>
-                  {scheduleInfo}
-                </Text>
-              )}
-              {!completionStatus.isCompleted && (
-                <Text style={[styles.dueDateText, isOverdue && styles.overdueText]}>
-                  {isOverdue ? t('common.overdue') : dueDateText}
-                </Text>
-              )}
+              {/* Info Chips */}
+              <View style={styles.infoChipsContainer}>
+                {scheduleInfo && (
+                  <View style={styles.infoChip}>
+                    <APP_ICONS.calendar size={12} color="#FFFFFF" />
+                    <Text style={styles.infoChipText}>
+                      {scheduleInfo}
+                    </Text>
+                  </View>
+                )}
+                {!completionStatus.isCompleted && (
+                  <View style={styles.infoChip}>
+                    <APP_ICONS.clock size={12} color="#FFFFFF" />
+                    <Text style={[styles.infoChipText, isOverdue && styles.overdueText]}>
+                      {isOverdue ? t('common.overdue') : dueDateText}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
 
@@ -110,7 +118,7 @@ export function TaskCard({
             <View style={styles.statusBadgeContainer}>
               {completionStatus.isCompleted ? (
                 <View style={styles.completedBadge}>
-                  <CheckIcon size={16} color="#FFFFFF" />
+                  <CheckIcon size={16} color="#10B981" />
                   <Text style={styles.completedText}>{t('common.done')}</Text>
                 </View>
               ) : isOverdue ? (
@@ -146,51 +154,52 @@ const styles = StyleSheet.create({
   },
   gradient: {
     borderRadius: BORDER_RADIUS.xlarge,
-    padding: 20,
+    padding: 16,
+    overflow: 'hidden',
+  },
+  backgroundIconContainer: {
+    position: 'absolute',
+    right: -10,
+    top: -10,
+    opacity: 1,
+    zIndex: 0,
   },
   cardContent: {
-    minHeight: 120,
+    minHeight: 100,
+    zIndex: 1,
   },
   topSection: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  iconContainer: {
-    marginRight: 12,
-  },
-  iconBackground: {
-    width: 50,
-    height: 50,
-    borderRadius: BORDER_RADIUS.circular.xlarge,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 14,
   },
   textSection: {
     flex: 1,
+    minWidth: 0,
   },
   taskName: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 4,
+    lineHeight: 28,
+    flexShrink: 1,
+    marginBottom: 8,
   },
-  scheduleText: {
-    fontSize: 13,
-    color: '#FFFFFF',
-    opacity: 0.85,
-    marginBottom: 4,
-    fontWeight: '500',
+  infoChipsContainer: {
+    marginTop: 4,
   },
-  dueDateText: {
-    fontSize: 14,
+  infoChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoChipText: {
+    fontSize: 11,
     color: '#FFFFFF',
     opacity: 0.9,
+    fontWeight: '500',
+    marginLeft: 6,
   },
   overdueText: {
     color: '#FFB3BA',
-    fontWeight: '600',
     opacity: 1,
   },
   bottomSection: {
@@ -215,37 +224,37 @@ const styles = StyleSheet.create({
   completedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: BORDER_RADIUS.large,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
   },
   completedText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#10B981',
+    marginLeft: 6,
   },
   pendingBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: BORDER_RADIUS.large,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
   },
   pendingBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6B7280',
   },
   overdueBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: BORDER_RADIUS.large,
-    backgroundColor: 'rgba(255, 179, 186, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
   },
   overdueBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFB3BA',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#EF4444',
   },
 });

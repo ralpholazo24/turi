@@ -290,32 +290,50 @@ export default function TaskDetailsScreen() {
             start={{ x: 1, y: 1 }}
             end={{ x: 0, y: 0 }}
             style={styles.taskCardGradient}>
+            {/* Background Icon */}
+            {(() => {
+              // eslint-disable-next-line import/namespace
+              const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+              return IconComponent ? (
+                <View style={styles.backgroundIconContainer}>
+                  <IconComponent size={120} color="rgba(255, 255, 255, 0.25)" />
+                </View>
+              ) : null;
+            })()}
             <View style={styles.taskCardContent}>
-              <View style={styles.iconContainer}>
-                <View style={styles.iconBackground}>
-                  {/* eslint-disable-next-line import/namespace */}
-                  {(() => {
-                    const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
-                    return IconComponent ? <IconComponent size={48} color="#FFFFFF" /> : null;
-                  })()}
+              {/* Top Section: Task Name */}
+              <View style={styles.topSection}>
+                <View style={styles.textSection}>
+                  <Text style={styles.taskName}>
+                    {task.name}
+                  </Text>
+                  {/* Info Chips */}
+                  <View style={styles.infoChipsContainer}>
+                    <View style={styles.infoChip}>
+                      <APP_ICONS.calendar size={12} color="#FFFFFF" />
+                      <Text style={styles.infoChipText}>
+                        {getFrequencyText()}
+                      </Text>
+                    </View>
+                    <View style={[styles.infoChip, styles.infoChipLast]}>
+                      <APP_ICONS.users size={12} color="#FFFFFF" />
+                      <Text style={styles.infoChipText}>
+                        {t('task.assignedMembersCount', { count: assignedMembers.length })}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               </View>
-              <View style={styles.taskInfo}>
-                <Text style={styles.taskName}>
-                  {task.name}
-                </Text>
-                <Text style={styles.frequency}>
-                  {getFrequencyText()}
-                </Text>
-                <Text style={styles.assignedMembersCountCard}>
-                  {t('task.assignedMembersCount', { count: assignedMembers.length })}
-                </Text>
-                {!completionStatus.isCompleted && (
+
+              {/* Bottom Section: Due Date */}
+              {!completionStatus.isCompleted && (
+                <View style={styles.dueDateSection}>
+                  <Text style={styles.dueDateLabel}>{t('task.dueDate')}</Text>
                   <Text style={[styles.nextDueDate, isOverdue && styles.overdueIndicator]}>
                     {getDueDateDisplay()}
                   </Text>
-                )}
-              </View>
+                </View>
+              )}
             </View>
           </LinearGradient>
         </View>
@@ -400,12 +418,12 @@ export default function TaskDetailsScreen() {
           </ThemedText>
         </TouchableOpacity>
 
-        {!completionStatus.isCompleted && !soloMode && (
+        {!completionStatus.isCompleted && !soloMode && assignedMembers.length > 1 && (
           <TouchableOpacity
             style={[styles.skipButton, { backgroundColor: backgroundColor, borderColor: borderColor + '50' }]}
             onPress={handleSkipTurn}
             activeOpacity={0.8}>
-            <ThemedText style={[styles.skipText, { color: groupColors.start }]} i18nKey="common.skip" />
+            <ThemedText style={[styles.skipText, { color: '#FF6B6B' }]} i18nKey="common.skip" />
           </TouchableOpacity>
         )}
       </View>
@@ -492,7 +510,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 160,
   },
   content: {
     flex: 1,
@@ -515,55 +533,73 @@ const styles = StyleSheet.create({
   },
   taskCardGradient: {
     borderRadius: BORDER_RADIUS.xlarge,
-    padding: 24,
+    padding: 16,
+    overflow: 'hidden',
+  },
+  backgroundIconContainer: {
+    position: 'absolute',
+    right: -10,
+    top: -10,
+    opacity: 1,
+    zIndex: 0,
   },
   taskCardContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    minHeight: 100,
+    zIndex: 1,
   },
-  iconContainer: {
-    marginRight: 20,
-    marginTop: 2,
+  topSection: {
+    marginBottom: 14,
   },
-  iconBackground: {
-    width: 72,
-    height: 72,
-    borderRadius: BORDER_RADIUS.circular.xlarge,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  taskInfo: {
+  textSection: {
     flex: 1,
-    paddingTop: 2,
+    minWidth: 0,
   },
   taskName: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 6,
-    lineHeight: 32,
+    lineHeight: 28,
+    flexShrink: 1,
+    marginBottom: 8,
   },
-  frequency: {
-    fontSize: 15,
-    fontWeight: '500',
+  infoChipsContainer: {
+    marginTop: 4,
+  },
+  infoChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoChipLast: {
+    marginBottom: 0,
+  },
+  infoChipText: {
+    fontSize: 11,
     color: '#FFFFFF',
     opacity: 0.9,
-    marginBottom: 6,
-  },
-  assignedMembersCountCard: {
-    fontSize: 13,
     fontWeight: '500',
+    marginLeft: 6,
+  },
+  dueDateSection: {
+    marginTop: 14,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  dueDateLabel: {
+    fontSize: 10,
     color: '#FFFFFF',
-    opacity: 0.85,
-    marginBottom: 4,
+    opacity: 0.75,
+    marginBottom: 6,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   nextDueDate: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
     color: '#FFFFFF',
-    opacity: 0.95,
-    marginTop: 2,
+    fontWeight: '600',
+    lineHeight: 22,
   },
   countdown: {
     fontSize: 13,
@@ -573,15 +609,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   overdueIndicator: {
-    fontSize: 14,
-    fontWeight: '600',
     color: '#FFB3BA',
-    marginTop: 4,
   },
   currentAssigneeSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
     paddingHorizontal: 4,
   },
   assigneeInfo: {
@@ -639,22 +672,23 @@ const styles = StyleSheet.create({
   },
   emptyHistory: {
     alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 60,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
   emptyIllustration: {
-    width: 280,
-    height: 280,
+    width: 240,
+    height: 240,
     opacity: 0.8,
-    marginBottom: 12,
-    marginTop: -20,
+    marginBottom: 8,
+    marginTop: -10,
   },
   emptyTitle: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   emptyText: {
     textAlign: 'center',
     opacity: 0.7,
+    paddingHorizontal: 20,
   },
   actionButtons: {
     position: 'absolute',
