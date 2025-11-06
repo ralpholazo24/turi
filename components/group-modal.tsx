@@ -12,9 +12,10 @@ import {
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
+import { Group } from '@/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
@@ -28,19 +29,33 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface AddGroupModalProps {
+interface GroupModalProps {
   visible: boolean;
   onClose: () => void;
+  group?: Group; // Optional - if provided, it's edit mode; if not, it's add mode
 }
 
-export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
+export function GroupModal({ visible, onClose, group }: GroupModalProps) {
   const { t } = useTranslation();
-  const { createGroup } = useAppStore();
-  const [name, setName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState<GroupIconName>(DEFAULT_GROUP_ICON);
-  const [selectedColor, setSelectedColor] = useState<GroupColorPreset>(DEFAULT_GROUP_COLOR);
+  const { createGroup, updateGroup } = useAppStore();
+  const isEditMode = !!group;
+
+  // Initialize state based on mode
+  const [name, setName] = useState(
+    isEditMode ? group!.name : ''
+  );
+  const [selectedIcon, setSelectedIcon] = useState<GroupIconName>(
+    isEditMode ? (group!.icon as GroupIconName) : DEFAULT_GROUP_ICON
+  );
+  const [selectedColor, setSelectedColor] = useState<GroupColorPreset>(
+    isEditMode
+      ? GROUP_COLOR_PRESETS.find(
+          (preset) => preset.name === group!.colorPreset
+        ) || GROUP_COLOR_PRESETS[0]
+      : DEFAULT_GROUP_COLOR
+  );
   const [showIconPicker, setShowIconPicker] = useState(false);
-  
+
   const colorSpacing = 12;
 
   const backgroundColor = useThemeColor({}, 'background');
@@ -54,37 +69,77 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
   const buttonTextColor = useThemeColor({}, 'background');
 
   const CloseIcon = APP_ICONS.close;
-  const EditIcon = APP_ICONS.pen;
   const CheckIcon = APP_ICONS.check;
+
+  // Update form when group changes (edit mode)
+  useEffect(() => {
+    if (visible && isEditMode && group) {
+      setName(group.name);
+      setSelectedIcon(group.icon as GroupIconName);
+      const matchingColor = GROUP_COLOR_PRESETS.find(
+        (preset) => preset.name === group.colorPreset
+      );
+      if (matchingColor) {
+        setSelectedColor(matchingColor);
+      }
+    } else if (visible && !isEditMode) {
+      // Add mode: reset to defaults
+      setName('');
+      setSelectedIcon(DEFAULT_GROUP_ICON);
+      setSelectedColor(DEFAULT_GROUP_COLOR);
+    }
+  }, [visible, group, isEditMode]);
 
   const handleSave = async () => {
     if (!name.trim()) {
       return;
     }
 
-    await createGroup(
-      name.trim(),
-      selectedIcon,
-      selectedColor.name
-    );
+    if (isEditMode && group) {
+      // Edit mode: update existing group
+      await updateGroup(group.id, {
+        name: name.trim(),
+        icon: selectedIcon,
+        colorPreset: selectedColor.name,
+      });
+    } else {
+      // Add mode: create new group
+      await createGroup(
+        name.trim(),
+        selectedIcon,
+        selectedColor.name
+      );
+    }
 
-    // Reset form
-    setName('');
-    setSelectedIcon(DEFAULT_GROUP_ICON);
-    setSelectedColor(DEFAULT_GROUP_COLOR);
     onClose();
   };
 
   const handleClose = () => {
-    setName('');
-    setSelectedIcon(DEFAULT_GROUP_ICON);
-    setSelectedColor(DEFAULT_GROUP_COLOR);
+    if (isEditMode && group) {
+      // Edit mode: reset to group values
+      setName(group.name);
+      setSelectedIcon(group.icon as GroupIconName);
+      const matchingColor = GROUP_COLOR_PRESETS.find(
+        (preset) => preset.name === group.colorPreset
+      );
+      if (matchingColor) {
+        setSelectedColor(matchingColor);
+      }
+    } else {
+      // Add mode: reset to defaults
+      setName('');
+      setSelectedIcon(DEFAULT_GROUP_ICON);
+      setSelectedColor(DEFAULT_GROUP_COLOR);
+    }
     onClose();
   };
 
   const IconComponent = (
     // eslint-disable-next-line import/namespace
-    LucideIcons[selectedIcon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>
+    LucideIcons[selectedIcon as keyof typeof LucideIcons] as React.ComponentType<{
+      size?: number;
+      color?: string;
+    }>
   );
 
   return (
@@ -103,7 +158,11 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
             <TouchableOpacity onPress={handleClose}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
-            <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="group.newGroup" />
+            <ThemedText
+              type="subtitle"
+              style={styles.headerTitle}
+              i18nKey={isEditMode ? 'group.editGroup' : 'group.newGroup'}
+            />
             <TouchableOpacity
               style={[
                 styles.headerSaveButton,
@@ -134,9 +193,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
                       start={{ x: 1, y: 1 }}
                       end={{ x: 0, y: 0 }}
                       style={styles.previewGradient}>
-                      {IconComponent && (
-                        <IconComponent size={48} color="#FFFFFF" />
-                      )}
+                      {IconComponent && <IconComponent size={48} color="#FFFFFF" />}
                     </LinearGradient>
                   </View>
                 </TouchableOpacity>
@@ -158,6 +215,7 @@ export function AddGroupModal({ visible, onClose }: AddGroupModalProps) {
                 placeholderTextColor={textColor + '80'}
                 value={name}
                 onChangeText={setName}
+                autoFocus={isEditMode}
               />
             </View>
 
@@ -308,9 +366,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  labelIcon: {
-    marginRight: 8,
-  },
   label: {
     fontSize: 16,
     fontWeight: '600',
@@ -354,3 +409,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+

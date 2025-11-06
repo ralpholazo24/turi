@@ -1,5 +1,5 @@
-import { AddGroupModal } from '@/components/add-group-modal';
 import { GroupCard } from '@/components/group-card';
+import { GroupModal } from '@/components/group-modal';
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
@@ -92,7 +92,7 @@ export default function HomeScreen() {
       </TouchableOpacity>
 
       {/* Add Group Modal */}
-      <AddGroupModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+      <GroupModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
     </SafeAreaView>
   );
 }

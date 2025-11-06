@@ -1,7 +1,7 @@
 import { AddMemberModal } from '@/components/add-member-modal';
 import { ConfirmationModal } from '@/components/confirmation-modal';
-import { EditGroupModal } from '@/components/edit-group-modal';
 import { GroupContextMenu } from '@/components/group-context-menu';
+import { GroupModal } from '@/components/group-modal';
 import { GroupTabs } from '@/components/group-tabs';
 import { MemberChipList } from '@/components/member-chip-list';
 import { TaskCardList } from '@/components/task-card-list';
@@ -187,7 +187,7 @@ export default function GroupScreen() {
 
       {/* Edit Group Modal */}
       {group && (
-        <EditGroupModal
+        <GroupModal
           visible={isEditModalVisible}
           onClose={handleCloseModals}
           group={group}
