@@ -186,8 +186,8 @@ export function MemberChipList({ group }: MemberChipListProps) {
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   
   // Check if a member is the owner
-  const isOwner = (member: Member) => {
-    return user && member.id === user.id && group.ownerId === user.id;
+  const isOwner = (member: Member): boolean => {
+    return !!(user && member.id === user.id && group.ownerId === user.id);
   };
 
   const backgroundColor = useThemeColor({}, 'background');

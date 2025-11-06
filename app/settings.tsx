@@ -97,10 +97,8 @@ export default function SettingsScreen() {
         [
           {
             text: t('common.ok'),
-            onPress: () => {
-              // Navigate to home screen
-              router.replace('/(tabs)' as any);
-            },
+            // No navigation needed - the useEffect in _layout.tsx will automatically
+            // redirect to onboarding when onboardingCompleted becomes false
           },
         ]
       );

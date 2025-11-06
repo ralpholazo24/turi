@@ -39,11 +39,8 @@ export function TaskCard({
   // Check if task is overdue
   const isOverdue = isTaskOverdue(task);
   
-  // Get formatted schedule information
-  const scheduleInfo = formatScheduleInfo(task);
-  
-  // Get next due date text using actual calculation
-  const dueDateText = formatNextDueDate(task);
+  // Get formatted schedule information with date
+  const scheduleInfo = formatScheduleInfo(task, isOverdue);
   
   const CheckIcon = APP_ICONS.check;
 
@@ -78,16 +75,13 @@ export function TaskCard({
                   <View style={styles.infoChip}>
                     <APP_ICONS.calendar size={12} color="#FFFFFF" />
                     <Text style={styles.infoChipText}>
-                      {scheduleInfo}
+                      {scheduleInfo.text.split(' - ')[0]}
                     </Text>
-                  </View>
-                )}
-                {!completionStatus.isCompleted && (
-                  <View style={styles.infoChip}>
-                    <APP_ICONS.clock size={12} color="#FFFFFF" />
-                    <Text style={[styles.infoChipText, isOverdue && styles.overdueText]}>
-                      {isOverdue ? t('common.overdue') : dueDateText}
-                    </Text>
+                    {scheduleInfo.dateText && (
+                      <Text style={[styles.infoChipText, styles.dateText, scheduleInfo.isOverdue && styles.overdueDateText]}>
+                        {' - ' + scheduleInfo.dateText}
+                      </Text>
+                    )}
                   </View>
                 )}
               </View>
@@ -198,8 +192,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: 6,
   },
-  overdueText: {
-    color: '#FFB3BA',
+  dateText: {
+    marginLeft: 0,
+  },
+  overdueDateText: {
+    color: '#FF6B6B',
     opacity: 1,
   },
   bottomSection: {

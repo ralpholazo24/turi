@@ -390,10 +390,24 @@
     "clearDataMessage": "This will permanently delete all your groups, tasks, members, and preferences. This action cannot be undone.",
     "ok": "OK"
   },
+  "schedule": {
+    "repeat": {
+      "daily": "Daily",
+      "weekdays": "Weekdays",
+      "weekends": "Weekends",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly",
+      "monthly": "Monthly",
+      "every3months": "Every 3 Months",
+      "every6months": "Every 6 Months",
+      "yearly": "Yearly"
+    }
+  },
   "taskModal": {
     "taskName": "Task name",
-    "howOften": "How often?",
+    "repeat": "Repeat",
     "schedule": "Schedule",
+    "startDate": "Start Date",
     "week": "Week:",
     "day": "Day",
     "dayOfMonth": "Day of month",

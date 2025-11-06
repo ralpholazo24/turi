@@ -181,3 +181,65 @@ export function parseTime(timeString: string): { hours: number; minutes: number 
   return { hours, minutes };
 }
 
+/**
+ * Check if a date is a weekday (Monday-Friday)
+ */
+export function isWeekday(date: Date): boolean {
+  const day = date.getDay();
+  return day >= 1 && day <= 5; // Monday = 1, Friday = 5
+}
+
+/**
+ * Check if a date is a weekend (Saturday-Sunday)
+ */
+export function isWeekend(date: Date): boolean {
+  const day = date.getDay();
+  return day === 0 || day === 6; // Sunday = 0, Saturday = 6
+}
+
+/**
+ * Get the next weekday (Monday-Friday) from a given date
+ */
+export function getNextWeekday(fromDate: Date): Date {
+  const next = new Date(fromDate);
+  next.setDate(next.getDate() + 1);
+  
+  // If it's already a weekday and we're looking for the next one, move forward
+  if (isWeekday(fromDate)) {
+    // If today is Friday, next weekday is Monday (3 days later)
+    if (fromDate.getDay() === 5) {
+      next.setDate(next.getDate() + 2); // Skip weekend
+    }
+  } else {
+    // If it's a weekend, find the next weekday
+    while (!isWeekday(next)) {
+      next.setDate(next.getDate() + 1);
+    }
+  }
+  
+  return next;
+}
+
+/**
+ * Get the next weekend day (Saturday or Sunday) from a given date
+ */
+export function getNextWeekendDay(fromDate: Date): Date {
+  const next = new Date(fromDate);
+  next.setDate(next.getDate() + 1);
+  
+  // If it's already a weekend and we're looking for the next one, move forward
+  if (isWeekend(fromDate)) {
+    // If today is Sunday, next weekend is Saturday (6 days later)
+    if (fromDate.getDay() === 0) {
+      next.setDate(next.getDate() + 5); // Skip weekdays
+    }
+  } else {
+    // If it's a weekday, find the next weekend
+    while (!isWeekend(next)) {
+      next.setDate(next.getDate() + 1);
+    }
+  }
+  
+  return next;
+}
+

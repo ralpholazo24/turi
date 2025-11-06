@@ -387,10 +387,24 @@
     "dark": "Oscuro",
     "system": "Sistema"
   },
+  "schedule": {
+    "repeat": {
+      "daily": "Diario",
+      "weekdays": "Días laborables",
+      "weekends": "Fines de semana",
+      "weekly": "Semanal",
+      "biweekly": "Quincenal",
+      "monthly": "Mensual",
+      "every3months": "Cada 3 meses",
+      "every6months": "Cada 6 meses",
+      "yearly": "Anual"
+    }
+  },
   "taskModal": {
     "taskName": "Nombre de la tarea",
-    "howOften": "¿Con qué frecuencia?",
+    "repeat": "Repetir",
     "schedule": "Horario",
+    "startDate": "Fecha de inicio",
     "week": "Semana:",
     "day": "Día:",
     "dayOfMonth": "Día del mes",

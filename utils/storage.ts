@@ -75,12 +75,101 @@ function migrateData(data: AppData): AppData {
         // Add avatarColor if it doesn't exist (backward compatibility)
         avatarColor: member.avatarColor || getColorFromName(member.name),
       })),
-      tasks: oldGroup.tasks.map((task) => ({
-        ...task,
+      tasks: oldGroup.tasks.map((task) => {
+        const oldTask = task as any;
+
         // Add createdAt if it doesn't exist (backward compatibility)
-        // Use Unix epoch as fallback so overdue detection still works
-        createdAt: (task as any).createdAt || "1970-01-01T00:00:00.000Z",
-      })),
+        const createdAt = oldTask.createdAt || "1970-01-01T00:00:00.000Z";
+
+        // Migrate schedule format from old structure to new structure
+        let schedule: any;
+
+        if (oldTask.schedule && oldTask.schedule.repeat) {
+          // Task already has new schedule format - use it as is
+          schedule = oldTask.schedule;
+        } else if (oldTask.frequency) {
+          // Old format: migrate frequency to schedule.repeat
+          const oldFrequency = oldTask.frequency;
+          let repeat: string;
+
+          // Map old frequency values to new repeat values
+          switch (oldFrequency) {
+            case "daily":
+              repeat = "daily";
+              break;
+            case "weekly":
+              repeat = "weekly";
+              break;
+            case "monthly":
+              repeat = "monthly";
+              break;
+            default:
+              // Fallback to daily for unknown frequencies
+              repeat = "daily";
+              break;
+          }
+
+          // Build new schedule object
+          schedule = {
+            repeat,
+            startDate: createdAt, // Use createdAt as startDate
+            time: oldTask.scheduleTime || undefined,
+            dayOfWeek:
+              oldTask.scheduleDay !== undefined
+                ? oldTask.scheduleDay
+                : undefined,
+          };
+
+          // For weekly and biweekly, ensure dayOfWeek is set
+          if (
+            (repeat === "weekly" || repeat === "biweekly") &&
+            schedule.dayOfWeek === undefined
+          ) {
+            // Default to the day of week from createdAt if scheduleDay wasn't set
+            const createdDate = new Date(createdAt);
+            schedule.dayOfWeek = createdDate.getDay();
+          }
+        } else {
+          // No frequency or schedule - create default schedule
+          schedule = {
+            repeat: "daily",
+            startDate: createdAt,
+          };
+        }
+
+        // Migrate lastCompletedAt to completionHistory if needed
+        let completionHistory = oldTask.completionHistory || [];
+        if (oldTask.lastCompletedAt && !completionHistory.length) {
+          // Convert lastCompletedAt to completionHistory format
+          completionHistory = [
+            {
+              type: "completed" as const,
+              memberId:
+                oldTask.memberIds[oldTask.assignedIndex] ||
+                oldTask.memberIds[0] ||
+                "",
+              timestamp: oldTask.lastCompletedAt,
+            },
+          ];
+        }
+
+        // Return migrated task, removing old properties
+        const migratedTask: any = {
+          ...oldTask,
+          createdAt,
+          schedule,
+          completionHistory,
+        };
+
+        // Remove old properties that are no longer used
+        delete migratedTask.frequency;
+        delete migratedTask.scheduleDay;
+        delete migratedTask.scheduleWeek;
+        delete migratedTask.scheduleTime;
+        delete migratedTask.lastCompletedAt;
+
+        return migratedTask;
+      }),
     };
   });
 

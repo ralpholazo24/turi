@@ -7,10 +7,7 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
-import { getDaysDifference, startOfDay } from '@/utils/date-helpers';
-import { formatDetailedNextDueDate, getDueDateCountdown } from '@/utils/due-date-format';
 import { getColorsFromPreset } from '@/utils/group-colors';
-import { calculateNextDueDate } from '@/utils/notification-schedule';
 import { isSoloMode } from '@/utils/solo-mode';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
@@ -83,39 +80,11 @@ export default function TaskDetailsScreen() {
   const assignedMembers = group.members.filter((m) => task.memberIds.includes(m.id));
   const currentMember = assignedMembers[task.assignedIndex] || null;
 
-  // Format frequency text
-  const getFrequencyText = () => {
-    const scheduleInfo = formatScheduleInfo(task);
-    if (scheduleInfo) return scheduleInfo;
-    // Fallback to frequency name
-    if (task.frequency === 'daily') return t('task.daily');
-    if (task.frequency === 'weekly') return t('task.weekly');
-    return t('task.monthly');
-  };
+  // Check if task is overdue (needed before formatScheduleInfo)
+  const isOverdue = isTaskOverdue(task);
 
-  // Determine what to show for due date (detailed date or countdown)
-  const getDueDateDisplay = () => {
-    if (isOverdue) {
-      return t('common.overdue');
-    }
-
-    const nextDueDate = calculateNextDueDate(task);
-    if (!nextDueDate) {
-      return formatDetailedNextDueDate(task);
-    }
-
-    const now = new Date();
-    const today = startOfDay(now);
-    const dueDateStart = startOfDay(nextDueDate);
-    const daysDiff = getDaysDifference(today, dueDateStart);
-
-    // Show countdown if within 7 days, otherwise show detailed date
-    if (daysDiff <= 7) {
-      return getDueDateCountdown(task);
-    } else {
-      return formatDetailedNextDueDate(task);
-    }
-  };
+  // Format schedule info with date
+  const scheduleInfo = formatScheduleInfo(task, isOverdue);
 
   // Format completion date
   const formatDate = (dateString: string) => {
@@ -170,9 +139,6 @@ export default function TaskDetailsScreen() {
 
   // Check if task is already completed
   const completionStatus = getTaskCompletionStatus(task);
-  
-  // Check if task is overdue
-  const isOverdue = isTaskOverdue(task);
   
   // Check if group is in solo mode
   const soloMode = isSoloMode(group);
@@ -312,8 +278,13 @@ export default function TaskDetailsScreen() {
                     <View style={styles.infoChip}>
                       <APP_ICONS.calendar size={12} color="#FFFFFF" />
                       <Text style={styles.infoChipText}>
-                        {getFrequencyText()}
+                        {scheduleInfo.text.split(' - ')[0]}
                       </Text>
+                      {scheduleInfo.dateText && (
+                        <Text style={[styles.infoChipText, styles.dateText, scheduleInfo.isOverdue && styles.overdueDateText]}>
+                          {' - ' + scheduleInfo.dateText}
+                        </Text>
+                      )}
                     </View>
                     <View style={[styles.infoChip, styles.infoChipLast]}>
                       <APP_ICONS.users size={12} color="#FFFFFF" />
@@ -324,16 +295,6 @@ export default function TaskDetailsScreen() {
                   </View>
                 </View>
               </View>
-
-              {/* Bottom Section: Due Date */}
-              {!completionStatus.isCompleted && (
-                <View style={styles.dueDateSection}>
-                  <Text style={styles.dueDateLabel}>{t('task.dueDate')}</Text>
-                  <Text style={[styles.nextDueDate, isOverdue && styles.overdueIndicator]}>
-                    {getDueDateDisplay()}
-                  </Text>
-                </View>
-              )}
             </View>
           </LinearGradient>
         </View>
@@ -580,36 +541,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: 6,
   },
-  dueDateSection: {
-    marginTop: 14,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  dateText: {
+    marginLeft: 0,
   },
-  dueDateLabel: {
-    fontSize: 10,
-    color: '#FFFFFF',
-    opacity: 0.75,
-    marginBottom: 6,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  nextDueDate: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: '600',
-    lineHeight: 22,
-  },
-  countdown: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#FFFFFF',
-    opacity: 0.85,
-    marginTop: 2,
-  },
-  overdueIndicator: {
-    color: '#FFB3BA',
+  overdueDateText: {
+    color: '#FF6B6B',
+    opacity: 1,
   },
   currentAssigneeSection: {
     flexDirection: 'row',

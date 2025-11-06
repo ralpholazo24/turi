@@ -5,7 +5,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 
 interface TimePickerProps {
   value: string; // HH:MM format
@@ -25,6 +25,7 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
 
   const ClockIcon = APP_ICONS.clock;
   const XIcon = APP_ICONS.close;
+  const CloseIcon = APP_ICONS.close;
 
   // Parse value to Date object
   const getDateFromValue = (timeString: string): Date => {
@@ -53,24 +54,27 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
   }, [value]);
 
   const handleTimeChange = (event: any, date?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
-
-    if (event.type === 'set' && date) {
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      const timeString = `${hours}:${minutes}`;
+    if (date) {
       setSelectedTime(date);
-      onChange(timeString);
-      
-      // On iOS, dismiss after selection
-      if (Platform.OS === 'ios') {
+      // On Android, auto-close and save
+      if (Platform.OS === 'android' && event.type === 'set') {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}`;
+        onChange(timeString);
         setShowPicker(false);
       }
     } else if (event.type === 'dismissed') {
       setShowPicker(false);
     }
+  };
+
+  const handleDone = () => {
+    const hours = selectedTime.getHours().toString().padStart(2, '0');
+    const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+    const timeString = `${hours}:${minutes}`;
+    onChange(timeString);
+    setShowPicker(false);
   };
 
   const formatTimeDisplay = (date: Date): string => {
@@ -113,70 +117,62 @@ export function TimePicker({ value, onChange, onClear }: TimePickerProps) {
         )}
       </TouchableOpacity>
 
-      {showPicker && (
-        <>
-          {Platform.OS === 'ios' ? (
-            <Modal
-              visible={showPicker}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setShowPicker(false)}>
-              <View style={styles.modalContainer}>
-                <TouchableOpacity
-                  style={styles.modalBackdrop}
-                  activeOpacity={1}
-                  onPress={() => setShowPicker(false)}
+      <Modal
+        visible={showPicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowPicker(false)}>
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowPicker(false)}>
+          <View style={[styles.timePickerModal, { backgroundColor }]}>
+            <View style={styles.timePickerHeader}>
+              <ThemedText style={[styles.timePickerTitle, { color: textColor }]}>
+                {t('timePicker.selectTimeTitle')}
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => setShowPicker(false)}
+                style={styles.timePickerCloseButton}>
+                <CloseIcon size={24} color={textColor} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.timePickerContent}>
+              {Platform.OS === 'ios' ? (
+                <DateTimePicker
+                  value={selectedTime}
+                  mode="time"
+                  is24Hour={false}
+                  display="spinner"
+                  onChange={(event, date) => {
+                    if (date) {
+                      setSelectedTime(date);
+                    }
+                  }}
+                  textColor={textColor}
                 />
-                <View style={[styles.modalContent, { backgroundColor }]}>
-                  <View style={[styles.modalHeader, { borderBottomColor: borderColor + '30' }]}>
-                    <TouchableOpacity
-                      onPress={() => setShowPicker(false)}
-                      style={styles.cancelButton}>
-                      <ThemedText style={[styles.cancelButtonText, { color: iconColor }]} i18nKey="timePicker.cancel" />
-                    </TouchableOpacity>
-                    <ThemedText style={styles.modalTitle} i18nKey="timePicker.selectTimeTitle" />
-                    <TouchableOpacity
-                      onPress={() => {
-                        const hours = selectedTime.getHours().toString().padStart(2, '0');
-                        const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
-                        onChange(`${hours}:${minutes}`);
-                        setShowPicker(false);
-                      }}
-                      style={styles.doneButton}>
-                      <ThemedText style={styles.doneButtonText} i18nKey="timePicker.done" />
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.pickerWrapper}>
-                    <View style={styles.pickerContainer}>
-                      <DateTimePicker
-                        value={selectedTime}
-                        mode="time"
-                        is24Hour={false}
-                        display="spinner"
-                        onChange={(event, date) => {
-                          if (date) {
-                            setSelectedTime(date);
-                          }
-                        }}
-                        style={styles.picker}
-                        textColor={textColor}
-                      />
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </Modal>
-          ) : (
-            <DateTimePicker
-              value={selectedTime}
-              mode="time"
-              is24Hour={false}
-              display="default"
-              onChange={handleTimeChange}
-            />
-          )}
-        </>
-      )}
+              ) : (
+                <DateTimePicker
+                  value={selectedTime}
+                  mode="time"
+                  is24Hour={false}
+                  display="default"
+                  onChange={handleTimeChange}
+                />
+              )}
+            </View>
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                style={[styles.timePickerDoneButton, { backgroundColor: textColor }]}
+                onPress={handleDone}>
+                <Text style={[styles.timePickerDoneText, { color: backgroundColor }]}>
+                  {t('common.done')}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -214,76 +210,49 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalContainer: {
+  modalBackdrop: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
-  modalBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '85%',
+  timePickerModal: {
+    width: '100%',
     maxWidth: 400,
-    borderRadius: BORDER_RADIUS.xlarge,
-    paddingBottom: 20,
-    paddingHorizontal: 0,
+    borderRadius: BORDER_RADIUS.large,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
-  modalHeader: {
+  timePickerHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    justifyContent: 'space-between',
+    padding: 20,
     borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
-  cancelButton: {
-    paddingVertical: 8,
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  modalTitle: {
+  timePickerTitle: {
     fontSize: 18,
     fontWeight: '600',
   },
-  doneButton: {
-    paddingVertical: 8,
+  timePickerCloseButton: {
+    padding: 4,
   },
-  doneButtonText: {
+  timePickerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  timePickerDoneButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: BORDER_RADIUS.medium,
+    margin: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timePickerDoneText: {
     fontSize: 16,
-    color: '#10B981',
     fontWeight: '600',
-  },
-  picker: {
-    height: 200,
-    width: '100%',
-    alignSelf: 'center',
-    marginHorizontal: 0,
-    paddingHorizontal: 0,
-  },
-  pickerWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    paddingHorizontal: 0,
-    overflow: 'hidden',
-  },
-  pickerContainer: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: -20, // Compensate for iOS picker's default padding
   },
 });

@@ -7,8 +7,9 @@ import { APP_ICONS } from '@/constants/icons';
 import { TASK_ICON_OPTIONS, type TaskIconName } from '@/constants/icons-task-member';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
-import { Group, Task } from '@/types';
+import { Group, Task, TaskSchedule } from '@/types';
 import { isSoloMode } from '@/utils/solo-mode';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as LucideIcons from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,33 +38,15 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   const { updateTask } = useAppStore();
   const [taskName, setTaskName] = useState(task.name);
   const [selectedIcon, setSelectedIcon] = useState<TaskIconName>(task.icon as TaskIconName);
-  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>(task.frequency);
+  const [repeat, setRepeat] = useState<TaskSchedule['repeat']>(task.schedule.repeat);
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set(task.memberIds));
   const [showIconPicker, setShowIconPicker] = useState(false);
   
   // Scheduling options - initialize from task.schedule
-  const getInitialSchedule = () => {
-    if (!task.schedule) return { dayOfMonth: undefined, day: undefined, time: '' };
-    if (task.schedule.frequency === 'daily') {
-      return { dayOfMonth: undefined, day: undefined, time: task.schedule.time || '' };
-    }
-    if (task.schedule.frequency === 'weekly') {
-      return { dayOfMonth: undefined, day: task.schedule.day, time: task.schedule.time || '' };
-    }
-    if (task.schedule.frequency === 'monthly') {
-      if (task.schedule.type === 'dayOfMonth') {
-        return { dayOfMonth: task.schedule.dayOfMonth, day: undefined, time: task.schedule.time || '' };
-      }
-      // For other monthly types, we'll handle separately
-      return { dayOfMonth: undefined, day: task.schedule.dayOfWeek, time: task.schedule.time || '' };
-    }
-    return { dayOfMonth: undefined, day: undefined, time: '' };
-  };
-  
-  const initialSchedule = getInitialSchedule();
-  const [scheduleDayOfMonth, setScheduleDayOfMonth] = useState<number | undefined>(initialSchedule.dayOfMonth);
-  const [scheduleDay, setScheduleDay] = useState<number | undefined>(initialSchedule.day);
-  const [scheduleTime, setScheduleTime] = useState<string>(initialSchedule.time);
+  const [startDate, setStartDate] = useState<Date>(new Date(task.schedule.startDate));
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [scheduleDay, setScheduleDay] = useState<number | undefined>(task.schedule.dayOfWeek);
+  const [scheduleTime, setScheduleTime] = useState<string>(task.schedule.time || '');
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -90,9 +73,19 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
     { value: 5, label: t('task.friday') },
     { value: 6, label: t('task.saturday') },
   ];
-  
-  // Days of the month (1-31) for monthly tasks
-  const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  // Repeat options
+  const REPEAT_OPTIONS: { value: TaskSchedule['repeat']; label: string }[] = [
+    { value: 'daily', label: t('schedule.repeat.daily') },
+    { value: 'weekdays', label: t('schedule.repeat.weekdays') },
+    { value: 'weekends', label: t('schedule.repeat.weekends') },
+    { value: 'weekly', label: t('schedule.repeat.weekly') },
+    { value: 'biweekly', label: t('schedule.repeat.biweekly') },
+    { value: 'monthly', label: t('schedule.repeat.monthly') },
+    { value: 'every3months', label: t('schedule.repeat.every3months') },
+    { value: 'every6months', label: t('schedule.repeat.every6months') },
+    { value: 'yearly', label: t('schedule.repeat.yearly') },
+  ];
   
   // Validate time format (HH:MM)
   const validateTime = (time: string): boolean => {
@@ -113,38 +106,16 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
     if (visible) {
       setTaskName(task.name);
       setSelectedIcon(task.icon as TaskIconName);
-      setFrequency(task.frequency);
+      setRepeat(task.schedule.repeat);
+      setStartDate(new Date(task.schedule.startDate));
       // In solo mode, automatically select the solo member
       if (isSoloMode(group)) {
         setSelectedMembers(new Set([group.members[0].id]));
       } else {
         setSelectedMembers(new Set(task.memberIds));
       }
-      const schedule = task.schedule;
-      if (schedule) {
-        if (schedule.frequency === 'daily') {
-          setScheduleDayOfMonth(undefined);
-          setScheduleDay(undefined);
-          setScheduleTime(schedule.time || '');
-        } else if (schedule.frequency === 'weekly') {
-          setScheduleDayOfMonth(undefined);
-          setScheduleDay(schedule.day);
-          setScheduleTime(schedule.time || '');
-        } else if (schedule.frequency === 'monthly') {
-          if (schedule.type === 'dayOfMonth') {
-            setScheduleDayOfMonth(schedule.dayOfMonth);
-            setScheduleDay(undefined);
-          } else {
-            setScheduleDayOfMonth(undefined);
-            setScheduleDay(schedule.dayOfWeek);
-          }
-          setScheduleTime(schedule.time || '');
-        }
-      } else {
-        setScheduleDayOfMonth(undefined);
-        setScheduleDay(undefined);
-        setScheduleTime('');
-      }
+      setScheduleDay(task.schedule.dayOfWeek);
+      setScheduleTime(task.schedule.time || '');
     }
   }, [visible, task, group]);
 
@@ -198,33 +169,22 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       newAssignedIndex = newMemberIds.indexOf(currentMemberId);
     }
 
-    // Build schedule object based on frequency
-    let schedule: import('@/types').TaskSchedule | undefined;
-    if (frequency === 'daily') {
-      schedule = scheduleTime ? { frequency: 'daily', time: scheduleTime } : undefined;
-    } else if (frequency === 'weekly') {
-      if (scheduleDay !== undefined) {
-        schedule = {
-          frequency: 'weekly',
-          day: scheduleDay,
-          time: scheduleTime || undefined,
-        };
-      }
-    } else if (frequency === 'monthly') {
-      if (scheduleDayOfMonth !== undefined) {
-        schedule = {
-          frequency: 'monthly',
-          type: 'dayOfMonth',
-          dayOfMonth: scheduleDayOfMonth,
-          time: scheduleTime || undefined,
-        };
-      }
+    // Validate dayOfWeek for weekly/biweekly
+    if ((repeat === 'weekly' || repeat === 'biweekly') && scheduleDay === undefined) {
+      return; // Can't update weekly/biweekly task without day of week
     }
+
+    // Build schedule object
+    const schedule: TaskSchedule = {
+      repeat,
+      startDate: startDate.toISOString(),
+      time: scheduleTime || undefined,
+      dayOfWeek: (repeat === 'weekly' || repeat === 'biweekly') ? scheduleDay : undefined,
+    };
 
     await updateTask(group.id, task.id, {
       name: taskName.trim(),
       icon: selectedIcon,
-      frequency,
       memberIds: newMemberIds,
       assignedIndex: newAssignedIndex,
       schedule,
@@ -236,33 +196,11 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   const handleClose = () => {
     setTaskName(task.name);
     setSelectedIcon(task.icon as TaskIconName);
-    setFrequency(task.frequency);
+    setRepeat(task.schedule.repeat);
+    setStartDate(new Date(task.schedule.startDate));
     setSelectedMembers(new Set(task.memberIds));
-    const schedule = task.schedule;
-    if (schedule) {
-      if (schedule.frequency === 'daily') {
-        setScheduleDayOfMonth(undefined);
-        setScheduleDay(undefined);
-        setScheduleTime(schedule.time || '');
-      } else if (schedule.frequency === 'weekly') {
-        setScheduleDayOfMonth(undefined);
-        setScheduleDay(schedule.day);
-        setScheduleTime(schedule.time || '');
-      } else if (schedule.frequency === 'monthly') {
-        if (schedule.type === 'dayOfMonth') {
-          setScheduleDayOfMonth(schedule.dayOfMonth);
-          setScheduleDay(undefined);
-        } else {
-          setScheduleDayOfMonth(undefined);
-          setScheduleDay(schedule.dayOfWeek);
-        }
-        setScheduleTime(schedule.time || '');
-      }
-    } else {
-      setScheduleDayOfMonth(undefined);
-      setScheduleDay(undefined);
-      setScheduleTime('');
-    }
+    setScheduleDay(task.schedule.dayOfWeek);
+    setScheduleTime(task.schedule.time || '');
     onClose();
   };
 
@@ -387,61 +325,38 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
               />
             </View>
 
-            {/* Frequency Selector */}
+            {/* Repeat Selector */}
             <View style={styles.section}>
-              <ThemedText style={styles.label} i18nKey="taskModal.howOften" />
-              <View style={styles.frequencyContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.frequencyButton,
-                    frequency === 'daily' && styles.frequencyButtonActive,
-                    { backgroundColor: frequency === 'daily' ? '#10B981' : borderColor + '30' },
-                  ]}
-                  onPress={() => setFrequency('daily')}>
-                  <CalendarIcon size={20} color={frequency === 'daily' ? '#FFFFFF' : iconColor} />
-                  <Text
+              <ThemedText style={styles.label} i18nKey="taskModal.repeat" />
+              <View style={styles.repeatContainer}>
+                {REPEAT_OPTIONS.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
                     style={[
-                      styles.frequencyText,
-                      frequency === 'daily' && styles.frequencyTextActive,
-                      { color: frequency === 'daily' ? '#FFFFFF' : iconColor },
-                    ]}>
-                    {t('task.daily')}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.frequencyButton,
-                    frequency === 'weekly' && styles.frequencyButtonActive,
-                    { backgroundColor: frequency === 'weekly' ? '#10B981' : borderColor + '30' },
-                  ]}
-                  onPress={() => setFrequency('weekly')}>
-                  <CalendarIcon size={20} color={frequency === 'weekly' ? '#FFFFFF' : iconColor} />
-                  <Text
-                    style={[
-                      styles.frequencyText,
-                      frequency === 'weekly' && styles.frequencyTextActive,
-                      { color: frequency === 'weekly' ? '#FFFFFF' : iconColor },
-                    ]}>
-                    {t('task.weekly')}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.frequencyButton,
-                    frequency === 'monthly' && styles.frequencyButtonActive,
-                    { backgroundColor: frequency === 'monthly' ? '#10B981' : borderColor + '30' },
-                  ]}
-                  onPress={() => setFrequency('monthly')}>
-                  <CalendarIcon size={20} color={frequency === 'monthly' ? '#FFFFFF' : iconColor} />
-                  <Text
-                    style={[
-                      styles.frequencyText,
-                      frequency === 'monthly' && styles.frequencyTextActive,
-                      { color: frequency === 'monthly' ? '#FFFFFF' : iconColor },
-                    ]}>
-                    {t('task.monthly')}
-                  </Text>
-                </TouchableOpacity>
+                      styles.repeatButton,
+                      repeat === option.value && styles.repeatButtonActive,
+                      { 
+                        backgroundColor: repeat === option.value ? '#10B981' : borderColor + '30',
+                        borderColor: repeat === option.value ? '#10B981' : borderColor + '30',
+                      },
+                    ]}
+                    onPress={() => {
+                      setRepeat(option.value);
+                      // Clear dayOfWeek if switching away from weekly/biweekly
+                      if (option.value !== 'weekly' && option.value !== 'biweekly') {
+                        setScheduleDay(undefined);
+                      }
+                    }}>
+                    <Text
+                      style={[
+                        styles.repeatButtonText,
+                        repeat === option.value && styles.repeatButtonTextActive,
+                        { color: repeat === option.value ? '#FFFFFF' : textColor },
+                      ]}>
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
 
@@ -449,8 +364,21 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
             <View style={styles.section}>
               <ThemedText style={styles.label} i18nKey="taskModal.schedule" />
               
-              {/* Day selector for weekly */}
-              {frequency === 'weekly' && (
+              {/* Start Date Picker */}
+              <View style={styles.scheduleRow}>
+                <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.startDate" />
+                <TouchableOpacity
+                  style={[styles.dateButton, { backgroundColor, borderColor }]}
+                  onPress={() => setShowStartDatePicker(true)}>
+                  <CalendarIcon size={20} color={textColor} style={styles.icon} />
+                  <ThemedText style={[styles.dateText, { color: textColor }]}>
+                    {startDate.toLocaleDateString()}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+
+              {/* Day selector for weekly/biweekly */}
+              {(repeat === 'weekly' || repeat === 'biweekly') && (
                 <View style={styles.scheduleRow}>
                   <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.day" />
                   <ScrollView
@@ -480,39 +408,7 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                 </View>
               )}
 
-              {/* Day of month selector for monthly */}
-              {frequency === 'monthly' && (
-                <View style={styles.scheduleRow}>
-                  <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.dayOfMonth" />
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.dayScroll}
-                    contentContainerStyle={styles.dayOfMonthContainer}>
-                    {DAYS_OF_MONTH.map((day) => (
-                      <TouchableOpacity
-                        key={day}
-                        style={[
-                          styles.scheduleButton,
-                          scheduleDayOfMonth === day && styles.scheduleButtonActive,
-                          { backgroundColor: scheduleDayOfMonth === day ? '#10B981' : borderColor + '30' },
-                        ]}
-                        onPress={() => setScheduleDayOfMonth(day)}>
-                        <Text
-                          style={[
-                            styles.scheduleButtonText,
-                            scheduleDayOfMonth === day && styles.scheduleButtonTextActive,
-                            { color: scheduleDayOfMonth === day ? '#FFFFFF' : iconColor },
-                          ]}>
-                          {day}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
-              {/* Time selector - Optional for all frequencies */}
+              {/* Time selector - Optional */}
               <View style={styles.scheduleRow}>
                 <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.timeOptional" />
                 <TimePicker
@@ -535,6 +431,67 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
         selectedIcon={selectedIcon}
         title={t('taskModal.pickIcon')}
       />
+
+      {/* Date Picker Modal */}
+      <Modal
+        visible={showStartDatePicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowStartDatePicker(false)}>
+        <TouchableOpacity
+          style={styles.dropdownBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowStartDatePicker(false)}>
+          <View style={[styles.datePickerModal, { backgroundColor }]}>
+            <View style={styles.datePickerHeader}>
+              <ThemedText style={[styles.datePickerTitle, { color: textColor }]}>
+                {t('taskModal.startDate')}
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => setShowStartDatePicker(false)}
+                style={styles.datePickerCloseButton}>
+                <CloseIcon size={24} color={textColor} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.datePickerContent}>
+              {Platform.OS === 'ios' ? (
+                <DateTimePicker
+                  value={startDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      setStartDate(selectedDate);
+                    }
+                  }}
+                  textColor={textColor}
+                />
+              ) : (
+                <DateTimePicker
+                  value={startDate}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowStartDatePicker(false);
+                    if (selectedDate) {
+                      setStartDate(selectedDate);
+                    }
+                  }}
+                />
+              )}
+            </View>
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                style={[styles.datePickerDoneButton, { backgroundColor: buttonBackgroundColor }]}
+                onPress={() => setShowStartDatePicker(false)}>
+                <ThemedText style={[styles.datePickerDoneText, { color: buttonTextColor }]}>
+                  {t('common.done')}
+                </ThemedText>
+              </TouchableOpacity>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </Modal>
   );
 }
@@ -612,21 +569,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 50,
   },
-  frequencyContainer: {
+  repeatContainer: {
     flexDirection: 'row',
-    gap: 12,
-  },
-  frequencyButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: BORDER_RADIUS.medium,
+    flexWrap: 'wrap',
     gap: 8,
   },
-  frequencyButtonActive: {
+  repeatButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: BORDER_RADIUS.medium,
+    borderWidth: 1,
+    minWidth: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  repeatButtonActive: {
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -636,12 +593,26 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  frequencyText: {
-    fontSize: 16,
+  repeatButtonText: {
+    fontSize: 14,
     fontWeight: '500',
   },
-  frequencyTextActive: {
+  repeatButtonTextActive: {
     fontWeight: '600',
+  },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: BORDER_RADIUS.medium,
+    padding: 16,
+    gap: 8,
+  },
+  dateText: {
+    fontSize: 16,
+  },
+  icon: {
+    marginRight: 0,
   },
   scheduleRow: {
     marginBottom: 16,
@@ -768,6 +739,51 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 12,
     textAlign: 'center',
+  },
+  dropdownBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  datePickerModal: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: BORDER_RADIUS.large,
+    overflow: 'hidden',
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  datePickerCloseButton: {
+    padding: 4,
+  },
+  datePickerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  datePickerDoneButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: BORDER_RADIUS.medium,
+    margin: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  datePickerDoneText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

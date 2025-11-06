@@ -48,28 +48,32 @@ export interface GroupActivity {
   metadata?: GroupActivityMetadata;
 }
 
-export type TaskSchedule =
-  | { frequency: "daily"; time?: string }
-  | { frequency: "weekly"; day: number; time?: string }
-  | {
-      frequency: "monthly";
-      type: "dayOfWeek" | "dayOfMonth" | "lastDayOfMonth";
-      dayOfWeek?: number; // when type is 'dayOfWeek' or 'lastDayOfMonth' (0-6, Sunday = 0)
-      week?: number; // when type is 'dayOfWeek' (1-4)
-      dayOfMonth?: number; // when type is 'dayOfMonth' (1-31)
-      time?: string;
-    };
+export type TaskSchedule = {
+  repeat:
+    | "daily"
+    | "weekdays"
+    | "weekends"
+    | "weekly"
+    | "biweekly"
+    | "monthly"
+    | "every3months"
+    | "every6months"
+    | "yearly";
+  startDate: string; // ISO date string - when task first becomes due
+  time?: string; // HH:MM format (optional)
+  // For weekly/biweekly: which day of week (0-6, Sunday = 0)
+  dayOfWeek?: number; // Only used for 'weekly' and 'biweekly'
+};
 
 export interface Task {
   id: string;
   name: string;
   icon: string; // Icon name from lucide-react-native
-  frequency: "daily" | "weekly" | "monthly";
   assignedIndex: number;
   memberIds: string[];
   completionHistory: TaskCompletion[]; // History of completions
   skipHistory: TaskSkip[]; // History of skips
-  schedule?: TaskSchedule; // Scheduling options
+  schedule: TaskSchedule; // Scheduling options (required)
   createdAt: string; // ISO date string - when task was created
 }
 

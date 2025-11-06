@@ -12,8 +12,13 @@ export function formatNextDueDate(task: Task): string {
   
   if (!nextDueDate) {
     // Fallback if we can't calculate due date
-    if (task.frequency === 'daily') return i18n.t('task.dueToday');
-    if (task.frequency === 'weekly') return i18n.t('task.dueThisWeek');
+    const schedule = task.schedule;
+    if (schedule.repeat === 'daily' || schedule.repeat === 'weekdays' || schedule.repeat === 'weekends') {
+      return i18n.t('task.dueToday');
+    }
+    if (schedule.repeat === 'weekly' || schedule.repeat === 'biweekly') {
+      return i18n.t('task.dueThisWeek');
+    }
     return i18n.t('task.dueThisMonth');
   }
 
@@ -110,11 +115,7 @@ export function formatDetailedNextDueDate(task: Task): string {
     dateString = `${monthName} ${nextDueDate.getDate()}`;
   }
   
-  const hasScheduledTime = task.schedule && (
-    (task.schedule.frequency === 'daily' && task.schedule.time) ||
-    (task.schedule.frequency === 'weekly' && task.schedule.time) ||
-    (task.schedule.frequency === 'monthly' && task.schedule.time)
-  );
+  const hasScheduledTime = task.schedule && task.schedule.time !== undefined;
   
   if (hasScheduledTime) {
     return i18n.t('task.nextDueAt', { date: dateString, time: timeString });
@@ -147,11 +148,7 @@ export function getDueDateCountdown(task: Task): string {
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
   
   // If task has no scheduled time, don't show minutes precision
-  const hasScheduledTime = task.schedule && (
-    (task.schedule.frequency === 'daily' && task.schedule.time) ||
-    (task.schedule.frequency === 'weekly' && task.schedule.time) ||
-    (task.schedule.frequency === 'monthly' && task.schedule.time)
-  );
+  const hasScheduledTime = task.schedule && task.schedule.time !== undefined;
   
   if (days > 0) {
     if (hours > 0) {
