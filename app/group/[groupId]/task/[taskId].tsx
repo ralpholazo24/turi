@@ -1,7 +1,7 @@
 import { ConfirmationModal } from '@/components/confirmation-modal';
-import { EditTaskModal } from '@/components/edit-task-modal';
 import { MemberAvatar } from '@/components/member-avatar';
 import { TaskContextMenu } from '@/components/task-context-menu';
+import { TaskModal } from '@/components/task-modal';
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
@@ -390,7 +390,7 @@ export default function TaskDetailsScreen() {
       </View>
 
       {/* Edit Task Modal */}
-      <EditTaskModal
+      <TaskModal
         visible={isEditModalVisible}
         onClose={() => setIsEditModalVisible(false)}
         group={group}

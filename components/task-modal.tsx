@@ -26,27 +26,42 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface EditTaskModalProps {
+interface TaskModalProps {
   visible: boolean;
   onClose: () => void;
   group: Group;
-  task: Task;
+  task?: Task; // Optional - if provided, it's edit mode; if not, it's add mode
+  onOpenAddMember?: () => void; // Callback to open Add Member modal (only used in add mode)
 }
 
-export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalProps) {
+export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: TaskModalProps) {
   const { t } = useTranslation();
-  const { updateTask } = useAppStore();
-  const [taskName, setTaskName] = useState(task.name);
-  const [selectedIcon, setSelectedIcon] = useState<TaskIconName>(task.icon as TaskIconName);
-  const [repeat, setRepeat] = useState<TaskSchedule['repeat']>(task.schedule.repeat);
-  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set(task.memberIds));
-  const [showIconPicker, setShowIconPicker] = useState(false);
-  
-  // Scheduling options - initialize from task.schedule
-  const [startDate, setStartDate] = useState<Date>(new Date(task.schedule.startDate));
+  const { addTask, updateTask } = useAppStore();
+  const isEditMode = !!task;
+
+  // Initialize state based on mode
+  const [taskName, setTaskName] = useState(isEditMode ? task!.name : '');
+  const [selectedIcon, setSelectedIcon] = useState<TaskIconName>(
+    isEditMode ? (task!.icon as TaskIconName) : 'Sprout'
+  );
+  const [startDate, setStartDate] = useState<Date>(
+    isEditMode ? new Date(task!.schedule.startDate) : new Date()
+  );
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [scheduleDay, setScheduleDay] = useState<number | undefined>(task.schedule.dayOfWeek);
-  const [scheduleTime, setScheduleTime] = useState<string>(task.schedule.time || '');
+  const [repeat, setRepeat] = useState<TaskSchedule['repeat']>(
+    isEditMode ? task!.schedule.repeat : 'daily'
+  );
+  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
+    isEditMode ? new Set(task!.memberIds) : new Set()
+  );
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [showRepeatDropdown, setShowRepeatDropdown] = useState(false);
+  const [scheduleDay, setScheduleDay] = useState<number | undefined>(
+    isEditMode ? task!.schedule.dayOfWeek : undefined
+  );
+  const [scheduleTime, setScheduleTime] = useState<string>(
+    isEditMode ? task!.schedule.time || '' : ''
+  );
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -59,10 +74,10 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   const buttonTextColor = useThemeColor({}, 'background');
 
   const CloseIcon = APP_ICONS.close;
-  const EditIcon = APP_ICONS.pen;
-  const CalendarIcon = APP_ICONS.calendar;
   const CheckIcon = APP_ICONS.check;
-  
+  const CalendarIcon = APP_ICONS.calendar;
+  const ChevronDownIcon = LucideIcons.ChevronDown;
+
   // Days of the week
   const DAYS = [
     { value: 0, label: t('task.sunday') },
@@ -86,38 +101,64 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
     { value: 'every6months', label: t('schedule.repeat.every6months') },
     { value: 'yearly', label: t('schedule.repeat.yearly') },
   ];
-  
+
   // Validate time format (HH:MM)
   const validateTime = (time: string): boolean => {
     const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
     return timeRegex.test(time) || time === '';
   };
-  
+
   const handleTimeChange = (time: string) => {
     setScheduleTime(time);
   };
-  
+
   const handleClearTime = () => {
     setScheduleTime('');
   };
 
-  // Initialize with task data
+  // Initialize with task data (edit mode) or defaults (add mode)
   useEffect(() => {
     if (visible) {
-      setTaskName(task.name);
-      setSelectedIcon(task.icon as TaskIconName);
-      setRepeat(task.schedule.repeat);
-      setStartDate(new Date(task.schedule.startDate));
-      // In solo mode, automatically select the solo member
-      if (isSoloMode(group)) {
-        setSelectedMembers(new Set([group.members[0].id]));
+      if (isEditMode && task) {
+        // Edit mode: initialize from task
+        setTaskName(task.name);
+        setSelectedIcon(task.icon as TaskIconName);
+        setRepeat(task.schedule.repeat);
+        setStartDate(new Date(task.schedule.startDate));
+        if (isSoloMode(group)) {
+          setSelectedMembers(new Set([group.members[0].id]));
+        } else {
+          setSelectedMembers(new Set(task.memberIds));
+        }
+        setScheduleDay(task.schedule.dayOfWeek);
+        setScheduleTime(task.schedule.time || '');
       } else {
-        setSelectedMembers(new Set(task.memberIds));
+        // Add mode: initialize with defaults
+        setTaskName('');
+        setSelectedIcon('Sprout');
+        setStartDate(new Date());
+        setRepeat('daily');
+        setScheduleDay(undefined);
+        setScheduleTime('');
+        if (group.members.length > 0) {
+          if (isSoloMode(group)) {
+            setSelectedMembers(new Set([group.members[0].id]));
+          } else {
+            setSelectedMembers(new Set(group.members.map((m) => m.id)));
+          }
+        } else {
+          setSelectedMembers(new Set());
+        }
       }
-      setScheduleDay(task.schedule.dayOfWeek);
-      setScheduleTime(task.schedule.time || '');
     }
-  }, [visible, task, group]);
+  }, [visible, task, group, isEditMode]);
+
+  // Update scheduleDay when startDate changes in add mode for weekly/biweekly
+  useEffect(() => {
+    if (!isEditMode && (repeat === 'weekly' || repeat === 'biweekly')) {
+      setScheduleDay(startDate.getDay());
+    }
+  }, [startDate, repeat, isEditMode]);
 
   const handleSelectAll = () => {
     if (selectedMembers.size === group.members.length) {
@@ -138,40 +179,22 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
   };
 
   const handleSave = async () => {
-    if (!taskName.trim()) {
-      return;
-    }
-
     // In solo mode, automatically assign to the solo member
-    const finalSelectedMembers = isSoloMode(group) 
-      ? [group.members[0].id]
-      : Array.from(selectedMembers);
+    const finalSelectedMembers = isSoloMode(group)
+      ? (isEditMode ? [group.members[0].id] : new Set([group.members[0].id]))
+      : selectedMembers;
 
-    if (finalSelectedMembers.length === 0) {
+    const finalMemberIds = isSoloMode(group)
+      ? [group.members[0].id]
+      : Array.from(finalSelectedMembers);
+
+    if (!taskName.trim() || finalMemberIds.length === 0) {
       return;
     }
 
     // Validate time if provided
     if (scheduleTime && !validateTime(scheduleTime)) {
       return;
-    }
-
-    // Calculate new assigned index
-    const newMemberIds = finalSelectedMembers;
-    const currentMemberId = task.memberIds[task.assignedIndex];
-    let newAssignedIndex = task.assignedIndex;
-
-    if (!newMemberIds.includes(currentMemberId)) {
-      // Current assignee was removed, set to first member
-      newAssignedIndex = 0;
-    } else {
-      // Find new index for current member in new list
-      newAssignedIndex = newMemberIds.indexOf(currentMemberId);
-    }
-
-    // Validate dayOfWeek for weekly/biweekly
-    if ((repeat === 'weekly' || repeat === 'biweekly') && scheduleDay === undefined) {
-      return; // Can't update weekly/biweekly task without day of week
     }
 
     // Build schedule object
@@ -182,25 +205,69 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
       dayOfWeek: (repeat === 'weekly' || repeat === 'biweekly') ? scheduleDay : undefined,
     };
 
-    await updateTask(group.id, task.id, {
-      name: taskName.trim(),
-      icon: selectedIcon,
-      memberIds: newMemberIds,
-      assignedIndex: newAssignedIndex,
-      schedule,
-    });
+    if (isEditMode && task) {
+      // Edit mode: update existing task
+      // Calculate new assigned index
+      const currentMemberId = task.memberIds[task.assignedIndex];
+      let newAssignedIndex = task.assignedIndex;
+
+      if (!finalMemberIds.includes(currentMemberId)) {
+        // Current assignee was removed, set to first member
+        newAssignedIndex = 0;
+      } else {
+        // Find new index for current member in new list
+        newAssignedIndex = finalMemberIds.indexOf(currentMemberId);
+      }
+
+      // Validate dayOfWeek for weekly/biweekly
+      if ((repeat === 'weekly' || repeat === 'biweekly') && scheduleDay === undefined) {
+        return; // Can't update weekly/biweekly task without day of week
+      }
+
+      await updateTask(group.id, task.id, {
+        name: taskName.trim(),
+        icon: selectedIcon,
+        memberIds: finalMemberIds,
+        assignedIndex: newAssignedIndex,
+        schedule,
+      });
+    } else {
+      // Add mode: create new task
+      await addTask(group.id, {
+        name: taskName.trim(),
+        icon: selectedIcon,
+        assignedIndex: 0,
+        memberIds: finalMemberIds,
+        completionHistory: [],
+        skipHistory: [],
+        schedule,
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     onClose();
   };
 
   const handleClose = () => {
-    setTaskName(task.name);
-    setSelectedIcon(task.icon as TaskIconName);
-    setRepeat(task.schedule.repeat);
-    setStartDate(new Date(task.schedule.startDate));
-    setSelectedMembers(new Set(task.memberIds));
-    setScheduleDay(task.schedule.dayOfWeek);
-    setScheduleTime(task.schedule.time || '');
+    if (isEditMode && task) {
+      // Edit mode: reset to task values
+      setTaskName(task.name);
+      setSelectedIcon(task.icon as TaskIconName);
+      setRepeat(task.schedule.repeat);
+      setStartDate(new Date(task.schedule.startDate));
+      setSelectedMembers(new Set(task.memberIds));
+      setScheduleDay(task.schedule.dayOfWeek);
+      setScheduleTime(task.schedule.time || '');
+    } else {
+      // Add mode: reset to defaults
+      setTaskName('');
+      setSelectedIcon('Sprout');
+      setStartDate(new Date());
+      setRepeat('daily');
+      setSelectedMembers(new Set());
+      setScheduleDay(undefined);
+      setScheduleTime('');
+    }
     onClose();
   };
 
@@ -222,15 +289,26 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
             <TouchableOpacity onPress={handleClose}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
-            <ThemedText type="subtitle" style={styles.headerTitle} i18nKey="task.editTask" />
+            <ThemedText
+              type="subtitle"
+              style={styles.headerTitle}
+              i18nKey={isEditMode ? 'task.editTask' : 'group.addTask'}
+            />
             <TouchableOpacity
               style={[
                 styles.headerSaveButton,
-                (!taskName.trim() || selectedMembers.size === 0) && styles.headerSaveButtonDisabled,
+                (!taskName.trim() ||
+                  (!isSoloMode(group) && selectedMembers.size === 0) ||
+                  group.members.length === 0) &&
+                  styles.headerSaveButtonDisabled,
                 { backgroundColor: buttonBackgroundColor },
               ]}
               onPress={handleSave}
-              disabled={!taskName.trim() || selectedMembers.size === 0}
+              disabled={
+                !taskName.trim() ||
+                (!isSoloMode(group) && selectedMembers.size === 0) ||
+                group.members.length === 0
+              }
               activeOpacity={0.8}>
               <CheckIcon size={20} color={buttonTextColor} />
             </TouchableOpacity>
@@ -247,11 +325,21 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                   onPress={() => setShowIconPicker(true)}
                   activeOpacity={0.8}
                   style={styles.iconPreviewTouchable}>
-                  <View style={[styles.iconPreview, styles.iconPreviewClickable, { backgroundColor: borderColor + '40', borderColor: '#10B981' }]}>
+                  <View
+                    style={[
+                      styles.iconPreview,
+                      styles.iconPreviewClickable,
+                      { backgroundColor: borderColor + '40', borderColor: '#10B981' },
+                    ]}>
+                    {/* eslint-disable-next-line import/namespace */}
                     {(() => {
-                      // eslint-disable-next-line import/namespace
-                      const IconComponent = LucideIcons[selectedIcon] as React.ComponentType<{ size?: number; color?: string }>;
-                      return IconComponent ? <IconComponent size={48} color={textColor} /> : null;
+                      const IconComponent = LucideIcons[selectedIcon] as React.ComponentType<{
+                        size?: number;
+                        color?: string;
+                      }>;
+                      return IconComponent ? (
+                        <IconComponent size={48} color={textColor} />
+                      ) : null;
                     })()}
                   </View>
                 </TouchableOpacity>
@@ -304,6 +392,15 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                     })}
                   </ScrollView>
                 )}
+                {!isEditMode && group.members.length === 0 && onOpenAddMember && (
+                  <TouchableOpacity
+                    style={[styles.addMemberButton, { borderColor }]}
+                    onPress={onOpenAddMember}>
+                    <ThemedText style={[styles.addMemberButtonText, { color: '#10B981' }]}>
+                      {t('taskModal.addMembers')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 
@@ -321,49 +418,13 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                 placeholderTextColor={textColor + '80'}
                 value={taskName}
                 onChangeText={setTaskName}
-                autoFocus
               />
-            </View>
-
-            {/* Repeat Selector */}
-            <View style={styles.section}>
-              <ThemedText style={styles.label} i18nKey="taskModal.repeat" />
-              <View style={styles.repeatContainer}>
-                {REPEAT_OPTIONS.map((option) => (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      styles.repeatButton,
-                      repeat === option.value && styles.repeatButtonActive,
-                      { 
-                        backgroundColor: repeat === option.value ? '#10B981' : borderColor + '30',
-                        borderColor: repeat === option.value ? '#10B981' : borderColor + '30',
-                      },
-                    ]}
-                    onPress={() => {
-                      setRepeat(option.value);
-                      // Clear dayOfWeek if switching away from weekly/biweekly
-                      if (option.value !== 'weekly' && option.value !== 'biweekly') {
-                        setScheduleDay(undefined);
-                      }
-                    }}>
-                    <Text
-                      style={[
-                        styles.repeatButtonText,
-                        repeat === option.value && styles.repeatButtonTextActive,
-                        { color: repeat === option.value ? '#FFFFFF' : textColor },
-                      ]}>
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
             </View>
 
             {/* Scheduling Options */}
             <View style={styles.section}>
               <ThemedText style={styles.label} i18nKey="taskModal.schedule" />
-              
+
               {/* Start Date Picker */}
               <View style={styles.scheduleRow}>
                 <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.startDate" />
@@ -374,6 +435,20 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                   <ThemedText style={[styles.dateText, { color: textColor }]}>
                     {startDate.toLocaleDateString()}
                   </ThemedText>
+                </TouchableOpacity>
+              </View>
+
+              {/* Repeat Selector */}
+              <View style={styles.scheduleRow}>
+                <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.repeat" />
+                <TouchableOpacity
+                  style={[styles.dropdownButton, { backgroundColor, borderColor }]}
+                  onPress={() => setShowRepeatDropdown(true)}>
+                  <ThemedText style={[styles.dropdownText, { color: textColor }]}>
+                    {REPEAT_OPTIONS.find((opt) => opt.value === repeat)?.label ||
+                      REPEAT_OPTIONS[0].label}
+                  </ThemedText>
+                  {ChevronDownIcon && <ChevronDownIcon size={20} color={textColor} />}
                 </TouchableOpacity>
               </View>
 
@@ -391,14 +466,19 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                         style={[
                           styles.scheduleButton,
                           scheduleDay === day.value && styles.scheduleButtonActive,
-                          { backgroundColor: scheduleDay === day.value ? '#10B981' : borderColor + '30' },
+                          {
+                            backgroundColor:
+                              scheduleDay === day.value ? '#10B981' : borderColor + '30',
+                          },
                         ]}
                         onPress={() => setScheduleDay(day.value)}>
                         <Text
                           style={[
                             styles.scheduleButtonText,
                             scheduleDay === day.value && styles.scheduleButtonTextActive,
-                            { color: scheduleDay === day.value ? '#FFFFFF' : iconColor },
+                            {
+                              color: scheduleDay === day.value ? '#FFFFFF' : iconColor,
+                            },
                           ]}>
                           {day.label}
                         </Text>
@@ -432,6 +512,63 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
         title={t('taskModal.pickIcon')}
       />
 
+      {/* Repeat Dropdown Modal */}
+      <Modal
+        visible={showRepeatDropdown}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowRepeatDropdown(false)}>
+        <TouchableOpacity
+          style={styles.dropdownBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowRepeatDropdown(false)}>
+          <View style={[styles.repeatDropdownModal, { backgroundColor }]}>
+            <View style={styles.repeatDropdownHeader}>
+              <ThemedText style={[styles.repeatDropdownTitle, { color: textColor }]}>
+                {t('taskModal.repeat')}
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => setShowRepeatDropdown(false)}
+                style={styles.repeatDropdownCloseButton}>
+                <CloseIcon size={24} color={textColor} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.repeatDropdownScrollView}>
+              {REPEAT_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.repeatDropdownOption,
+                    repeat === option.value && styles.repeatDropdownOptionSelected,
+                    { borderBottomColor: borderColor + '30' },
+                  ]}
+                  onPress={() => {
+                    setRepeat(option.value);
+                    // Clear dayOfWeek if switching away from weekly/biweekly
+                    if (option.value !== 'weekly' && option.value !== 'biweekly') {
+                      setScheduleDay(undefined);
+                    } else if (!scheduleDay && !isEditMode) {
+                      // Set to startDate's day if not in edit mode
+                      setScheduleDay(startDate.getDay());
+                    }
+                    setShowRepeatDropdown(false);
+                  }}>
+                  <ThemedText
+                    style={[
+                      styles.repeatDropdownOptionText,
+                      repeat === option.value && styles.repeatDropdownOptionTextSelected,
+                      { color: repeat === option.value ? '#10B981' : textColor },
+                    ]}>
+                    {option.label}
+                  </ThemedText>
+                  {repeat === option.value && <CheckIcon size={20} color="#10B981" />}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* Date Picker Modal */}
       <Modal
         visible={showStartDatePicker}
@@ -462,6 +599,10 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                   onChange={(event, selectedDate) => {
                     if (selectedDate) {
                       setStartDate(selectedDate);
+                      // Update scheduleDay for weekly/biweekly in add mode
+                      if (!isEditMode && (repeat === 'weekly' || repeat === 'biweekly')) {
+                        setScheduleDay(selectedDate.getDay());
+                      }
                     }
                   }}
                   textColor={textColor}
@@ -475,6 +616,10 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
                     setShowStartDatePicker(false);
                     if (selectedDate) {
                       setStartDate(selectedDate);
+                      // Update scheduleDay for weekly/biweekly in add mode
+                      if (!isEditMode && (repeat === 'weekly' || repeat === 'biweekly')) {
+                        setScheduleDay(selectedDate.getDay());
+                      }
                     }
                   }}
                 />
@@ -482,7 +627,10 @@ export function EditTaskModal({ visible, onClose, group, task }: EditTaskModalPr
             </View>
             {Platform.OS === 'ios' && (
               <TouchableOpacity
-                style={[styles.datePickerDoneButton, { backgroundColor: buttonBackgroundColor }]}
+                style={[
+                  styles.datePickerDoneButton,
+                  { backgroundColor: buttonBackgroundColor },
+                ]}
                 onPress={() => setShowStartDatePicker(false)}>
                 <ThemedText style={[styles.datePickerDoneText, { color: buttonTextColor }]}>
                   {t('common.done')}
@@ -518,10 +666,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  closeButton: {
-    fontSize: 24,
-    fontWeight: '300',
-  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -554,9 +698,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  labelIcon: {
-    marginRight: 8,
-  },
   label: {
     fontSize: 16,
     fontWeight: '600',
@@ -569,35 +710,106 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 50,
   },
-  repeatContainer: {
+  dropdownButton: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  repeatButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: BORDER_RADIUS.medium,
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
-    minWidth: 100,
+    borderRadius: BORDER_RADIUS.medium,
+    padding: 16,
+    minHeight: 50,
+  },
+  dropdownText: {
+    fontSize: 16,
+    flex: 1,
+  },
+  dropdownBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  repeatDropdownModal: {
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '70%',
+    borderRadius: BORDER_RADIUS.large,
+    overflow: 'hidden',
+  },
+  repeatDropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  repeatDropdownTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  repeatDropdownCloseButton: {
+    padding: 4,
+  },
+  repeatDropdownScrollView: {
+    maxHeight: 400,
+  },
+  repeatDropdownOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+  },
+  repeatDropdownOptionSelected: {
+    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+  },
+  repeatDropdownOptionText: {
+    fontSize: 16,
+    fontWeight: '500',
+    flex: 1,
+  },
+  repeatDropdownOptionTextSelected: {
+    fontWeight: '600',
+  },
+  datePickerModal: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: BORDER_RADIUS.large,
+    overflow: 'hidden',
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  datePickerCloseButton: {
+    padding: 4,
+  },
+  datePickerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  datePickerDoneButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: BORDER_RADIUS.medium,
+    margin: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  repeatButtonActive: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  repeatButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  repeatButtonTextActive: {
+  datePickerDoneText: {
+    fontSize: 16,
     fontWeight: '600',
   },
   dateButton: {
@@ -607,9 +819,11 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.medium,
     padding: 16,
     gap: 8,
+    minHeight: 50,
   },
   dateText: {
     fontSize: 16,
+    flex: 1,
   },
   icon: {
     marginRight: 0,
@@ -619,37 +833,23 @@ const styles = StyleSheet.create({
   },
   scheduleLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 8,
-  },
-  scheduleButtonGroup: {
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
+    opacity: 0.7,
   },
   dayScroll: {
     marginTop: 8,
-  },
-  dayOfMonthContainer: {
-    paddingRight: 16,
   },
   scheduleButton: {
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: BORDER_RADIUS.medium,
     marginRight: 8,
-    minWidth: 50,
-    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   scheduleButtonActive: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderColor: '#10B981',
   },
   scheduleButtonText: {
     fontSize: 14,
@@ -740,49 +940,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
-  dropdownBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  datePickerModal: {
-    width: '100%',
-    maxWidth: 400,
-    borderRadius: BORDER_RADIUS.large,
-    overflow: 'hidden',
-  },
-  datePickerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  datePickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  datePickerCloseButton: {
-    padding: 4,
-  },
-  datePickerContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
-  },
-  datePickerDoneButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+  addMemberButton: {
+    marginTop: 12,
+    padding: 12,
     borderRadius: BORDER_RADIUS.medium,
-    margin: 20,
+    borderWidth: 1,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  datePickerDoneText: {
-    fontSize: 16,
+  addMemberButtonText: {
+    fontSize: 14,
     fontWeight: '600',
   },
 });

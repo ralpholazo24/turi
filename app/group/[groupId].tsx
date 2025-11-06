@@ -1,11 +1,11 @@
 import { AddMemberModal } from '@/components/add-member-modal';
-import { AddTaskModal } from '@/components/add-task-modal';
 import { ConfirmationModal } from '@/components/confirmation-modal';
 import { EditGroupModal } from '@/components/edit-group-modal';
 import { GroupContextMenu } from '@/components/group-context-menu';
 import { GroupTabs } from '@/components/group-tabs';
 import { MemberChipList } from '@/components/member-chip-list';
 import { TaskCardList } from '@/components/task-card-list';
+import { TaskModal } from '@/components/task-modal';
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
@@ -168,7 +168,7 @@ export default function GroupScreen() {
       )}
 
       {/* Add Task Modal */}
-      <AddTaskModal
+      <TaskModal
         visible={isAddTaskModalVisible}
         onClose={() => setIsAddTaskModalVisible(false)}
         group={group}
