@@ -118,6 +118,8 @@
     "itYourTurn": "Es tu turno",
     "assignedMembersCount_one": "{{count}} miembro asignado",
     "assignedMembersCount_other": "{{count}} miembros asignados",
+    "assignedMembers": "Miembros Asignados",
+    "currentTurn": "Turno actual",
     "completionHistory": "Historial de Completados",
     "noHistory": "Aún no hay historial de completados",
     "noHistoryDescription": "¡Completa la tarea para verlo aquí!",
@@ -346,6 +348,10 @@
     "faq10": {
       "question": "¿Cómo personalizo los colores e iconos de los grupos?",
       "answer": "Al crear o editar un grupo, puedes elegir entre una variedad de iconos y temas de color. ¡Cada grupo puede tener su propio aspecto único!"
+    },
+    "faq11": {
+      "question": "¿Cómo reordeno grupos, tareas o miembros?",
+      "answer": "Puedes reordenar elementos manteniendo presionado y arrastrándolos. En la pantalla de inicio, mantén presionado y arrastra los grupos para cambiar su orden. En un grupo, puedes reordenar tareas en la pestaña Tareas y miembros en la pestaña Miembros. El orden afecta la rotación de tareas: los miembros reciben tareas según su posición en la lista."
     }
   },
   "errors": {

@@ -5,9 +5,13 @@ import { useAppStore } from '@/store/use-app-store';
 import { useUserStore } from '@/store/use-user-store';
 import { Group, Member } from '@/types';
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
@@ -33,6 +37,8 @@ interface SwipeableMemberCardProps {
   borderColor: string;
   onEdit: (member: Member) => void;
   onDelete: (member: Member) => void;
+  drag?: () => void;
+  isActive?: boolean;
 }
 
 const ACTION_WIDTH = 160; // Width for both action buttons combined
@@ -47,6 +53,8 @@ function SwipeableMemberCard({
   borderColor,
   onEdit,
   onDelete,
+  drag,
+  isActive,
 }: SwipeableMemberCardProps) {
   const { t } = useTranslation();
   const translateX = useSharedValue(0);
@@ -66,6 +74,17 @@ function SwipeableMemberCard({
   const closeCard = () => {
     setIsOpen(false);
   };
+
+  // Long press gesture for drag
+  const longPressGesture = drag
+    ? Gesture.LongPress()
+        .minDuration(400)
+        .onStart(() => {
+          if (drag) {
+            runOnJS(drag)();
+          }
+        })
+    : undefined;
 
   const panGesture = Gesture.Pan()
     .onUpdate((e) => {
@@ -94,11 +113,26 @@ function SwipeableMemberCard({
         runOnJS(closeCard)();
       }
     })
-    .activeOffsetX([-10, 10]); // Require minimum horizontal movement
+    .activeOffsetX([-10, 10]) // Require minimum horizontal movement
+    .failOffsetY([-10, 10]); // Fail if vertical movement is too large
+
+  // Compose gestures - allow both long press (for drag) and pan (for swipe)
+  const composedGesture = longPressGesture
+    ? Gesture.Simultaneous(longPressGesture, panGesture)
+    : panGesture;
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
+    opacity: isActive ? 0.8 : 1,
   }));
+
+  const actionButtonsStyle = useAnimatedStyle(() => {
+    // Hide action buttons when dragging (isActive) or when card is not swiped
+    const shouldShow = !isActive && translateX.value < -10;
+    return {
+      opacity: shouldShow ? 1 : 0,
+    };
+  });
 
   const handleEdit = () => {
     translateX.value = withSpring(0, {
@@ -121,7 +155,7 @@ function SwipeableMemberCard({
   return (
     <View style={styles.swipeableContainer}>
       {/* Action Buttons (behind the card) */}
-      <View style={[styles.actionButtonsContainer, { width: actionWidth }]}>
+      <Animated.View style={[styles.actionButtonsContainer, { width: actionWidth }, actionButtonsStyle]}>
         {!isOwner && (
           <TouchableOpacity
             style={[styles.actionButton, styles.editButton]}
@@ -138,39 +172,45 @@ function SwipeableMemberCard({
           <DeleteIcon size={20} color="#FFFFFF" />
           <ThemedText style={styles.actionButtonText}>Delete</ThemedText>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       {/* Member Card (on top) */}
-      <GestureDetector gesture={panGesture}>
+      <GestureDetector gesture={composedGesture}>
         <Animated.View
           style={[
-            styles.memberCard,
-            { backgroundColor, borderColor: borderColor + '50' },
-            cardStyle,
+            styles.cardWrapper,
+            isActive && styles.activeCard,
           ]}>
-          <View style={styles.memberContent}>
-            {/* Avatar */}
-            <MemberAvatar member={member} size={56} />
+          <Animated.View
+            style={[
+              styles.memberCard,
+              { backgroundColor, borderColor: borderColor + '80' },
+              cardStyle,
+            ]}>
+            <View style={styles.memberContent}>
+              {/* Avatar */}
+              <MemberAvatar member={member} size={56} />
 
-            {/* Member Info */}
-            <View style={styles.memberInfo}>
-              <ThemedText style={styles.memberName}>
-                {isOwner ? t('member.you') : member.name}
-              </ThemedText>
-            </View>
-
-            {/* Owner Chip - Right side */}
-            {isOwner && (
-              <View style={[styles.ownerChip, { 
-                backgroundColor: chipBackgroundColor, 
-                borderColor: borderColor 
-              }]}>
-                <ThemedText style={[styles.ownerChipText, { color: chipTextColor }]}>
-                  {t('member.owner')}
+              {/* Member Info */}
+              <View style={styles.memberInfo}>
+                <ThemedText style={styles.memberName}>
+                  {isOwner ? t('member.you') : member.name}
                 </ThemedText>
               </View>
-            )}
-          </View>
+
+              {/* Owner Chip - Right side */}
+              {isOwner && (
+                <View style={[styles.ownerChip, { 
+                  backgroundColor: chipBackgroundColor, 
+                  borderColor: borderColor 
+                }]}>
+                  <ThemedText style={[styles.ownerChipText, { color: chipTextColor }]}>
+                    {t('member.owner')}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+          </Animated.View>
         </Animated.View>
       </GestureDetector>
     </View>
@@ -179,16 +219,19 @@ function SwipeableMemberCard({
 
 export function MemberChipList({ group }: MemberChipListProps) {
   const { t } = useTranslation();
-  const { deleteMember } = useAppStore();
+  const { deleteMember, reorderMembers } = useAppStore();
   const { user } = useUserStore();
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   
   // Check if a member is the owner
-  const isOwner = (member: Member): boolean => {
-    return !!(user && member.id === user.id && group.ownerId === user.id);
-  };
+  const isOwner = useCallback(
+    (member: Member): boolean => {
+      return !!(user && member.id === user.id && group.ownerId === user.id);
+    },
+    [user, group.ownerId]
+  );
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -198,15 +241,15 @@ export function MemberChipList({ group }: MemberChipListProps) {
     'icon'
   );
 
-  const handleEdit = (member: Member) => {
+  const handleEdit = useCallback((member: Member) => {
     setSelectedMember(member);
     setIsEditModalVisible(true);
-  };
+  }, []);
 
-  const handleDelete = (member: Member) => {
+  const handleDelete = useCallback((member: Member) => {
     setSelectedMember(member);
     setIsDeleteConfirmationVisible(true);
-  };
+  }, []);
 
   const handleDeleteConfirm = async () => {
     if (selectedMember) {
@@ -221,6 +264,43 @@ export function MemberChipList({ group }: MemberChipListProps) {
     setIsDeleteConfirmationVisible(false);
     setSelectedMember(null);
   };
+
+  const handleReorderMembers = useCallback(
+    async (memberIds: string[]) => {
+      await reorderMembers(group.id, memberIds);
+    },
+    [group.id, reorderMembers]
+  );
+
+  const handleDragEnd = useCallback(
+    ({ data }: { data: Member[] }) => {
+      const memberIds = data.map((member) => member.id);
+      handleReorderMembers(memberIds);
+    },
+    [handleReorderMembers]
+  );
+
+  const renderItem = useCallback(
+    ({ item, drag, isActive }: RenderItemParams<Member>) => {
+      return (
+        <ScaleDecorator>
+          <SwipeableMemberCard
+            member={item}
+            group={group}
+            isOwner={isOwner(item)}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+            borderColor={borderColor}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            drag={drag}
+            isActive={isActive}
+          />
+        </ScaleDecorator>
+      );
+    },
+    [group, backgroundColor, textColor, borderColor, handleEdit, handleDelete, isOwner]
+  );
 
   if (group.members.length === 0) {
     return (
@@ -240,19 +320,16 @@ export function MemberChipList({ group }: MemberChipListProps) {
   return (
     <>
       <View style={styles.container}>
-        {group.members.map((member) => (
-          <SwipeableMemberCard
-            key={member.id}
-            member={member}
-            group={group}
-            isOwner={isOwner(member)}
-            backgroundColor={backgroundColor}
-            textColor={textColor}
-            borderColor={borderColor}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))}
+        <DraggableFlatList
+          data={group.members}
+          onDragEnd={handleDragEnd}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          activationDistance={10}
+          scrollEnabled={false}
+        />
       </View>
 
       {/* Edit Member Modal */}
@@ -284,6 +361,10 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingVertical: 12,
+    flex: 1,
+  },
+  listContent: {
+    gap: 12,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -308,13 +389,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     overflow: 'hidden',
     borderRadius: BORDER_RADIUS.large,
+    position: 'relative',
+    width: '100%',
+    padding: 3, // Add padding to allow borders to show when scaled during drag
   },
   actionButtonsContainer: {
     position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
+    right: 3,
+    top: 3,
+    bottom: 3,
     flexDirection: 'row',
+    borderRadius: BORDER_RADIUS.large,
+    overflow: 'hidden',
   },
   actionButton: {
     flex: 1,
@@ -334,23 +420,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  cardWrapper: {
+    backgroundColor: 'transparent',
+    zIndex: 1,
+    width: '100%',
+    position: 'relative',
+  },
+  activeCard: {
+    zIndex: 10,
+    elevation: 8,
+  },
   memberCard: {
     borderRadius: BORDER_RADIUS.large,
-    padding: 16,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    padding: 18,
+    borderWidth: 2,
   },
   memberContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 56,
   },
   memberInfo: {
     flex: 1,
@@ -359,13 +448,14 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 18,
     fontWeight: '600',
+    letterSpacing: 0.2,
   },
   ownerChip: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.small,
+    borderRadius: BORDER_RADIUS.medium,
     marginLeft: 12,
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
   ownerChipText: {
     fontSize: 12,

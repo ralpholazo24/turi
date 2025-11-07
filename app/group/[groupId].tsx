@@ -11,6 +11,7 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
+import { Task } from '@/types';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
@@ -33,7 +34,7 @@ export default function GroupScreen() {
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isDeleteTaskConfirmationVisible, setIsDeleteTaskConfirmationVisible] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<{ id: string; name: string } | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const insets = useSafeAreaInsets();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -76,12 +77,12 @@ export default function GroupScreen() {
     }
   };
 
-  const handleEditTask = useCallback((task: { id: string }) => {
+  const handleEditTask = useCallback((task: Task) => {
     setSelectedTask(task);
     setIsEditTaskModalVisible(true);
   }, []);
 
-  const handleDeleteTask = useCallback((task: { id: string; name: string }) => {
+  const handleDeleteTask = useCallback((task: Task) => {
     setSelectedTask(task);
     setIsDeleteTaskConfirmationVisible(true);
   }, []);

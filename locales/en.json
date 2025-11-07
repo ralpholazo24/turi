@@ -118,6 +118,8 @@
     "itYourTurn": "It's your turn",
     "assignedMembersCount_one": "{{count}} member assigned",
     "assignedMembersCount_other": "{{count}} members assigned",
+    "assignedMembers": "Assigned Members",
+    "currentTurn": "Current turn",
     "completionHistory": "Completion History",
     "noHistory": "No completion history yet",
     "noHistoryDescription": "Complete the task to see it here!",
@@ -361,6 +363,10 @@
     "faq10": {
       "question": "How do I customize group colors and icons?",
       "answer": "When creating or editing a group, you can choose from a variety of icons and color themes. Each group can have its own unique look!"
+    },
+    "faq11": {
+      "question": "How do I reorder groups, tasks, or members?",
+      "answer": "You can reorder items by long pressing and dragging them. On the home screen, long press and drag groups to change their order. In a group, you can reorder tasks in the Tasks tab and members in the Members tab. The order affects task rotation - members are assigned tasks based on their position in the list."
     }
   },
   "errors": {

@@ -48,6 +48,7 @@ interface AppState {
     updates: Partial<Member>
   ) => Promise<void>;
   deleteMember: (groupId: string, memberId: string) => Promise<void>;
+  reorderMembers: (groupId: string, memberIds: string[]) => Promise<void>;
 
   addTask: (groupId: string, task: Omit<Task, "id">) => Promise<void>;
   updateTask: (
@@ -57,6 +58,11 @@ interface AppState {
   ) => Promise<void>;
   deleteTask: (groupId: string, taskId: string) => Promise<void>;
   reorderTasks: (groupId: string, taskIds: string[]) => Promise<void>;
+  reorderTaskMembers: (
+    groupId: string,
+    taskId: string,
+    memberIds: string[]
+  ) => Promise<void>;
   markTaskDone: (groupId: string, taskId: string) => Promise<void>;
   skipTurn: (groupId: string, taskId: string) => Promise<void>;
 
@@ -432,6 +438,89 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  reorderMembers: async (groupId: string, memberIds: string[]) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+
+    // Create a map for quick lookup
+    const memberMap = new Map(
+      group.members.map((member) => [member.id, member])
+    );
+
+    // Reorder members based on the provided IDs array
+    const reorderedMembers = memberIds
+      .map((id) => memberMap.get(id))
+      .filter((member): member is Member => member !== undefined);
+
+    // Add any members that weren't in the reorder list (shouldn't happen, but safety check)
+    const existingIds = new Set(memberIds);
+    const remainingMembers = group.members.filter(
+      (member) => !existingIds.has(member.id)
+    );
+
+    // Update all tasks to reflect the new member order
+    // For each task, we need to update memberIds to match the new order
+    // and adjust assignedIndex if needed
+    const updatedTasks = group.tasks.map((task) => {
+      // Reorder task.memberIds to match the new member order
+      const reorderedTaskMemberIds = memberIds.filter((id) =>
+        task.memberIds.includes(id)
+      );
+
+      // If task had members in a different order, preserve those that aren't in memberIds
+      const otherTaskMemberIds = task.memberIds.filter(
+        (id) => !memberIds.includes(id)
+      );
+      const finalTaskMemberIds = [
+        ...reorderedTaskMemberIds,
+        ...otherTaskMemberIds,
+      ];
+
+      // Ensure assignedIndex is within bounds (in case members were deleted)
+      const safeAssignedIndex = Math.min(
+        task.assignedIndex,
+        task.memberIds.length - 1
+      );
+
+      // Find new assignedIndex for current assigned member
+      const currentMemberId = task.memberIds[safeAssignedIndex];
+      const newAssignedIndex = currentMemberId
+        ? finalTaskMemberIds.indexOf(currentMemberId)
+        : -1;
+      const finalAssignedIndex = newAssignedIndex >= 0 ? newAssignedIndex : 0;
+
+      return {
+        ...task,
+        memberIds: finalTaskMemberIds,
+        assignedIndex: finalAssignedIndex,
+      };
+    });
+
+    set((state) => ({
+      groups: state.groups.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              members: [...reorderedMembers, ...remainingMembers],
+              tasks: updatedTasks,
+            }
+          : g
+      ),
+    }));
+
+    await get().persist();
+
+    // Reschedule notifications since member order changed
+    const updatedGroup = get().groups.find((g) => g.id === groupId);
+    if (updatedGroup) {
+      const { notificationsEnabled, reminderMinutes } =
+        useNotificationStore.getState();
+      if (notificationsEnabled) {
+        await rescheduleGroupNotifications(updatedGroup, reminderMinutes);
+      }
+    }
+  },
+
   addTask: async (groupId: string, taskData: Omit<Task, "id">) => {
     const group = get().groups.find((g) => g.id === groupId);
     if (!group) return;
@@ -684,6 +773,71 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     await get().persist();
+  },
+
+  reorderTaskMembers: async (
+    groupId: string,
+    taskId: string,
+    memberIds: string[]
+  ) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+
+    const task = group.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    // Ensure assignedIndex is within bounds (in case members were deleted)
+    const safeAssignedIndex = Math.min(
+      task.assignedIndex,
+      task.memberIds.length - 1
+    );
+
+    // Get current assigned member ID to preserve assignment
+    const currentMemberId = task.memberIds[safeAssignedIndex];
+
+    // Find new index for the current member in the reordered list
+    const newAssignedIndex = currentMemberId
+      ? memberIds.indexOf(currentMemberId)
+      : -1;
+    // If current member not found in new list, default to 0
+    const finalAssignedIndex = newAssignedIndex >= 0 ? newAssignedIndex : 0;
+
+    set((state) => ({
+      groups: state.groups.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              tasks: g.tasks.map((t) =>
+                t.id === taskId
+                  ? {
+                      ...t,
+                      memberIds,
+                      assignedIndex: finalAssignedIndex,
+                    }
+                  : t
+              ),
+            }
+          : g
+      ),
+    }));
+
+    await get().persist();
+
+    // Reschedule notifications since member order changed
+    const updatedGroup = get().groups.find((g) => g.id === groupId);
+    const updatedTask = updatedGroup?.tasks.find((t) => t.id === taskId);
+    if (updatedGroup && updatedTask) {
+      const { notificationsEnabled, reminderMinutes } =
+        useNotificationStore.getState();
+      if (notificationsEnabled) {
+        await cancelTaskNotification(taskId);
+        await scheduleTaskNotification(
+          updatedTask,
+          updatedGroup,
+          reminderMinutes
+        );
+      }
+    }
   },
 
   markTaskDone: async (groupId: string, taskId: string) => {

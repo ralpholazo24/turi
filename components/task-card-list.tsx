@@ -31,6 +31,7 @@ export function TaskCardList({
 }: TaskCardListProps) {
   const { t } = useTranslation();
   const iconColor = useThemeColor({}, 'icon');
+  const textColor = useThemeColor({}, 'text');
   const buttonBackgroundColor = useThemeColor({}, 'text');
   const buttonTextColor = useThemeColor({}, 'background');
 

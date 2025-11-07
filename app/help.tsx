@@ -65,6 +65,10 @@ export default function HelpFAQScreen() {
       question: t('help.faq10.question'),
       answer: t('help.faq10.answer'),
     },
+    {
+      question: t('help.faq11.question'),
+      answer: t('help.faq11.answer'),
+    },
   ];
 
   return (
