@@ -39,6 +39,7 @@ interface AppState {
   ) => Promise<void>;
   updateGroup: (groupId: string, updates: Partial<Group>) => Promise<void>;
   deleteGroup: (groupId: string) => Promise<void>;
+  reorderGroups: (groupIds: string[]) => Promise<void>;
 
   addMember: (groupId: string, name: string) => Promise<void>;
   updateMember: (
@@ -246,6 +247,28 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({
       groups: state.groups.filter((group) => group.id !== groupId),
     }));
+
+    await get().persist();
+  },
+
+  reorderGroups: async (groupIds: string[]) => {
+    const { groups } = get();
+    
+    // Create a map for quick lookup
+    const groupMap = new Map(groups.map((group) => [group.id, group]));
+    
+    // Reorder groups based on the provided IDs array
+    const reorderedGroups = groupIds
+      .map((id) => groupMap.get(id))
+      .filter((group): group is Group => group !== undefined);
+    
+    // Add any groups that weren't in the reorder list (shouldn't happen, but safety check)
+    const existingIds = new Set(groupIds);
+    const remainingGroups = groups.filter((group) => !existingIds.has(group.id));
+    
+    set({
+      groups: [...reorderedGroups, ...remainingGroups],
+    });
 
     await get().persist();
   },

@@ -11,9 +11,10 @@ import { MemberAvatar } from './member-avatar';
 
 interface GroupCardProps {
   group: Group;
+  containerStyle?: object;
 }
 
-export function GroupCard({ group }: GroupCardProps) {
+export function GroupCard({ group, containerStyle }: GroupCardProps) {
   const { t } = useTranslation();
 
   const handlePress = () => {
@@ -44,7 +45,7 @@ export function GroupCard({ group }: GroupCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.cardContainer}
+      style={[styles.cardContainer, containerStyle]}
       onPress={handlePress}
       activeOpacity={0.8}>
       <LinearGradient
