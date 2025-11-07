@@ -3,6 +3,7 @@
  * Common icons for tasks/chores
  */
 export const TASK_ICON_OPTIONS = [
+  { name: 'Task', component: 'ListTodo' },
   { name: 'Sprout', component: 'Sprout' },
   { name: 'Trash', component: 'Trash2' },
   { name: 'Utensils', component: 'UtensilsCrossed' },

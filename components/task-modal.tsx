@@ -42,7 +42,7 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
   // Initialize state based on mode
   const [taskName, setTaskName] = useState(isEditMode ? task!.name : '');
   const [selectedIcon, setSelectedIcon] = useState<TaskIconName>(
-    isEditMode ? (task!.icon as TaskIconName) : 'Sprout'
+    isEditMode ? (task!.icon as TaskIconName) : 'ListTodo'
   );
   const [startDate, setStartDate] = useState<Date>(
     isEditMode ? new Date(task!.schedule.startDate) : new Date()
@@ -135,7 +135,7 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
       } else {
         // Add mode: initialize with defaults
         setTaskName('');
-        setSelectedIcon('Sprout');
+        setSelectedIcon('ListTodo');
         setStartDate(new Date());
         setRepeat('daily');
         setScheduleDay(undefined);
@@ -261,7 +261,7 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
     } else {
       // Add mode: reset to defaults
       setTaskName('');
-      setSelectedIcon('Sprout');
+      setSelectedIcon('ListTodo');
       setStartDate(new Date());
       setRepeat('daily');
       setSelectedMembers(new Set());
