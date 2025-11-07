@@ -87,6 +87,30 @@ export default function SettingsScreen() {
       });
   };
 
+  const handleFeatureRequests = () => {
+    const feedbackUrl = 'http://turiapp.userjot.com/board/features?cursor=1&order=top&limit=10';
+
+    Linking.canOpenURL(feedbackUrl)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(feedbackUrl);
+        } else {
+          Alert.alert(
+            t('featureRequests.error'),
+            t('featureRequests.errorMessage'),
+            [{ text: t('common.ok') }]
+          );
+        }
+      })
+      .catch(() => {
+        Alert.alert(
+          t('featureRequests.error'),
+          t('featureRequests.errorMessage'),
+          [{ text: t('common.ok') }]
+        );
+      });
+  };
+
   const handleClearData = async () => {
     try {
       await clearAllData();
@@ -247,11 +271,10 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle} i18nKey="settings.support" />
           
-          {/* Feature Requests - Hidden for now */}
-          {/* <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
+          <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
             <TouchableOpacity
               style={styles.settingItem}
-              onPress={() => router.push('/feature-requests')}
+              onPress={handleFeatureRequests}
               activeOpacity={0.7}>
               <View style={styles.settingLeft}>
                 <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
@@ -261,7 +284,7 @@ export default function SettingsScreen() {
               </View>
               <LucideIcons.ChevronRight size={20} color={iconColor} />
             </TouchableOpacity>
-          </View> */}
+          </View>
 
           <View style={[styles.settingItemContainer, { borderColor: borderColor + '30' }]}>
             <TouchableOpacity
