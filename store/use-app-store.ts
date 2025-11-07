@@ -56,6 +56,7 @@ interface AppState {
     updates: Partial<Task>
   ) => Promise<void>;
   deleteTask: (groupId: string, taskId: string) => Promise<void>;
+  reorderTasks: (groupId: string, taskIds: string[]) => Promise<void>;
   markTaskDone: (groupId: string, taskId: string) => Promise<void>;
   skipTurn: (groupId: string, taskId: string) => Promise<void>;
 
@@ -647,6 +648,38 @@ export const useAppStore = create<AppState>((set, get) => ({
               activities: [...(group.activities || []), activity],
             }
           : group
+      ),
+    }));
+
+    await get().persist();
+  },
+
+  reorderTasks: async (groupId: string, taskIds: string[]) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+
+    // Create a map for quick lookup
+    const taskMap = new Map(group.tasks.map((task) => [task.id, task]));
+
+    // Reorder tasks based on the provided IDs array
+    const reorderedTasks = taskIds
+      .map((id) => taskMap.get(id))
+      .filter((task): task is Task => task !== undefined);
+
+    // Add any tasks that weren't in the reorder list (shouldn't happen, but safety check)
+    const existingIds = new Set(taskIds);
+    const remainingTasks = group.tasks.filter(
+      (task) => !existingIds.has(task.id)
+    );
+
+    set((state) => ({
+      groups: state.groups.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              tasks: [...reorderedTasks, ...remainingTasks],
+            }
+          : g
       ),
     }));
 

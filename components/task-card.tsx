@@ -1,7 +1,6 @@
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { Group, Member, Task } from '@/types';
-import { formatNextDueDate } from '@/utils/due-date-format';
 import { isSoloMode } from '@/utils/solo-mode';
 import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion';
 import { formatScheduleInfo } from '@/utils/task-schedule';
@@ -20,6 +19,7 @@ interface TaskCardProps {
   groupColorEnd: string;
   groupId: string;
   group: Group; // Add group for solo mode detection
+  containerStyle?: object;
 }
 
 export function TaskCard({
@@ -29,6 +29,7 @@ export function TaskCard({
   groupColorStart,
   groupColorEnd,
   group,
+  containerStyle,
 }: TaskCardProps) {
   const { t } = useTranslation();
   const soloMode = isSoloMode(group);
@@ -46,7 +47,7 @@ export function TaskCard({
 
   return (
     <TouchableOpacity
-      style={styles.cardContainer}
+      style={[styles.cardContainer, containerStyle]}
       onPress={onPress}
       activeOpacity={0.8}>
       <LinearGradient

@@ -1,34 +1,84 @@
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { router } from 'expo-router';
-import { Image } from 'expo-image';
-import { useTranslation } from 'react-i18next';
-import { Group } from '@/types';
-import { TaskCard } from './task-card';
-import { ThemedText } from './themed-text';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { APP_ICONS } from '@/constants/icons';
 import { BORDER_RADIUS } from '@/constants/border-radius';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { Group, Task } from '@/types';
 import { getColorsFromPreset } from '@/utils/group-colors';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
+import { SwipeableTaskCard } from './swipeable-task-card';
+import { ThemedText } from './themed-text';
 
 interface TaskCardListProps {
   group: Group;
   onOpenAddMember?: () => void;
+  onEditTask?: (task: Task) => void;
+  onDeleteTask?: (task: Task) => void;
+  onReorderTasks?: (taskIds: string[]) => void;
 }
 
-export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
+export function TaskCardList({ 
+  group, 
+  onOpenAddMember, 
+  onEditTask, 
+  onDeleteTask,
+  onReorderTasks,
+}: TaskCardListProps) {
   const { t } = useTranslation();
-  const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'icon');
-  const borderColor = useThemeColor(
-    { light: '#E0E0E0', dark: '#404040' },
-    'icon'
-  );
   const buttonBackgroundColor = useThemeColor({}, 'text');
   const buttonTextColor = useThemeColor({}, 'background');
 
-  const handleTaskPress = (taskId: string) => {
+  const handleTaskPress = useCallback((taskId: string) => {
     router.push(`/group/${group.id}/task/${taskId}`);
-  };
+  }, [group.id]);
+
+  const handleDragEnd = useCallback(
+    ({ data }: { data: Task[] }) => {
+      if (onReorderTasks) {
+        const taskIds = data.map((task) => task.id);
+        onReorderTasks(taskIds);
+      }
+    },
+    [onReorderTasks]
+  );
+
+  const renderItem = useCallback(
+    ({ item, drag, isActive }: RenderItemParams<Task>) => {
+      // Find assigned member
+      const assignedMember =
+        item.memberIds.length > 0
+          ? group.members.find((m) => m.id === item.memberIds[item.assignedIndex])
+          : null;
+
+      // Get colors from preset
+      const colors = getColorsFromPreset(group.colorPreset);
+
+      return (
+        <ScaleDecorator>
+          <SwipeableTaskCard
+            task={item}
+            assignedMember={assignedMember || null}
+            groupColorStart={colors.start}
+            groupColorEnd={colors.end}
+            groupId={group.id}
+            group={group}
+            onPress={() => handleTaskPress(item.id)}
+            onEdit={onEditTask || (() => {})}
+            onDelete={onDeleteTask || (() => {})}
+            drag={drag}
+            isActive={isActive}
+          />
+        </ScaleDecorator>
+      );
+    },
+    [group, handleTaskPress, onEditTask, onDeleteTask]
+  );
 
   // Check if group has no tasks
   if (group.tasks.length === 0) {
@@ -71,38 +121,26 @@ export function TaskCardList({ group, onOpenAddMember }: TaskCardListProps) {
     );
   }
 
-  // Get colors from preset
-  const colors = getColorsFromPreset(group.colorPreset);
-
   return (
     <View style={styles.container}>
-      {group.tasks.map((task) => {
-        // Find assigned member
-        const assignedMember =
-          task.memberIds.length > 0
-            ? group.members.find((m) => m.id === task.memberIds[task.assignedIndex])
-            : null;
-
-        return (
-          <TaskCard
-            key={task.id}
-            task={task}
-            assignedMember={assignedMember || null}
-            onMarkDone={() => {}} // No longer used, but kept for compatibility
-            onPress={() => handleTaskPress(task.id)}
-            groupColorStart={colors.start}
-            groupColorEnd={colors.end}
-            groupId={group.id}
-            group={group}
-          />
-        );
-      })}
+      <DraggableFlatList
+        data={group.tasks}
+        onDragEnd={handleDragEnd}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        activationDistance={10}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  listContent: {
     paddingHorizontal: 20,
     paddingVertical: 12,
   },

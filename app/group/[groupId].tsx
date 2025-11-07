@@ -13,7 +13,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppStore } from '@/store/use-app-store';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -24,13 +24,16 @@ type TabType = 'tasks' | 'members';
 export default function GroupScreen() {
   const { t } = useTranslation();
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
-  const { groups, initialize, deleteGroup } = useAppStore();
+  const { groups, initialize, deleteGroup, reorderTasks, deleteTask } = useAppStore();
   const [activeTab, setActiveTab] = useState<TabType>('tasks');
   const [isAddTaskModalVisible, setIsAddTaskModalVisible] = useState(false);
   const [isAddMemberModalVisible, setIsAddMemberModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isEditTaskModalVisible, setIsEditTaskModalVisible] = useState(false);
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+  const [isDeleteTaskConfirmationVisible, setIsDeleteTaskConfirmationVisible] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<{ id: string; name: string } | null>(null);
   const insets = useSafeAreaInsets();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -73,10 +76,40 @@ export default function GroupScreen() {
     }
   };
 
+  const handleEditTask = useCallback((task: { id: string }) => {
+    setSelectedTask(task);
+    setIsEditTaskModalVisible(true);
+  }, []);
+
+  const handleDeleteTask = useCallback((task: { id: string; name: string }) => {
+    setSelectedTask(task);
+    setIsDeleteTaskConfirmationVisible(true);
+  }, []);
+
+  const handleDeleteTaskConfirm = useCallback(async () => {
+    if (selectedTask && group) {
+      await deleteTask(group.id, selectedTask.id);
+      setSelectedTask(null);
+    }
+    setIsDeleteTaskConfirmationVisible(false);
+  }, [selectedTask, group, deleteTask]);
+
+  const handleReorderTasks = useCallback(
+    async (taskIds: string[]) => {
+      if (group) {
+        await reorderTasks(group.id, taskIds);
+      }
+    },
+    [group, reorderTasks]
+  );
+
   const handleCloseModals = () => {
     setIsEditModalVisible(false);
+    setIsEditTaskModalVisible(false);
     setIsDeleteConfirmationVisible(false);
+    setIsDeleteTaskConfirmationVisible(false);
     setIsContextMenuVisible(false);
+    setSelectedTask(null);
   };
 
   if (!group) {
@@ -133,19 +166,22 @@ export default function GroupScreen() {
       <GroupTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Content */}
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {activeTab === 'tasks' ? (
-          <TaskCardList 
-            group={group} 
-            onOpenAddMember={() => {
-              setActiveTab('members');
-              setIsAddMemberModalVisible(true);
-            }}
-          />
-        ) : (
+      {activeTab === 'tasks' ? (
+        <TaskCardList 
+          group={group} 
+          onOpenAddMember={() => {
+            setActiveTab('members');
+            setIsAddMemberModalVisible(true);
+          }}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onReorderTasks={handleReorderTasks}
+        />
+      ) : (
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           <MemberChipList group={group} />
-        )}
-      </ScrollView>
+        </ScrollView>
+      )}
 
       {/* Floating Action Button - Only show on Tasks tab and when group has members */}
       {activeTab === 'tasks' && group.members.length > 0 && (
@@ -176,6 +212,32 @@ export default function GroupScreen() {
           setIsAddTaskModalVisible(false);
           setIsAddMemberModalVisible(true);
         }}
+      />
+
+      {/* Edit Task Modal */}
+      {selectedTask && group && (
+        <TaskModal
+          visible={isEditTaskModalVisible}
+          onClose={handleCloseModals}
+          group={group}
+          task={group.tasks.find((t) => t.id === selectedTask.id)}
+          onOpenAddMember={() => {
+            setIsEditTaskModalVisible(false);
+            setIsAddMemberModalVisible(true);
+          }}
+        />
+      )}
+
+      {/* Delete Task Confirmation */}
+      <ConfirmationModal
+        visible={isDeleteTaskConfirmationVisible}
+        title={t('confirmation.deleteTaskTitle')}
+        message={t('confirmation.deleteTaskMessage', { name: selectedTask?.name || '' })}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        confirmColor="#EF4444"
+        onConfirm={handleDeleteTaskConfirm}
+        onCancel={handleCloseModals}
       />
 
       {/* Add Member Modal */}
