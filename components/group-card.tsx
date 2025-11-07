@@ -1,13 +1,12 @@
-import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
+import { BORDER_RADIUS } from '@/constants/border-radius';
+import { APP_ICONS } from '@/constants/icons';
+import { Group } from '@/types';
+import { getColorsFromPreset } from '@/utils/group-colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { Group } from '@/types';
-import { BORDER_RADIUS } from '@/constants/border-radius';
-import { APP_ICONS } from '@/constants/icons';
-import { getColorsFromPreset } from '@/utils/group-colors';
-import { MemberAvatar } from './member-avatar';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface GroupCardProps {
   group: Group;

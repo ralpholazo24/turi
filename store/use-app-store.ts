@@ -253,19 +253,21 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   reorderGroups: async (groupIds: string[]) => {
     const { groups } = get();
-    
+
     // Create a map for quick lookup
     const groupMap = new Map(groups.map((group) => [group.id, group]));
-    
+
     // Reorder groups based on the provided IDs array
     const reorderedGroups = groupIds
       .map((id) => groupMap.get(id))
       .filter((group): group is Group => group !== undefined);
-    
+
     // Add any groups that weren't in the reorder list (shouldn't happen, but safety check)
     const existingIds = new Set(groupIds);
-    const remainingGroups = groups.filter((group) => !existingIds.has(group.id));
-    
+    const remainingGroups = groups.filter(
+      (group) => !existingIds.has(group.id)
+    );
+
     set({
       groups: [...reorderedGroups, ...remainingGroups],
     });
