@@ -449,22 +449,22 @@
     "screen1": {
       "headline": "Tired of turn-taking arguments?",
       "subtext": "Whether it's chores, cooking, or paying bills, Turi keeps things fair and peaceful for everyone.",
-      "cta": "Let's fix this!"
+      "cta": "Get Started"
     },
     "screen2": {
       "headline": "Fair turn tracking, automatically",
       "subtext": "Turi tracks everyone's turns automatically with no cheating, no forgetting, and no confusion.",
-      "cta": "Sounds fair!"
+      "cta": "Continue"
     },
     "screen3": {
       "headline": "Perfect for solo users too",
       "subtext": "Manage your recurring chores, workouts, and habits all in one organized place.",
-      "cta": "Let's get organized!"
+      "cta": "Continue"
     },
     "screen4": {
       "headline": "Organize your recurring tasks",
       "subtext": "Track turns, keep everyone accountable, and make shared responsibilities easier to manage.",
-      "cta": "Next",
+      "cta": "Continue",
       "ctaSecondary": "Learn how it works"
     },
     "screen5": {

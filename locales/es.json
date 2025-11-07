@@ -444,22 +444,22 @@
     "screen1": {
       "headline": "¿Cansado de discutir sobre los turnos?",
       "subtext": "Ya sea tareas domésticas, cocinar o pagar facturas, Turi mantiene las cosas justas y pacíficas para todos.",
-      "cta": "¡Arreglemos esto!"
+      "cta": "Comenzar"
     },
     "screen2": {
       "headline": "Rastrea turnos de forma justa y automática",
       "subtext": "Turi rastrea los turnos de todos automáticamente sin trampas, sin olvidos y sin confusiones.",
-      "cta": "¡Suena justo!"
+      "cta": "Continuar"
     },
     "screen3": {
       "headline": "Perfecto para usuarios solos también",
       "subtext": "Gestiona tus tareas recurrentes, entrenamientos y hábitos todo en un solo lugar organizado.",
-      "cta": "¡Organicémonos!"
+      "cta": "Continuar"
     },
     "screen4": {
       "headline": "Organiza tus tareas recurrentes",
       "subtext": "Rastrea turnos, mantén a todos responsables y haz que las responsabilidades compartidas sean más fáciles de gestionar.",
-      "cta": "Siguiente",
+      "cta": "Continuar",
       "ctaSecondary": "Aprende cómo funciona"
     },
     "screen5": {
