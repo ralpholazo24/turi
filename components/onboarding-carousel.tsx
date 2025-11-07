@@ -173,13 +173,13 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
               <ThemedText style={styles.permissionModalText} i18nKey="onboarding.notificationPermissionText" />
               <View style={[styles.permissionModalButtons, { borderTopColor: borderColor + '30' }]}>
                 <TouchableOpacity
-                  style={[styles.permissionModalButton, { borderRightColor: borderColor + '30' }]}
+                  style={[styles.permissionModalButton, styles.permissionModalButtonLeft, styles.permissionModalButtonHighlighted, { borderRightColor: borderColor + '30', backgroundColor: buttonBackgroundColor }]}
                   onPress={handleEnableNotifications}
-                  activeOpacity={0.7}>
-                  <ThemedText style={[styles.permissionModalButtonText, { color: buttonBackgroundColor }]} i18nKey="common.continue" />
+                  activeOpacity={0.8}>
+                  <ThemedText style={[styles.permissionModalButtonText, { color: buttonTextColor }]} i18nKey="common.continue" />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.permissionModalButton}
+                  style={[styles.permissionModalButton, styles.permissionModalButtonRight]}
                   onPress={handleSkipNotifications}
                   activeOpacity={0.7}>
                   <ThemedText style={[styles.permissionModalButtonText, { color: textColor, opacity: 0.6 }]} i18nKey="onboarding.dontAllow" />
@@ -197,24 +197,6 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
               />
             </View>
           </ScrollView>
-
-          {/* Sticky Buttons at Bottom */}
-          <View style={[styles.stickyButtonContainer, { paddingBottom: insets.bottom, backgroundColor, borderTopColor: borderColor + '30' }]}>
-            <TouchableOpacity
-              style={[styles.stickyButton, { backgroundColor: buttonBackgroundColor }]}
-              onPress={handleEnableNotifications}
-              activeOpacity={0.8}>
-              <ThemedText
-                style={[styles.stickyButtonText, { color: buttonTextColor }]}
-                i18nKey={item.ctaKey} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.stickySecondaryButton}
-              onPress={handleSkipNotifications}
-              activeOpacity={0.7}>
-              <ThemedText style={styles.stickySecondaryButtonText} i18nKey={item.ctaSecondaryKey} />
-            </TouchableOpacity>
-          </View>
         </View>
       );
     }
@@ -477,7 +459,15 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  permissionModalButtonLeft: {
     borderRightWidth: 1,
+  },
+  permissionModalButtonRight: {
+    borderRightWidth: 0,
+  },
+  permissionModalButtonHighlighted: {
+    borderRadius: BORDER_RADIUS.medium,
   },
   permissionModalButtonText: {
     fontSize: 16,
