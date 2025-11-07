@@ -4,11 +4,11 @@ import { Member } from '@/types';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import DraggableFlatList, {
   RenderItemParams,
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -54,7 +54,7 @@ function MemberItem({
 
   const cardStyle = useAnimatedStyle(() => ({
     opacity: isActive ? 0.8 : 1,
-    transform: [{ scale: isActive ? 1.02 : 1 }],
+    transform: [{ scale: isActive ? 0.95 : 1 }],
   }));
 
   const content = (

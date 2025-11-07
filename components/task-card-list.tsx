@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
-  ScaleDecorator,
 } from 'react-native-draggable-flatlist';
 import { SwipeableTaskCard } from './swipeable-task-card';
 import { ThemedText } from './themed-text';
@@ -61,21 +60,19 @@ export function TaskCardList({
       const colors = getColorsFromPreset(group.colorPreset);
 
       return (
-        <ScaleDecorator>
-          <SwipeableTaskCard
-            task={item}
-            assignedMember={assignedMember || null}
-            groupColorStart={colors.start}
-            groupColorEnd={colors.end}
-            groupId={group.id}
-            group={group}
-            onPress={() => handleTaskPress(item.id)}
-            onEdit={onEditTask || (() => {})}
-            onDelete={onDeleteTask || (() => {})}
-            drag={drag}
-            isActive={isActive}
-          />
-        </ScaleDecorator>
+        <SwipeableTaskCard
+          task={item}
+          assignedMember={assignedMember || null}
+          groupColorStart={colors.start}
+          groupColorEnd={colors.end}
+          groupId={group.id}
+          group={group}
+          onPress={() => handleTaskPress(item.id)}
+          onEdit={onEditTask || (() => {})}
+          onDelete={onDeleteTask || (() => {})}
+          drag={drag}
+          isActive={isActive}
+        />
       );
     },
     [group, handleTaskPress, onEditTask, onDeleteTask]

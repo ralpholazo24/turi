@@ -5,12 +5,11 @@ import { useAppStore } from '@/store/use-app-store';
 import { useUserStore } from '@/store/use-user-store';
 import { Group, Member } from '@/types';
 import { Image } from 'expo-image';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
-  ScaleDecorator,
 } from 'react-native-draggable-flatlist';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -18,6 +17,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { ConfirmationModal } from './confirmation-modal';
 import { EditMemberModal } from './edit-member-modal';
@@ -58,6 +58,7 @@ function SwipeableMemberCard({
 }: SwipeableMemberCardProps) {
   const { t } = useTranslation();
   const translateX = useSharedValue(0);
+  const scale = useSharedValue(1);
   const [isOpen, setIsOpen] = useState(false);
   const chipBackgroundColor = useThemeColor(
     { light: '#F5F5F5', dark: '#2A2A2A' },
@@ -74,6 +75,21 @@ function SwipeableMemberCard({
   const closeCard = () => {
     setIsOpen(false);
   };
+
+  // Scale animation when dragging
+  useEffect(() => {
+    if (isActive) {
+      // Scale down when drag starts - use timing to prevent overshoot
+      scale.value = withTiming(0.95, {
+        duration: 200,
+      });
+    } else {
+      // Scale back to normal when drag ends - use timing to avoid overshoot
+      scale.value = withTiming(1, {
+        duration: 200,
+      });
+    }
+  }, [isActive, scale]);
 
   // Long press gesture for drag
   const longPressGesture = drag
@@ -122,7 +138,10 @@ function SwipeableMemberCard({
     : panGesture;
 
   const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [
+      { translateX: translateX.value },
+      { scale: scale.value },
+    ],
     opacity: isActive ? 0.8 : 1,
   }));
 
@@ -283,20 +302,18 @@ export function MemberChipList({ group }: MemberChipListProps) {
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<Member>) => {
       return (
-        <ScaleDecorator>
-          <SwipeableMemberCard
-            member={item}
-            group={group}
-            isOwner={isOwner(item)}
-            backgroundColor={backgroundColor}
-            textColor={textColor}
-            borderColor={borderColor}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            drag={drag}
-            isActive={isActive}
-          />
-        </ScaleDecorator>
+        <SwipeableMemberCard
+          member={item}
+          group={group}
+          isOwner={isOwner(item)}
+          backgroundColor={backgroundColor}
+          textColor={textColor}
+          borderColor={borderColor}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          drag={drag}
+          isActive={isActive}
+        />
       );
     },
     [group, backgroundColor, textColor, borderColor, handleEdit, handleDelete, isOwner]
@@ -391,13 +408,12 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.large,
     position: 'relative',
     width: '100%',
-    padding: 3, // Add padding to allow borders to show when scaled during drag
   },
   actionButtonsContainer: {
     position: 'absolute',
-    right: 3,
-    top: 3,
-    bottom: 3,
+    right: 0,
+    top: 0,
+    bottom: 0,
     flexDirection: 'row',
     borderRadius: BORDER_RADIUS.large,
     overflow: 'hidden',

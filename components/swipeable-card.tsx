@@ -3,10 +3,10 @@ import { APP_ICONS } from '@/constants/icons';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from 'react-native-reanimated';
 import { ThemedText } from './themed-text';
 
@@ -138,7 +138,11 @@ export function SwipeableCard({
     : panGesture;
 
   const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [
+      { translateX: translateX.value },
+      { scale: isActive ? 0.95 : 1 },
+    ],
+    opacity: isActive ? 0.8 : 1,
   }));
 
   // Animate action buttons opacity based on swipe position
@@ -194,7 +198,7 @@ export function SwipeableCard({
       </Animated.View>
 
       {/* Card Content (on top) */}
-      <Animated.View style={[cardStyle, styles.cardWrapper, isActive && styles.activeCard]}>
+      <Animated.View style={[cardStyle, styles.cardWrapper]}>
         <GestureDetector gesture={composedGesture}>
           <View style={styles.gestureArea}>
             {children}
@@ -247,10 +251,6 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
-  },
-  activeCard: {
-    opacity: 0.8,
-    transform: [{ scale: 1.02 }],
   },
   gestureArea: {
     width: '100%',

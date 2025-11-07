@@ -16,7 +16,6 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
-  ScaleDecorator,
 } from 'react-native-draggable-flatlist';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -75,15 +74,13 @@ export default function HomeScreen() {
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<Group>) => {
       return (
-        <ScaleDecorator>
-          <SwipeableGroupCard
-            group={item}
-            onEdit={handleEditGroup}
-            onDelete={handleDeleteGroup}
-            drag={drag}
-            isActive={isActive}
-          />
-        </ScaleDecorator>
+        <SwipeableGroupCard
+          group={item}
+          onEdit={handleEditGroup}
+          onDelete={handleDeleteGroup}
+          drag={drag}
+          isActive={isActive}
+        />
       );
     },
     [handleEditGroup, handleDeleteGroup]
