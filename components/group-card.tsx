@@ -3,22 +3,19 @@ import { APP_ICONS } from '@/constants/icons';
 import { Group } from '@/types';
 import { getColorsFromPreset } from '@/utils/group-colors';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface GroupCardProps {
   group: Group;
+  onPress?: () => void;
   containerStyle?: object;
 }
 
-export function GroupCard({ group, containerStyle }: GroupCardProps) {
+export function GroupCard({ group, onPress, containerStyle }: GroupCardProps) {
   const { t } = useTranslation();
-
-  const handlePress = () => {
-    router.push(`/group/${group.id}`);
-  };
 
   const nextTask = group.tasks.find((task) => {
     if (task.memberIds.length === 0) return false;
@@ -35,18 +32,22 @@ export function GroupCard({ group, containerStyle }: GroupCardProps) {
   const totalTasksCount = group.tasks.length;
   const totalMembersCount = group.members.length;
 
-  // Get the icon component dynamically
-  // eslint-disable-next-line import/namespace
-  const IconComponent = LucideIcons[group.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+  // Memoize icon component lookup to avoid re-computation
+  const IconComponent = useMemo(() => {
+    // eslint-disable-next-line import/namespace
+    return LucideIcons[group.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+  }, [group.icon]);
 
-  // Get colors from preset
-  const colors = getColorsFromPreset(group.colorPreset);
+  // Memoize colors from preset
+  const colors = useMemo(() => {
+    return getColorsFromPreset(group.colorPreset);
+  }, [group.colorPreset]);
 
   return (
     <TouchableOpacity
       style={[styles.cardContainer, containerStyle]}
-      onPress={handlePress}
-      activeOpacity={0.8}>
+      onPress={onPress}
+      activeOpacity={1}>
       <LinearGradient
         colors={[colors.start, colors.end]}
         start={{ x: 1, y: 1 }}

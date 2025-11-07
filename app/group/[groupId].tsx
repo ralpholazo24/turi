@@ -14,7 +14,7 @@ import { useAppStore } from '@/store/use-app-store';
 import { Task } from '@/types';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -25,7 +25,7 @@ type TabType = 'tasks' | 'members';
 export default function GroupScreen() {
   const { t } = useTranslation();
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
-  const { groups, initialize, deleteGroup, reorderTasks, deleteTask } = useAppStore();
+  const { groups, deleteGroup, reorderTasks, deleteTask } = useAppStore();
   const [activeTab, setActiveTab] = useState<TabType>('tasks');
   const [isAddTaskModalVisible, setIsAddTaskModalVisible] = useState(false);
   const [isAddMemberModalVisible, setIsAddMemberModalVisible] = useState(false);
@@ -45,11 +45,11 @@ export default function GroupScreen() {
   const PlusIcon = APP_ICONS.add;
   const MenuIcon = APP_ICONS.menu;
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  const group = groups.find((g) => g.id === groupId);
+  // Memoize group lookup to avoid re-computation on every render
+  // Note: initialize() is called at app level, no need to call it here
+  const group = useMemo(() => {
+    return groups.find((g) => g.id === groupId);
+  }, [groups, groupId]);
 
   const handleMenuPress = () => {
     setIsContextMenuVisible(true);
@@ -128,9 +128,11 @@ export default function GroupScreen() {
     );
   }
 
-  // Get the icon component dynamically
-  // eslint-disable-next-line import/namespace
-  const IconComponent = LucideIcons[group.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+  // Memoize icon component lookup to avoid re-computation
+  const IconComponent = useMemo(() => {
+    // eslint-disable-next-line import/namespace
+    return LucideIcons[group.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+  }, [group.icon]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>

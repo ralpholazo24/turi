@@ -44,6 +44,7 @@ export type GroupIconName = (typeof GROUP_ICON_OPTIONS)[number]["component"];
 // Gradient flows from bottom-right to upper-left
 // Based on vibrant color palette: Red, Orange, Yellow, Green, Mint, Teal, Cyan, Blue, Indigo, Purple
 export const GROUP_COLOR_PRESETS = [
+  { start: "#DC2626", end: "#EF4444", name: "Red-Light Red" }, // Red → Light Red (vibrant)
   { start: "#DC2626", end: "#F97316", name: "Red-Orange" }, // Red → Orange (warm)
   { start: "#EA580C", end: "#EAB308", name: "Orange-Yellow" }, // Orange → Yellow (sunset)
   { start: "#FCD34D", end: "#16A34A", name: "Yellow-Green" }, // Yellow → Green (fresh)

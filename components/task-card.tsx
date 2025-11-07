@@ -6,6 +6,7 @@ import { getTaskCompletionStatus, isTaskOverdue } from '@/utils/task-completion'
 import { formatScheduleInfo } from '@/utils/task-schedule';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MemberAvatar } from './member-avatar';
@@ -45,26 +46,28 @@ export function TaskCard({
   
   const CheckIcon = APP_ICONS.check;
 
+  // Memoize icon component lookup to avoid re-computation
+  const IconComponent = useMemo(() => {
+    // eslint-disable-next-line import/namespace
+    return LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+  }, [task.icon]);
+
   return (
     <TouchableOpacity
       style={[styles.cardContainer, containerStyle]}
       onPress={onPress}
-      activeOpacity={0.8}>
+      activeOpacity={1}>
       <LinearGradient
         colors={[groupColorStart, groupColorEnd]}
         start={{ x: 1, y: 1 }}
         end={{ x: 0, y: 0 }}
         style={styles.gradient}>
         {/* Background Icon */}
-        {(() => {
-          // eslint-disable-next-line import/namespace
-          const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
-          return IconComponent ? (
-            <View style={styles.backgroundIconContainer}>
-              <IconComponent size={100} color="rgba(255, 255, 255, 0.25)" />
-            </View>
-          ) : null;
-        })()}
+        {IconComponent ? (
+          <View style={styles.backgroundIconContainer}>
+            <IconComponent size={100} color="rgba(255, 255, 255, 0.25)" />
+          </View>
+        ) : null}
         <View style={styles.cardContent}>
           {/* Top Section: Task Name and Info */}
           <View style={styles.topSection}>

@@ -15,7 +15,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -32,7 +32,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function TaskDetailsScreen() {
   const { t } = useTranslation();
   const { groupId, taskId } = useLocalSearchParams<{ groupId: string; taskId: string }>();
-  const { groups, markTaskDone, skipTurn, deleteTask, initialize } = useAppStore();
+  const { groups, markTaskDone, skipTurn, deleteTask } = useAppStore();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [isSkipConfirmationVisible, setIsSkipConfirmationVisible] = useState(false);
@@ -54,12 +54,15 @@ export default function TaskDetailsScreen() {
   const MenuIcon = APP_ICONS.menu;
   const CheckIcon = APP_ICONS.check;
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  const group = groups.find((g) => g.id === groupId);
-  const task = group?.tasks.find((t) => t.id === taskId);
+  // Note: initialize() is called at app level, no need to call it here
+  // Memoize group and task lookup to avoid re-computation
+  const group = useMemo(() => {
+    return groups.find((g) => g.id === groupId);
+  }, [groups, groupId]);
+  
+  const task = useMemo(() => {
+    return group?.tasks.find((t) => t.id === taskId);
+  }, [group, taskId]);
 
   if (!group || !task) {
     return (
@@ -76,9 +79,14 @@ export default function TaskDetailsScreen() {
     );
   }
 
-  // Get assigned members for this task
-  const assignedMembers = group.members.filter((m) => task.memberIds.includes(m.id));
-  const currentMember = assignedMembers[task.assignedIndex] || null;
+  // Memoize assigned members and current member lookup
+  const assignedMembers = useMemo(() => {
+    return group.members.filter((m) => task.memberIds.includes(m.id));
+  }, [group.members, task.memberIds]);
+  
+  const currentMember = useMemo(() => {
+    return assignedMembers[task.assignedIndex] || null;
+  }, [assignedMembers, task.assignedIndex]);
 
   // Check if task is overdue (needed before formatScheduleInfo)
   const isOverdue = isTaskOverdue(task);
@@ -143,8 +151,16 @@ export default function TaskDetailsScreen() {
   // Check if group is in solo mode
   const soloMode = isSoloMode(group);
 
-  // Get colors from preset (cache to avoid multiple calls)
-  const groupColors = getColorsFromPreset(group.colorPreset);
+  // Memoize colors from preset
+  const groupColors = useMemo(() => {
+    return getColorsFromPreset(group.colorPreset);
+  }, [group.colorPreset]);
+
+  // Memoize icon component lookup
+  const TaskIconComponent = useMemo(() => {
+    // eslint-disable-next-line import/namespace
+    return LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+  }, [task.icon]);
 
   const handleMarkDone = async () => {
     if (completionStatus.isCompleted) {
@@ -257,15 +273,11 @@ export default function TaskDetailsScreen() {
             end={{ x: 0, y: 0 }}
             style={styles.taskCardGradient}>
             {/* Background Icon */}
-            {(() => {
-              // eslint-disable-next-line import/namespace
-              const IconComponent = LucideIcons[task.icon as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }> | undefined;
-              return IconComponent ? (
-                <View style={styles.backgroundIconContainer}>
-                  <IconComponent size={120} color="rgba(255, 255, 255, 0.25)" />
-                </View>
-              ) : null;
-            })()}
+            {TaskIconComponent ? (
+              <View style={styles.backgroundIconContainer}>
+                <TaskIconComponent size={120} color="rgba(255, 255, 255, 0.25)" />
+              </View>
+            ) : null}
             <View style={styles.taskCardContent}>
               {/* Top Section: Task Name */}
               <View style={styles.topSection}>

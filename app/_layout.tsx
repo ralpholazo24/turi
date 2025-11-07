@@ -69,7 +69,19 @@ export default function RootLayout() {
   // Hide the native splash screen once React is ready
   useEffect(() => {
     if (isReady) {
-      SplashScreen.hideAsync();
+      // Add a small delay to ensure the native module is ready
+      // Use requestAnimationFrame to ensure it's called after the first render
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          SplashScreen.hideAsync().catch((error) => {
+            // Ignore errors if splash screen is not registered
+            // This can happen during development, on web, or if the native module isn't ready
+            if (__DEV__) {
+              console.warn('Failed to hide splash screen (this is normal in some cases):', error.message);
+            }
+          });
+        }, 100);
+      });
     }
   }, [isReady]);
 
@@ -130,9 +142,24 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: 'default',
+            animationDuration: 250,
+            gestureEnabled: true,
+            gestureDirection: 'horizontal',
+          }}>
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="group"
+            options={{
+              animation: 'default',
+              gestureEnabled: true,
+              gestureDirection: 'horizontal',
+            }}
+          />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
           <Stack.Screen name="activity" />
