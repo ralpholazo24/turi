@@ -19,6 +19,7 @@
     "ok": "OK",
     "last": "Último",
     "loading": "Cargando...",
+    "continue": "Continuar",
     "january": "Enero",
     "february": "Febrero",
     "march": "Marzo",
@@ -73,9 +74,7 @@
     "nextTask": "Próxima Tarea",
     "assignedTo": "Asignado a",
     "task": "Tarea",
-    "tasks": "Tareas",
     "member": "Miembro",
-    "members": "Miembros",
     "noTasksAssigned": "No hay tareas asignadas",
     "groupName": "Nombre del Grupo",
     "pickIcon": "Elige un icono",
@@ -460,9 +459,19 @@
     "screen4": {
       "headline": "Organiza tus tareas recurrentes",
       "subtext": "Rastrea turnos, mantén a todos responsables y haz que las responsabilidades compartidas sean más fáciles de gestionar.",
-      "cta": "Comenzar",
+      "cta": "Siguiente",
       "ctaSecondary": "Aprende cómo funciona"
-    }
+    },
+    "screen5": {
+      "headline": "Nunca pierdas tu turno",
+      "subtext": "Recibe notificaciones cuando las tareas se acerquen para que siempre estés preparado y nunca olvides tu turno.",
+      "cta": "Activar Notificaciones",
+      "ctaSecondary": "Tal Vez Más Tarde"
+    },
+    "notificationGranted": "¡Acceso a notificaciones concedido!",
+    "notificationPermissionTitle": "\"Turi\" Quiere Enviarte Notificaciones",
+    "notificationPermissionText": "Proporcionar a \"Turi\" acceso a las notificaciones le permite enviarte recordatorios cuando las tareas estén próximas, para que nunca pierdas tu turno.",
+    "dontAllow": "No Permitir"
   },
   "profile": {
     "title": "Perfil",

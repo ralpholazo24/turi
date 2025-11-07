@@ -21,6 +21,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const ANIMATION_DELAY_MS = 100;
+
 interface OnboardingModalProps {
   visible: boolean;
   onComplete: () => void;
@@ -37,7 +39,7 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
 
   const CloseIcon = APP_ICONS.back;
 
-  // Reset name input when modal closes or viewOnly changes
+  // Reset states when modal closes
   useEffect(() => {
     if (!visible) {
       setShowNameInput(false);
@@ -45,7 +47,7 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
       setIsCompleting(false);
       fadeAnim.setValue(1);
     }
-  }, [visible, fadeAnim]);
+  }, [visible]);
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -75,7 +77,7 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
         await setUser(name.trim(), getRandomAvatarColor());
         await completeOnboarding();
         // Small delay to ensure smooth transition
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, ANIMATION_DELAY_MS));
         // Keep showNameInput true until modal is fully closed to prevent carousel flash
         onComplete();
       });
@@ -86,12 +88,12 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
     }
   };
 
-  const handleGetStarted = () => {
+  const handleOnboardingComplete = () => {
     if (viewOnly && user) {
       // In view-only mode with existing user, just close
       onComplete();
     } else {
-      // Fade in the name input screen
+      // Fade to name input screen
       fadeAnim.setValue(0);
       setShowNameInput(true);
       Animated.timing(fadeAnim, {
@@ -142,7 +144,17 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
       headlineKey: 'onboarding.screen4.headline',
       subtextKey: 'onboarding.screen4.subtext',
       ctaKey: 'onboarding.screen4.cta',
-      onCtaPress: handleGetStarted,
+      ctaSecondaryKey: 'onboarding.screen4.ctaSecondary',
+      onCtaSecondaryPress: handleLearnMore,
+    },
+    {
+      id: '5',
+      illustration: require('@/assets/illustrations/hello-with-balloons.svg'),
+      headlineKey: 'onboarding.screen5.headline',
+      subtextKey: 'onboarding.screen5.subtext',
+      ctaKey: 'onboarding.screen5.cta',
+      ctaSecondaryKey: 'onboarding.screen5.ctaSecondary',
+      isNotificationScreen: true,
     },
   ];
 
@@ -214,7 +226,7 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
               </ScrollView>
             </Animated.View>
           ) : (
-            <OnboardingCarousel screens={onboardingScreens} onComplete={onComplete} />
+            <OnboardingCarousel screens={onboardingScreens} onComplete={handleOnboardingComplete} />
           )}
         </SafeAreaView>
       </KeyboardAvoidingView>

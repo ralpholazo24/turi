@@ -6,7 +6,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/store/use-user-store';
 import { getRandomAvatarColor } from '@/utils/member-avatar';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Animated,
@@ -42,12 +42,14 @@ export default function OnboardingScreen() {
   const buttonBackgroundColor = useThemeColor({}, 'text');
   const buttonTextColor = useThemeColor({}, 'background');
 
+  const shouldSkipOnboarding = () => viewOnly && user;
+
   const handleContinue = async () => {
     if (!name.trim() || isCompleting) {
       return;
     }
 
-    if (viewOnly && user) {
+    if (shouldSkipOnboarding()) {
       // In view-only mode with existing user, just go back
       router.back();
       return;
@@ -75,13 +77,13 @@ export default function OnboardingScreen() {
     }
   };
 
-  const handleGetStarted = () => {
-    if (viewOnly && user) {
+  const handleOnboardingComplete = () => {
+    if (shouldSkipOnboarding()) {
       // In view-only mode with existing user, just go back
       router.back();
       return;
     }
-    // Fade in the name input screen
+    // Fade to name input screen
     fadeAnim.setValue(0);
     setShowNameInput(true);
     Animated.timing(fadeAnim, {
@@ -127,7 +129,17 @@ export default function OnboardingScreen() {
       headlineKey: 'onboarding.screen4.headline',
       subtextKey: 'onboarding.screen4.subtext',
       ctaKey: 'onboarding.screen4.cta',
-      onCtaPress: handleGetStarted,
+      ctaSecondaryKey: 'onboarding.screen4.ctaSecondary',
+      onCtaSecondaryPress: handleLearnMore,
+    },
+    {
+      id: '5',
+      illustration: require('@/assets/illustrations/hello-with-balloons.svg'),
+      headlineKey: 'onboarding.screen5.headline',
+      subtextKey: 'onboarding.screen5.subtext',
+      ctaKey: 'onboarding.screen5.cta',
+      ctaSecondaryKey: 'onboarding.screen5.ctaSecondary',
+      isNotificationScreen: true,
     },
   ];
 
@@ -194,7 +206,7 @@ export default function OnboardingScreen() {
             </ScrollView>
           </Animated.View>
         ) : (
-          <OnboardingCarousel screens={onboardingScreens} onComplete={() => {}} />
+          <OnboardingCarousel screens={onboardingScreens} onComplete={handleOnboardingComplete} />
         )}
       </SafeAreaView>
     </KeyboardAvoidingView>

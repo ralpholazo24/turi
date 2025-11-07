@@ -19,6 +19,7 @@
     "ok": "OK",
     "last": "Last",
     "loading": "Loading...",
+    "continue": "Continue",
     "january": "January",
     "february": "February",
     "march": "March",
@@ -463,9 +464,19 @@
     "screen4": {
       "headline": "Organize your recurring tasks",
       "subtext": "Track turns, keep everyone accountable, and make shared responsibilities easier to manage.",
-      "cta": "Get Started",
+      "cta": "Next",
       "ctaSecondary": "Learn how it works"
-    }
+    },
+    "screen5": {
+      "headline": "Never miss a turn",
+      "subtext": "Get notified when tasks are coming up so you're always prepared and never forget your turn.",
+      "cta": "Enable Notifications",
+      "ctaSecondary": "Maybe Later"
+    },
+    "notificationGranted": "Notification access granted!",
+    "notificationPermissionTitle": "\"Turi\" Would Like to Send You Notifications",
+    "notificationPermissionText": "Providing \"Turi\" access to notifications allows it to send you reminders when tasks are due, so you never miss your turn.",
+    "dontAllow": "Don't Allow"
   },
   "profile": {
     "title": "Profile",
