@@ -6,8 +6,9 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 
 export default function AboutScreen() {
   const { t } = useTranslation();
@@ -30,6 +31,13 @@ export default function AboutScreen() {
 
   const BackIcon = APP_ICONS.back;
   const HeartIcon = LucideIcons.Heart;
+
+  // Get build number from expo-constants
+  const buildNumber = Platform.select({
+    ios: Constants.expoConfig?.ios?.buildNumber,
+    android: Constants.expoConfig?.android?.versionCode?.toString(),
+    default: undefined,
+  });
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
@@ -62,7 +70,9 @@ export default function AboutScreen() {
           
           <ThemedText type="title" style={styles.appName} i18nKey="about.appName" />
           
-          <ThemedText style={styles.appVersion} i18nKey="about.versionNumber" />
+          <ThemedText style={styles.appVersion}>
+            {t('about.versionNumber')}{buildNumber ? ` (${buildNumber})` : ''}
+          </ThemedText>
         </View>
 
         {/* Description Section */}
