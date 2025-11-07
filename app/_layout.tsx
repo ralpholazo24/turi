@@ -30,10 +30,23 @@ export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Hide native splash screen immediately so CustomSplashScreen can show
+  // This ensures the themed SVG icon is visible right away
+  useEffect(() => {
+    // Hide native splash screen as soon as React is ready
+    // This allows CustomSplashScreen to be visible immediately
+    SplashScreen.hideAsync().catch((error) => {
+      // Ignore errors - this is normal in some cases
+      if (__DEV__) {
+        console.warn('Splash screen hide error (can be ignored):', error);
+      }
+    });
+  }, []);
+
   useEffect(() => {
     async function prepare() {
       const startTime = Date.now();
-      const MIN_SPLASH_DURATION = 4000; // Minimum 4 seconds
+      const MIN_SPLASH_DURATION = 1500; // Minimum 1.5 seconds for smooth transition
 
       try {
         // Initialize theme, language, and user
@@ -66,24 +79,6 @@ export default function RootLayout() {
     }
   }, [userLoading, isReady, onboardingCompleted]);
 
-  // Hide the native splash screen once React is ready
-  useEffect(() => {
-    if (isReady) {
-      // Add a small delay to ensure the native module is ready
-      // Use requestAnimationFrame to ensure it's called after the first render
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          SplashScreen.hideAsync().catch((error) => {
-            // Ignore errors if splash screen is not registered
-            // This can happen during development, on web, or if the native module isn't ready
-            if (__DEV__) {
-              console.warn('Failed to hide splash screen (this is normal in some cases):', error.message);
-            }
-          });
-        }, 100);
-      });
-    }
-  }, [isReady]);
 
   // Handle notification taps - navigate to task details
   useEffect(() => {

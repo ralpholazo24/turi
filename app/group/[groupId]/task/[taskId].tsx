@@ -293,7 +293,7 @@ export default function TaskDetailsScreen() {
                         {scheduleInfo.text.split(' - ')[0]}
                       </Text>
                       {scheduleInfo.dateText && (
-                        <Text style={[styles.infoChipText, styles.dateText, scheduleInfo.isOverdue && styles.overdueDateText]}>
+                        <Text style={[styles.infoChipText, styles.dateText]}>
                           {' - ' + scheduleInfo.dateText}
                         </Text>
                       )}
@@ -555,10 +555,6 @@ const styles = StyleSheet.create({
   },
   dateText: {
     marginLeft: 0,
-  },
-  overdueDateText: {
-    color: '#FF6B6B',
-    opacity: 1,
   },
   currentAssigneeSection: {
     flexDirection: 'row',
