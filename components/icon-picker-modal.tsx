@@ -3,8 +3,8 @@ import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import * as LucideIcons from 'lucide-react-native';
-import { useState } from 'react';
-import { Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useMemo } from 'react';
+import { Modal, ScrollView, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type IconOption = {
@@ -35,19 +35,36 @@ export function IconPickerModal({
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
+  const { width: screenWidth } = useWindowDimensions();
 
   const CloseIcon = APP_ICONS.close;
-  const CheckIcon = APP_ICONS.check;
 
-  // Calculate spacing for even grid layout
-  const screenWidth = Dimensions.get('window').width;
-  const padding = 20;
-  const iconSize = 48;
-  const iconsPerRow = 5;
-  const availableWidth = screenWidth - (padding * 2);
-  const totalIconsWidth = iconsPerRow * iconSize;
-  const remainingSpace = availableWidth - totalIconsWidth;
-  const iconSpacing = remainingSpace / (iconsPerRow + 1);
+  // Calculate responsive icon size and grid layout
+  const gridConfig = useMemo(() => {
+    const horizontalPadding = 32; // 16px padding on each side
+    const gap = 12; // Gap between icons
+    const iconsPerRow = 5; // Target 5 icons per row
+    const availableWidth = screenWidth - horizontalPadding;
+    const totalGapWidth = gap * (iconsPerRow - 1);
+    const iconSize = Math.floor((availableWidth - totalGapWidth) / iconsPerRow);
+    
+    // Clamp icon size between min and max for better UX
+    const minSize = 56;
+    const maxSize = 80;
+    const clampedSize = Math.max(minSize, Math.min(maxSize, iconSize));
+    
+    // Recalculate to ensure proper distribution
+    const actualTotalWidth = (clampedSize * iconsPerRow) + totalGapWidth;
+    const remainingSpace = availableWidth - actualTotalWidth;
+    const extraPadding = Math.max(0, Math.floor(remainingSpace / 2));
+    
+    return {
+      iconSize: clampedSize,
+      gap,
+      iconsPerRow,
+      extraPadding,
+    };
+  }, [screenWidth]);
 
   const handleSelect = (iconComponent: string) => {
     onSelect(iconComponent);
@@ -61,11 +78,15 @@ export function IconPickerModal({
       transparent={true}
       onRequestClose={onClose}>
       <View style={styles.modalContainer}>
-        <View style={styles.backdrop} />
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
         <SafeAreaView style={[styles.modalContent, { backgroundColor }]} edges={['bottom']}>
           {/* Header */}
           <View style={[styles.header, { borderBottomColor: borderColor + '30' }]}>
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <CloseIcon size={24} color={textColor} />
             </TouchableOpacity>
             <ThemedText type="subtitle" style={styles.headerTitle}>
@@ -79,12 +100,19 @@ export function IconPickerModal({
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}>
-            <View style={[styles.iconGrid, { paddingLeft: iconSpacing }]}>
-              {icons.map((icon, index) => {
+            <View 
+              style={[
+                styles.iconGrid, 
+                { 
+                  gap: gridConfig.gap,
+                  paddingHorizontal: 16 + gridConfig.extraPadding,
+                  paddingTop: 16,
+                }
+              ]}>
+              {icons.map((icon) => {
                 // eslint-disable-next-line import/namespace
                 const IconComponent = LucideIcons[icon.component as keyof typeof LucideIcons] as React.ComponentType<{ size?: number; color?: string }>;
                 const isSelected = selectedIcon === icon.component;
-                const isFirstInRow = index % iconsPerRow === 0;
                 
                 return (
                   <TouchableOpacity
@@ -94,8 +122,8 @@ export function IconPickerModal({
                       isSelected && styles.iconButtonSelected,
                       {
                         borderColor,
-                        marginLeft: isFirstInRow ? 0 : iconSpacing,
-                        marginTop: index >= iconsPerRow ? iconSpacing : 0,
+                        width: gridConfig.iconSize,
+                        height: gridConfig.iconSize,
                       },
                     ]}
                     onPress={() => handleSelect(icon.component)}
@@ -127,6 +155,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
+    width: '100%',
     borderTopLeftRadius: BORDER_RADIUS.xlarge,
     borderTopRightRadius: BORDER_RADIUS.xlarge,
     marginTop: 'auto',
@@ -152,22 +181,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
     paddingBottom: 40,
   },
   iconGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    width: '100%',
   },
   iconButton: {
-    width: 48,
-    height: 48,
     borderRadius: BORDER_RADIUS.medium,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    position: 'relative',
   },
   iconButtonSelected: {
     borderWidth: 3,

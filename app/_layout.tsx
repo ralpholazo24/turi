@@ -28,20 +28,6 @@ export default function RootLayout() {
   const initializeUser = useUserStore((state) => state.initialize);
   const { onboardingCompleted, isLoading: userLoading } = useUserStore();
   const [isReady, setIsReady] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
-  // Hide native splash screen immediately so CustomSplashScreen can show
-  // This ensures the themed SVG icon is visible right away
-  useEffect(() => {
-    // Hide native splash screen as soon as React is ready
-    // This allows CustomSplashScreen to be visible immediately
-    SplashScreen.hideAsync().catch((error) => {
-      // Ignore errors - this is normal in some cases
-      if (__DEV__) {
-        console.warn('Splash screen hide error (can be ignored):', error);
-      }
-    });
-  }, []);
 
   useEffect(() => {
     async function prepare() {
@@ -65,6 +51,18 @@ export default function RootLayout() {
         if (remainingTime > 0) {
           await new Promise((resolve) => setTimeout(resolve, remainingTime));
         }
+        
+        // Hide native splash screen only after everything is ready
+        // This ensures the native splash is properly registered before hiding
+        try {
+          await SplashScreen.hideAsync();
+        } catch (error) {
+          // Ignore errors - this can happen in some edge cases
+          if (__DEV__) {
+            console.warn('Splash screen hide error (can be ignored):', error);
+          }
+        }
+        
         setIsReady(true);
       }
     }
@@ -147,14 +145,6 @@ export default function RootLayout() {
           }}>
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="group"
-            options={{
-              animation: 'default',
-              gestureEnabled: true,
-              gestureDirection: 'horizontal',
-            }}
-          />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" />
           <Stack.Screen name="activity" />
