@@ -99,7 +99,6 @@ export function EditMemberModal({ visible, onClose, group, member }: EditMemberM
               placeholderTextColor={textColor + '80'}
               value={name}
               onChangeText={setName}
-              autoFocus
             />
           </View>
         </SafeAreaView>

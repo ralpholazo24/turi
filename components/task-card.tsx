@@ -14,7 +14,7 @@ import { MemberAvatar } from './member-avatar';
 interface TaskCardProps {
   task: Task;
   assignedMember: Member | null;
-  onMarkDone: () => void; // Keep for compatibility but won't be used
+  onMarkDone?: () => void; // Optional - kept for compatibility but not used
   onPress?: () => void;
   groupColorStart: string;
   groupColorEnd: string;

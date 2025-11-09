@@ -4,13 +4,14 @@ import { Group, Task } from '@/types';
 import { getColorsFromPreset } from '@/utils/group-colors';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DraggableFlatList, {
-  RenderItemParams,
+    RenderItemParams,
 } from 'react-native-draggable-flatlist';
-import { SwipeableTaskCard } from './swipeable-task-card';
+import { SwipeableCard } from './swipeable-card';
+import { TaskCard } from './task-card';
 import { ThemedText } from './themed-text';
 
 interface TaskCardListProps {
@@ -30,13 +31,22 @@ export function TaskCardList({
 }: TaskCardListProps) {
   const { t } = useTranslation();
   const iconColor = useThemeColor({}, 'icon');
-  const textColor = useThemeColor({}, 'text');
   const buttonBackgroundColor = useThemeColor({}, 'text');
   const buttonTextColor = useThemeColor({}, 'background');
+  const [openCardId, setOpenCardId] = useState<string | null>(null);
 
   const handleTaskPress = useCallback((taskId: string) => {
     router.push(`/group/${group.id}/task/${taskId}`);
   }, [group.id]);
+
+  const handleSwipeStart = useCallback((taskId: string) => {
+    // Close any other open card when a new swipe starts
+    if (openCardId && openCardId !== taskId) {
+      setOpenCardId(null);
+    }
+    // Set this card as the one being swiped
+    setOpenCardId(taskId);
+  }, [openCardId]);
 
   const handleDragEnd = useCallback(
     ({ data }: { data: Task[] }) => {
@@ -58,24 +68,31 @@ export function TaskCardList({
 
       // Get colors from preset
       const colors = getColorsFromPreset(group.colorPreset);
+      const isCardOpen = openCardId === item.id;
 
       return (
-        <SwipeableTaskCard
-          task={item}
-          assignedMember={assignedMember || null}
-          groupColorStart={colors.start}
-          groupColorEnd={colors.end}
-          groupId={group.id}
-          group={group}
-          onPress={() => handleTaskPress(item.id)}
-          onEdit={onEditTask || (() => {})}
-          onDelete={onDeleteTask || (() => {})}
+        <SwipeableCard
+          onEdit={() => onEditTask?.(item)}
+          onDelete={() => onDeleteTask?.(item)}
           drag={drag}
           isActive={isActive}
-        />
+          isOpen={isCardOpen}
+          onSwipeStart={() => handleSwipeStart(item.id)}
+          onSwipeClose={() => setOpenCardId(null)}>
+          <TaskCard
+            task={item}
+            assignedMember={assignedMember || null}
+            onPress={() => handleTaskPress(item.id)}
+            groupColorStart={colors.start}
+            groupColorEnd={colors.end}
+            groupId={group.id}
+            group={group}
+            containerStyle={{ marginBottom: 0 }}
+          />
+        </SwipeableCard>
       );
     },
-    [group, handleTaskPress, onEditTask, onDeleteTask]
+    [group, handleTaskPress, onEditTask, onDeleteTask, openCardId, handleSwipeStart]
   );
 
   // Check if group has no tasks

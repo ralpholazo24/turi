@@ -9,7 +9,6 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { ThemedText } from './themed-text';
 
 interface SwipeableCardProps {
   children: React.ReactNode;
@@ -24,7 +23,9 @@ interface SwipeableCardProps {
   onSwipeClose?: () => void;
 }
 
-const ACTION_WIDTH = 160; // Width for both action buttons combined
+const EDIT_BUTTON_WIDTH = 80; // Width for edit button only
+const DELETE_BUTTON_WIDTH = 80; // Width for delete button
+const ACTION_WIDTH = EDIT_BUTTON_WIDTH + DELETE_BUTTON_WIDTH; // Total width for both buttons
 
 export function SwipeableCard({
   children,
@@ -40,16 +41,25 @@ export function SwipeableCard({
 }: SwipeableCardProps) {
   const translateX = useSharedValue(0);
   const isDragging = useSharedValue(false);
+  const showDeleteButton = useSharedValue(false);
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  
-  // Use controlled isOpen if provided, otherwise use internal state
-  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   const EditIcon = APP_ICONS.edit;
   const DeleteIcon = APP_ICONS.delete;
 
-  // Calculate action width based on whether edit button is hidden
-  const actionWidth = hideEditButton ? ACTION_WIDTH / 2 : ACTION_WIDTH;
+  // Calculate action width based on swipe state
+  // First swipe: show only edit button (if not hidden)
+  // Second swipe: show both buttons
+  // Use animated style for dynamic width
+  const actionButtonsWidthStyle = useAnimatedStyle(() => {
+    let width = EDIT_BUTTON_WIDTH;
+    if (hideEditButton) {
+      width = DELETE_BUTTON_WIDTH;
+    } else if (showDeleteButton.value) {
+      width = ACTION_WIDTH;
+    }
+    return { width };
+  });
 
   // Long press gesture for drag (if drag function provided)
   // Following Apple guidelines: 400ms minimum for long press
@@ -83,6 +93,7 @@ export function SwipeableCard({
         stiffness: 300,
       });
       setInternalIsOpen(false);
+      showDeleteButton.value = false;
     }
   }, [controlledIsOpen]);
 
@@ -121,10 +132,23 @@ export function SwipeableCard({
       
       if (horizontalMovement > verticalMovement * 1.5) {
         if (e.translationX < 0) {
-          translateX.value = Math.max(e.translationX, -actionWidth);
+          // Show delete button when swiped past edit button
+          if (!hideEditButton && !showDeleteButton.value && Math.abs(e.translationX) > EDIT_BUTTON_WIDTH * 0.8) {
+            showDeleteButton.value = true;
+          }
+          
+          // Calculate max swipe distance based on current state
+          const maxWidth = hideEditButton 
+            ? DELETE_BUTTON_WIDTH 
+            : (showDeleteButton.value ? ACTION_WIDTH : EDIT_BUTTON_WIDTH);
+          translateX.value = Math.max(e.translationX, -maxWidth);
         } else if (translateX.value < 0) {
           // Allow swiping back to close
           translateX.value = Math.min(e.translationX + translateX.value, 0);
+          // Reset delete button visibility when swiping back
+          if (showDeleteButton.value && translateX.value > -EDIT_BUTTON_WIDTH * 0.5) {
+            showDeleteButton.value = false;
+          }
         }
       }
     })
@@ -135,12 +159,19 @@ export function SwipeableCard({
           damping: 20,
           stiffness: 300,
         });
+        showDeleteButton.value = false;
         return;
       }
 
-      // If swiped more than half the action width, open
-      if (translateX.value < -actionWidth / 2) {
-        translateX.value = withSpring(-actionWidth, {
+      // Calculate current action width
+      const currentActionWidth = hideEditButton 
+        ? DELETE_BUTTON_WIDTH 
+        : (showDeleteButton.value ? ACTION_WIDTH : EDIT_BUTTON_WIDTH);
+      const threshold = currentActionWidth / 2;
+
+      // If swiped more than half the current action width, open
+      if (translateX.value < -threshold) {
+        translateX.value = withSpring(-currentActionWidth, {
           damping: 20,
           stiffness: 300,
         });
@@ -153,6 +184,7 @@ export function SwipeableCard({
           damping: 20,
           stiffness: 300,
         });
+        showDeleteButton.value = false;
         if (controlledIsOpen === undefined) {
           runOnJS(setInternalIsOpen)(false);
         } else if (onSwipeClose) {
@@ -207,6 +239,7 @@ export function SwipeableCard({
       damping: 20,
       stiffness: 300,
     });
+    showDeleteButton.value = false;
     if (controlledIsOpen === undefined) {
       setInternalIsOpen(false);
     } else if (onSwipeClose) {
@@ -222,6 +255,7 @@ export function SwipeableCard({
       damping: 20,
       stiffness: 300,
     });
+    showDeleteButton.value = false;
     if (controlledIsOpen === undefined) {
       setInternalIsOpen(false);
     } else if (onSwipeClose) {
@@ -230,10 +264,23 @@ export function SwipeableCard({
     onDelete();
   };
 
+  // Animate delete button visibility based on swipe position
+  const deleteButtonStyle = useAnimatedStyle(() => {
+    if (isDragging.value || isActive) {
+      return { opacity: 0 };
+    }
+    
+    // Show delete button when showDeleteButton is true and swiping left
+    const opacity = showDeleteButton.value && !hideEditButton ? 1 : 0;
+    return {
+      opacity: translateX.value < 0 ? opacity : 0,
+    };
+  });
+
   return (
     <View style={[styles.swipeableContainer, containerStyle]}>
       {/* Action Buttons (behind the card) */}
-      <Animated.View style={[styles.actionButtonsContainer, { width: actionWidth }, actionButtonsStyle]}>
+      <Animated.View style={[styles.actionButtonsContainer, actionButtonsWidthStyle, actionButtonsStyle]}>
         {!hideEditButton && (
           <TouchableOpacity
             style={[styles.actionButton, styles.editButton]}
@@ -242,12 +289,14 @@ export function SwipeableCard({
             <EditIcon size={24} color="#FFFFFF" />
           </TouchableOpacity>
         )}
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={handleDelete}
-          activeOpacity={0.8}>
-          <DeleteIcon size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        <Animated.View style={deleteButtonStyle}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={handleDelete}
+            activeOpacity={0.8}>
+            <DeleteIcon size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </Animated.View>
       </Animated.View>
 
       {/* Card Content (on top) */}

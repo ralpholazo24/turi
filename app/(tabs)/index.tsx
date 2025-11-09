@@ -1,6 +1,7 @@
 import { ConfirmationModal } from '@/components/confirmation-modal';
+import { GroupCard } from '@/components/group-card';
 import { GroupModal } from '@/components/group-modal';
-import { SwipeableGroupCard } from '@/components/swipeable-group-card';
+import { SwipeableCard } from '@/components/swipeable-card';
 import { ThemedText } from '@/components/themed-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
@@ -27,6 +28,7 @@ export default function HomeScreen() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [openCardId, setOpenCardId] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
 
   const backgroundColor = useThemeColor({}, 'background');
@@ -71,19 +73,41 @@ export default function HomeScreen() {
     [reorderGroups]
   );
 
+  const handleSwipeStart = useCallback((groupId: string) => {
+    // Close any other open card when a new swipe starts
+    if (openCardId && openCardId !== groupId) {
+      setOpenCardId(null);
+    }
+    // Set this card as the one being swiped
+    setOpenCardId(groupId);
+  }, [openCardId]);
+
+  const handleGroupPress = useCallback((groupId: string) => {
+    router.push(`/group/${groupId}`);
+  }, []);
+
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<Group>) => {
+      const isCardOpen = openCardId === item.id;
+      
       return (
-        <SwipeableGroupCard
-          group={item}
-          onEdit={handleEditGroup}
-          onDelete={handleDeleteGroup}
+        <SwipeableCard
+          onEdit={() => handleEditGroup(item)}
+          onDelete={() => handleDeleteGroup(item)}
           drag={drag}
           isActive={isActive}
-        />
+          isOpen={isCardOpen}
+          onSwipeStart={() => handleSwipeStart(item.id)}
+          onSwipeClose={() => setOpenCardId(null)}>
+          <GroupCard
+            group={item}
+            onPress={() => handleGroupPress(item.id)}
+            containerStyle={{ marginBottom: 0 }}
+          />
+        </SwipeableCard>
       );
     },
-    [handleEditGroup, handleDeleteGroup]
+    [handleEditGroup, handleDeleteGroup, handleGroupPress, openCardId, handleSwipeStart]
   );
 
   return (

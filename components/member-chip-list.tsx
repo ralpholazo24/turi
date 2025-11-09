@@ -74,6 +74,14 @@ export function MemberChipList({ group }: MemberChipListProps) {
     setSelectedMember(null);
   };
 
+  const handleCloseEditModal = () => {
+    setIsEditModalVisible(false);
+    // Clear selectedMember after modal animation completes (300ms for slide animation)
+    setTimeout(() => {
+      setSelectedMember(null);
+    }, 300);
+  };
+
   const handleReorderMembers = useCallback(
     async (memberIds: string[]) => {
       await reorderMembers(group.id, memberIds);
@@ -183,7 +191,7 @@ export function MemberChipList({ group }: MemberChipListProps) {
       {selectedMember && (
         <EditMemberModal
           visible={isEditModalVisible}
-          onClose={handleCloseModals}
+          onClose={handleCloseEditModal}
           group={group}
           member={selectedMember}
         />
