@@ -1,5 +1,6 @@
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { APP_ICONS } from '@/constants/icons';
+import { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -12,11 +13,15 @@ import { ThemedText } from './themed-text';
 
 interface SwipeableCardProps {
   children: React.ReactNode;
-  onEdit: () => void;
+  onEdit?: () => void;
   onDelete: () => void;
+  hideEditButton?: boolean;
   drag?: () => void;
   isActive?: boolean;
   containerStyle?: object;
+  isOpen?: boolean;
+  onSwipeStart?: () => void;
+  onSwipeClose?: () => void;
 }
 
 const ACTION_WIDTH = 160; // Width for both action buttons combined
@@ -25,15 +30,26 @@ export function SwipeableCard({
   children,
   onEdit,
   onDelete,
+  hideEditButton = false,
   drag,
   isActive,
   containerStyle,
+  isOpen: controlledIsOpen,
+  onSwipeStart,
+  onSwipeClose,
 }: SwipeableCardProps) {
   const translateX = useSharedValue(0);
   const isDragging = useSharedValue(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  
+  // Use controlled isOpen if provided, otherwise use internal state
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   const EditIcon = APP_ICONS.edit;
   const DeleteIcon = APP_ICONS.delete;
+
+  // Calculate action width based on whether edit button is hidden
+  const actionWidth = hideEditButton ? ACTION_WIDTH / 2 : ACTION_WIDTH;
 
   // Long press gesture for drag (if drag function provided)
   // Following Apple guidelines: 400ms minimum for long press
@@ -58,6 +74,18 @@ export function SwipeableCard({
         })
     : undefined;
 
+  // Close card when controlled isOpen becomes false
+  useEffect(() => {
+    if (controlledIsOpen !== undefined && !controlledIsOpen) {
+      // Close the card with animation
+      translateX.value = withSpring(0, {
+        damping: 20,
+        stiffness: 300,
+      });
+      setInternalIsOpen(false);
+    }
+  }, [controlledIsOpen]);
+
   // Swipe gesture for actions (only horizontal swipes)
   // Following Apple guidelines: 44pt minimum for gesture recognition
   // This gesture should NOT activate during drag operations
@@ -67,6 +95,10 @@ export function SwipeableCard({
       // Early check: if dragging is active, don't process
       if (isActive || isDragging.value) {
         return;
+      }
+      // Notify parent that swiping started (to close other cards)
+      if (onSwipeStart && translateX.value === 0) {
+        runOnJS(onSwipeStart)();
       }
     })
     .onUpdate((e) => {
@@ -89,7 +121,7 @@ export function SwipeableCard({
       
       if (horizontalMovement > verticalMovement * 1.5) {
         if (e.translationX < 0) {
-          translateX.value = Math.max(e.translationX, -ACTION_WIDTH);
+          translateX.value = Math.max(e.translationX, -actionWidth);
         } else if (translateX.value < 0) {
           // Allow swiping back to close
           translateX.value = Math.min(e.translationX + translateX.value, 0);
@@ -107,17 +139,26 @@ export function SwipeableCard({
       }
 
       // If swiped more than half the action width, open
-      if (translateX.value < -ACTION_WIDTH / 2) {
-        translateX.value = withSpring(-ACTION_WIDTH, {
+      if (translateX.value < -actionWidth / 2) {
+        translateX.value = withSpring(-actionWidth, {
           damping: 20,
           stiffness: 300,
         });
+        if (controlledIsOpen === undefined) {
+          runOnJS(setInternalIsOpen)(true);
+        }
       } else {
         // Otherwise, close
         translateX.value = withSpring(0, {
           damping: 20,
           stiffness: 300,
         });
+        if (controlledIsOpen === undefined) {
+          runOnJS(setInternalIsOpen)(false);
+        } else if (onSwipeClose) {
+          // Notify parent that card was closed
+          runOnJS(onSwipeClose)();
+        }
       }
     })
     .activeOffsetX([-44, 44]) // Apple guideline: 44pt minimum for gesture recognition
@@ -166,7 +207,14 @@ export function SwipeableCard({
       damping: 20,
       stiffness: 300,
     });
-    onEdit();
+    if (controlledIsOpen === undefined) {
+      setInternalIsOpen(false);
+    } else if (onSwipeClose) {
+      onSwipeClose();
+    }
+    if (onEdit) {
+      onEdit();
+    }
   };
 
   const handleDelete = () => {
@@ -174,26 +222,31 @@ export function SwipeableCard({
       damping: 20,
       stiffness: 300,
     });
+    if (controlledIsOpen === undefined) {
+      setInternalIsOpen(false);
+    } else if (onSwipeClose) {
+      onSwipeClose();
+    }
     onDelete();
   };
 
   return (
     <View style={[styles.swipeableContainer, containerStyle]}>
       {/* Action Buttons (behind the card) */}
-      <Animated.View style={[styles.actionButtonsContainer, { width: ACTION_WIDTH }, actionButtonsStyle]}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={handleEdit}
-          activeOpacity={0.8}>
-          <EditIcon size={20} color="#FFFFFF" />
-          <ThemedText style={styles.actionButtonText} i18nKey="common.edit" />
-        </TouchableOpacity>
+      <Animated.View style={[styles.actionButtonsContainer, { width: actionWidth }, actionButtonsStyle]}>
+        {!hideEditButton && (
+          <TouchableOpacity
+            style={[styles.actionButton, styles.editButton]}
+            onPress={handleEdit}
+            activeOpacity={0.8}>
+            <EditIcon size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={[styles.actionButton, styles.deleteButton]}
           onPress={handleDelete}
           activeOpacity={0.8}>
-          <DeleteIcon size={20} color="#FFFFFF" />
-          <ThemedText style={styles.actionButtonText} i18nKey="common.delete" />
+          <DeleteIcon size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </Animated.View>
 
@@ -226,24 +279,23 @@ const styles = StyleSheet.create({
     zIndex: 0,
     borderRadius: BORDER_RADIUS.xlarge,
     overflow: 'hidden',
+    paddingHorizontal: 4, // Add padding for button spacing
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionButton: {
-    flex: 1,
+    width: 56, // Fixed circular size
+    height: 56, // Fixed circular size
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 4,
+    borderRadius: 28, // Half of width/height to make perfect circle
+    marginHorizontal: 4, // Add spacing between buttons
   },
   editButton: {
     backgroundColor: '#3B82F6',
   },
   deleteButton: {
     backgroundColor: '#EF4444',
-  },
-  actionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
   },
   cardWrapper: {
     backgroundColor: 'transparent',
