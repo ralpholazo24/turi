@@ -38,15 +38,24 @@
       "jan": "Ene",
       "feb": "Feb",
       "mar": "Mar",
-      "abr": "Abr",
+      "apr": "Abr",
       "may": "May",
       "jun": "Jun",
       "jul": "Jul",
-      "ago": "Ago",
+      "aug": "Ago",
       "sep": "Sep",
       "oct": "Oct",
       "nov": "Nov",
-      "dic": "Dic"
+      "dec": "Dic"
+    },
+    "dayNames": {
+      "sunday": "Domingo",
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado"
     }
   },
   "home": {
@@ -314,7 +323,7 @@
     },
     "faq2": {
       "question": "¿Cómo funciona la rotación de tareas?",
-      "answer": "Cuando creas una tarea, se asigna al primer miembro de tu grupo. Cada vez que alguien marca la tarea como hecha, automáticamente pasa a la siguiente persona en la rotación."
+      "answer": "Cuando creas una tarea, puedes asignarla a miembros específicos. La tarea comienza con el primer miembro asignado. Cada vez que alguien marca la tarea como hecha, automáticamente rota al siguiente miembro asignado en la lista. Las tareas solo se pueden completar una vez por período (diario, semanal, mensual, etc.) para evitar completados duplicados."
     },
     "faq3": {
       "question": "¿Qué pasa si omito mi turno?",
@@ -322,15 +331,15 @@
     },
     "faq4": {
       "question": "¿Cómo programo tareas?",
-      "answer": "Al crear o editar una tarea, puedes establecer una frecuencia (diaria, semanal o mensual) y opcionalmente especificar un día de la semana y hora. Para tareas mensuales, también puedes elegir qué semana del mes."
+      "answer": "Al crear o editar una tarea, puedes establecer una frecuencia de repetición (diaria, días laborables, fines de semana, semanal, quincenal, mensual, cada 3 meses, cada 6 meses o anual). Establecerás una fecha de inicio cuando la tarea se deba por primera vez. Para tareas semanales o quincenales, el día de la semana se establece automáticamente según tu fecha de inicio. Opcionalmente puedes agregar una hora específica (p. ej., 2:30 PM) para cuándo se debe completar la tarea."
     },
     "faq5": {
       "question": "¿Qué es el modo solo?",
-      "answer": "El modo solo se activa automáticamente cuando eres el único miembro en un grupo. Todas las tareas se asignan a ti y la rotación está deshabilitada. Vuelve a la rotación normal cuando agregues más miembros."
+      "answer": "El modo solo se activa automáticamente cuando eres el único miembro en un grupo. Todas las tareas se asignan automáticamente a ti, la rotación está deshabilitada (las tareas permanecen asignadas a ti) y el botón de saltar está oculto. La interfaz muestra \"Tú\" en lugar de nombres de miembros. Cambia automáticamente de vuelta al modo de rotación normal cuando agregues más miembros."
     },
     "faq6": {
       "question": "¿Cómo funcionan las notificaciones?",
-      "answer": "Activa las notificaciones en Configuración, luego elige cuántos minutos antes de que venza una tarea quieres ser recordado. Las notificaciones solo se envían para tareas que aún no se han completado."
+      "answer": "Activa las notificaciones en Configuración, luego elige tu tiempo de recordatorio (cuántos minutos u horas antes de que venza una tarea). Las notificaciones se programan automáticamente cuando creas o actualizas tareas con horarios. Solo se envían para tareas que no se han completado en el período actual, y se reprograman automáticamente cuando las tareas se completan o actualizan. Las notificaciones incluyen el nombre de la tarea, de quién es el turno e información del horario."
     },
     "faq7": {
       "question": "¿Puedo cambiar quién está asignado a una tarea?",
@@ -338,7 +347,7 @@
     },
     "faq8": {
       "question": "¿Dónde puedo ver el historial de tareas?",
-      "answer": "Abre cualquier tarea para ver su historial de completados. El historial muestra quién completó la tarea y cuándo, con las horas mostradas para cada completado."
+      "answer": "Abre cualquier tarea para ver su historial de completados, que muestra quién la completó y cuándo. También puedes ver toda la actividad (completados, omisiones, creación de tareas, cambios de miembros) en el Feed de Actividad, accesible desde Configuración. El Feed de Actividad es filtrable por tipo y muestra tiempos relativos como \"hace 2h\" o \"hace 3d\"."
     },
     "faq9": {
       "question": "¿Qué pasa si elimino una tarea por error?",
@@ -350,7 +359,7 @@
     },
     "faq11": {
       "question": "¿Cómo reordeno grupos, tareas o miembros?",
-      "answer": "Puedes reordenar elementos manteniendo presionado y arrastrándolos. En la pantalla de inicio, mantén presionado y arrastra los grupos para cambiar su orden. En un grupo, puedes reordenar tareas en la pestaña Tareas y miembros en la pestaña Miembros. El orden afecta la rotación de tareas: los miembros reciben tareas según su posición en la lista."
+      "answer": "Puedes reordenar elementos manteniendo presionado y arrastrándolos. En la pantalla de inicio, mantén presionado y arrastra los grupos para cambiar su orden. En un grupo, puedes reordenar tareas en la pestaña Tareas y miembros en la pestaña Miembros. El orden de los miembros asignados afecta la rotación de tareas: las tareas rotan a través de los miembros asignados según su posición en la lista de miembros asignados."
     }
   },
   "errors": {

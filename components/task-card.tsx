@@ -86,6 +86,11 @@ export function TaskCard({
                         {' - ' + scheduleInfo.dateText}
                       </Text>
                     )}
+                    {scheduleInfo.timeText && (
+                      <Text style={[styles.infoChipText, styles.timeText]}>
+                        {' • ' + scheduleInfo.timeText}
+                      </Text>
+                    )}
                   </View>
                 )}
               </View>
@@ -198,6 +203,10 @@ const styles = StyleSheet.create({
   },
   dateText: {
     marginLeft: 0,
+  },
+  timeText: {
+    marginLeft: 0,
+    fontWeight: '600',
   },
   bottomSection: {
     flexDirection: 'row',

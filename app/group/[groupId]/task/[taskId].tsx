@@ -297,6 +297,11 @@ export default function TaskDetailsScreen() {
                           {' - ' + scheduleInfo.dateText}
                         </Text>
                       )}
+                      {scheduleInfo.timeText && (
+                        <Text style={[styles.infoChipText, styles.timeText]}>
+                          {' • ' + scheduleInfo.timeText}
+                        </Text>
+                      )}
                     </View>
                     <View style={[styles.infoChip, styles.infoChipLast]}>
                       <APP_ICONS.users size={12} color="#FFFFFF" />
@@ -555,6 +560,10 @@ const styles = StyleSheet.create({
   },
   dateText: {
     marginLeft: 0,
+  },
+  timeText: {
+    marginLeft: 0,
+    fontWeight: '600',
   },
   currentAssigneeSection: {
     flexDirection: 'row',

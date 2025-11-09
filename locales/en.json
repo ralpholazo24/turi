@@ -47,6 +47,15 @@
       "oct": "Oct",
       "nov": "Nov",
       "dec": "Dec"
+    },
+    "dayNames": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
     }
   },
   "home": {
@@ -331,7 +340,7 @@
     },
     "faq2": {
       "question": "How does task rotation work?",
-      "answer": "When you create a task, it's assigned to the first member in your group. Each time someone marks the task as done, it automatically moves to the next person in the rotation."
+      "answer": "When you create a task, you can assign it to specific members. The task starts with the first assigned member. Each time someone marks the task as done, it automatically rotates to the next assigned member in the list. Tasks can only be completed once per period (daily, weekly, monthly, etc.) to prevent duplicate completions."
     },
     "faq3": {
       "question": "What happens if I skip my turn?",
@@ -339,15 +348,15 @@
     },
     "faq4": {
       "question": "How do I schedule tasks?",
-      "answer": "When creating or editing a task, you can set a frequency (daily, weekly, or monthly) and optionally specify a day of the week and time. For monthly tasks, you can also choose which week of the month."
+      "answer": "When creating or editing a task, you can set a repeat frequency (daily, weekdays, weekends, weekly, biweekly, monthly, every 3 months, every 6 months, or yearly). You'll set a start date when the task first becomes due. For weekly or biweekly tasks, the day of the week is automatically set based on your start date. You can optionally add a specific time (e.g., 2:30 PM) for when the task should be completed."
     },
     "faq5": {
       "question": "What is solo mode?",
-      "answer": "Solo mode automatically activates when you're the only member in a group. All tasks are assigned to you and rotation is disabled. It switches back to normal rotation when you add more members."
+      "answer": "Solo mode automatically activates when you're the only member in a group. All tasks are automatically assigned to you, rotation is disabled (tasks stay assigned to you), and the skip button is hidden. The UI shows \"You\" instead of member names. It automatically switches back to normal rotation mode when you add more members."
     },
     "faq6": {
       "question": "How do notifications work?",
-      "answer": "Enable notifications in Settings, then choose how many minutes before a task is due you want to be reminded. Notifications are only sent for tasks that haven't been completed yet."
+      "answer": "Enable notifications in Settings, then choose your reminder time (how many minutes or hours before a task is due). Notifications are automatically scheduled when you create or update tasks with schedules. They're only sent for tasks that haven't been completed in the current period, and they're automatically rescheduled when tasks are completed or updated. Notifications include the task name, whose turn it is, and schedule information."
     },
     "faq7": {
       "question": "Can I change who's assigned to a task?",
@@ -355,7 +364,7 @@
     },
     "faq8": {
       "question": "Where can I see task history?",
-      "answer": "Open any task to see its completion history. The history shows who completed the task and when, with times displayed for each completion."
+      "answer": "Open any task to see its completion history, which shows who completed it and when. You can also view all activity (completions, skips, task creation, member changes) in the Activity Feed, accessible from Settings. The Activity Feed is filterable by type and shows relative times like \"2h ago\" or \"3d ago\"."
     },
     "faq9": {
       "question": "What if I delete a task by mistake?",
@@ -367,7 +376,7 @@
     },
     "faq11": {
       "question": "How do I reorder groups, tasks, or members?",
-      "answer": "You can reorder items by long pressing and dragging them. On the home screen, long press and drag groups to change their order. In a group, you can reorder tasks in the Tasks tab and members in the Members tab. The order affects task rotation - members are assigned tasks based on their position in the list."
+      "answer": "You can reorder items by long pressing and dragging them. On the home screen, long press and drag groups to change their order. In a group, you can reorder tasks in the Tasks tab and members in the Members tab. The order of assigned members affects task rotation - tasks rotate through assigned members based on their position in the assigned members list."
     }
   },
   "errors": {
