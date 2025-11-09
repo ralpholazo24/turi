@@ -19,7 +19,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -56,9 +55,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
   );
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showRepeatDropdown, setShowRepeatDropdown] = useState(false);
-  const [scheduleDay, setScheduleDay] = useState<number | undefined>(
-    isEditMode ? task!.schedule.dayOfWeek : undefined
-  );
   const [scheduleTime, setScheduleTime] = useState<string>(
     isEditMode ? task!.schedule.time || '' : ''
   );
@@ -77,17 +73,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
   const CheckIcon = APP_ICONS.check;
   const CalendarIcon = APP_ICONS.calendar;
   const ChevronDownIcon = LucideIcons.ChevronDown;
-
-  // Days of the week
-  const DAYS = [
-    { value: 0, label: t('task.sunday') },
-    { value: 1, label: t('task.monday') },
-    { value: 2, label: t('task.tuesday') },
-    { value: 3, label: t('task.wednesday') },
-    { value: 4, label: t('task.thursday') },
-    { value: 5, label: t('task.friday') },
-    { value: 6, label: t('task.saturday') },
-  ];
 
   // Repeat options
   const REPEAT_OPTIONS: { value: TaskSchedule['repeat']; label: string }[] = [
@@ -130,7 +115,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
         } else {
           setSelectedMembers(new Set(task.memberIds));
         }
-        setScheduleDay(task.schedule.dayOfWeek);
         setScheduleTime(task.schedule.time || '');
       } else {
         // Add mode: initialize with defaults
@@ -138,7 +122,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
         setSelectedIcon('ListTodo');
         setStartDate(new Date());
         setRepeat('daily');
-        setScheduleDay(undefined);
         setScheduleTime('');
         if (group.members.length > 0) {
           if (isSoloMode(group)) {
@@ -152,13 +135,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
       }
     }
   }, [visible, task, group, isEditMode]);
-
-  // Update scheduleDay when startDate changes in add mode for weekly/biweekly
-  useEffect(() => {
-    if (!isEditMode && (repeat === 'weekly' || repeat === 'biweekly')) {
-      setScheduleDay(startDate.getDay());
-    }
-  }, [startDate, repeat, isEditMode]);
 
   const handleSelectAll = () => {
     if (selectedMembers.size === group.members.length) {
@@ -197,12 +173,12 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
       return;
     }
 
-    // Build schedule object
+    // Build schedule object - derive dayOfWeek from startDate for weekly/biweekly (Apple Reminders style)
     const schedule: TaskSchedule = {
       repeat,
       startDate: startDate.toISOString(),
       time: scheduleTime || undefined,
-      dayOfWeek: (repeat === 'weekly' || repeat === 'biweekly') ? scheduleDay : undefined,
+      dayOfWeek: (repeat === 'weekly' || repeat === 'biweekly') ? startDate.getDay() : undefined,
     };
 
     if (isEditMode && task) {
@@ -217,11 +193,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
       } else {
         // Find new index for current member in new list
         newAssignedIndex = finalMemberIds.indexOf(currentMemberId);
-      }
-
-      // Validate dayOfWeek for weekly/biweekly
-      if ((repeat === 'weekly' || repeat === 'biweekly') && scheduleDay === undefined) {
-        return; // Can't update weekly/biweekly task without day of week
       }
 
       await updateTask(group.id, task.id, {
@@ -256,7 +227,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
       setRepeat(task.schedule.repeat);
       setStartDate(new Date(task.schedule.startDate));
       setSelectedMembers(new Set(task.memberIds));
-      setScheduleDay(task.schedule.dayOfWeek);
       setScheduleTime(task.schedule.time || '');
     } else {
       // Add mode: reset to defaults
@@ -265,7 +235,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
       setStartDate(new Date());
       setRepeat('daily');
       setSelectedMembers(new Set());
-      setScheduleDay(undefined);
       setScheduleTime('');
     }
     onClose();
@@ -452,42 +421,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
                 </TouchableOpacity>
               </View>
 
-              {/* Day selector for weekly/biweekly */}
-              {(repeat === 'weekly' || repeat === 'biweekly') && (
-                <View style={styles.scheduleRow}>
-                  <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.day" />
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.dayScroll}>
-                    {DAYS.map((day) => (
-                      <TouchableOpacity
-                        key={day.value}
-                        style={[
-                          styles.scheduleButton,
-                          scheduleDay === day.value && styles.scheduleButtonActive,
-                          {
-                            backgroundColor:
-                              scheduleDay === day.value ? '#10B981' : borderColor + '30',
-                          },
-                        ]}
-                        onPress={() => setScheduleDay(day.value)}>
-                        <Text
-                          style={[
-                            styles.scheduleButtonText,
-                            scheduleDay === day.value && styles.scheduleButtonTextActive,
-                            {
-                              color: scheduleDay === day.value ? '#FFFFFF' : iconColor,
-                            },
-                          ]}>
-                          {day.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
               {/* Time selector - Optional */}
               <View style={styles.scheduleRow}>
                 <ThemedText style={styles.scheduleLabel} i18nKey="taskModal.timeOptional" />
@@ -544,13 +477,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
                   ]}
                   onPress={() => {
                     setRepeat(option.value);
-                    // Clear dayOfWeek if switching away from weekly/biweekly
-                    if (option.value !== 'weekly' && option.value !== 'biweekly') {
-                      setScheduleDay(undefined);
-                    } else if (!scheduleDay && !isEditMode) {
-                      // Set to startDate's day if not in edit mode
-                      setScheduleDay(startDate.getDay());
-                    }
                     setShowRepeatDropdown(false);
                   }}>
                   <ThemedText
@@ -599,10 +525,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
                   onChange={(event, selectedDate) => {
                     if (selectedDate) {
                       setStartDate(selectedDate);
-                      // Update scheduleDay for weekly/biweekly in add mode
-                      if (!isEditMode && (repeat === 'weekly' || repeat === 'biweekly')) {
-                        setScheduleDay(selectedDate.getDay());
-                      }
                     }
                   }}
                   textColor={textColor}
@@ -616,10 +538,6 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
                     setShowStartDatePicker(false);
                     if (selectedDate) {
                       setStartDate(selectedDate);
-                      // Update scheduleDay for weekly/biweekly in add mode
-                      if (!isEditMode && (repeat === 'weekly' || repeat === 'biweekly')) {
-                        setScheduleDay(selectedDate.getDay());
-                      }
                     }
                   }}
                 />
@@ -836,27 +754,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 8,
     opacity: 0.7,
-  },
-  dayScroll: {
-    marginTop: 8,
-  },
-  scheduleButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: BORDER_RADIUS.medium,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  scheduleButtonActive: {
-    borderColor: '#10B981',
-  },
-  scheduleButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  scheduleButtonTextActive: {
-    fontWeight: '600',
   },
   iconPreviewContainer: {
     alignItems: 'center',
