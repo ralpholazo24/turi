@@ -14,7 +14,7 @@ import { useAppStore } from '@/store/use-app-store';
 import { Task } from '@/types';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -35,6 +35,7 @@ export default function GroupScreen() {
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isDeleteTaskConfirmationVisible, setIsDeleteTaskConfirmationVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const hasInitializedTab = useRef(false);
   const insets = useSafeAreaInsets();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -50,6 +51,25 @@ export default function GroupScreen() {
   const group = useMemo(() => {
     return groups.find((g) => g.id === groupId);
   }, [groups, groupId]);
+
+  // Set initial tab state based on tasks and member count (only on initial load)
+  useEffect(() => {
+    if (group && !isLoading && !hasInitializedTab.current) {
+      // If group has no tasks AND only 1 member → redirect to members tab
+      // Otherwise → redirect to tasks tab
+      if (group.tasks.length === 0 && group.members.length === 1) {
+        setActiveTab('members');
+      } else {
+        setActiveTab('tasks');
+      }
+      hasInitializedTab.current = true;
+    }
+  }, [group?.id, isLoading]); // Only run when group changes or loading completes
+
+  // Reset initialization flag when groupId changes (navigating to different group)
+  useEffect(() => {
+    hasInitializedTab.current = false;
+  }, [groupId]);
 
   const handleMenuPress = () => {
     setIsContextMenuVisible(true);
