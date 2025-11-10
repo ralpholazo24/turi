@@ -162,6 +162,7 @@
     "doneForToday": "Done for today!",
     "doneForThisWeek": "Done for this week!",
     "doneForThisMonth": "Done for this month!",
+    "completedSuccess": "Great job! Task completed",
     "reset": "Reset"
   },
   "member": {

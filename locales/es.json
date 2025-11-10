@@ -160,6 +160,7 @@
     "doneForToday": "¡Hecho por hoy!",
     "doneForThisWeek": "¡Hecho por esta semana!",
     "doneForThisMonth": "¡Hecho por este mes!",
+    "completedSuccess": "¡Excelente! Tarea completada",
     "reset": "Restablecer"
   },
   "member": {

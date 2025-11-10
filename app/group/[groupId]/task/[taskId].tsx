@@ -15,31 +15,31 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
-  Dimensions,
+  Animated,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import ConfettiCannon from 'react-native-confetti-cannon';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TaskDetailsScreen() {
   const { t } = useTranslation();
   const { groupId, taskId } = useLocalSearchParams<{ groupId: string; taskId: string }>();
   const { groups, markTaskDone, skipTurn, deleteTask, undoTaskCompletion } = useAppStore();
+  const insets = useSafeAreaInsets();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [isSkipConfirmationVisible, setIsSkipConfirmationVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
   const [isResetConfirmationVisible, setIsResetConfirmationVisible] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [confettiKey, setConfettiKey] = useState(0);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const successMessageOpacity = useRef(new Animated.Value(0)).current;
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -150,6 +150,27 @@ export default function TaskDetailsScreen() {
   // Check if task is already completed
   const completionStatus = getTaskCompletionStatus(task);
   
+  // Check if task has recent completion (completed in current period)
+  // This ensures buttons update immediately after marking as done
+  const hasRecentCompletion = useMemo(() => {
+    // First check the completion status (handles period-based logic)
+    if (completionStatus.isCompleted) {
+      return true;
+    }
+    // Also check if there's completion history and the most recent one is today
+    // This provides immediate feedback when task is just completed
+    if (task.completionHistory && task.completionHistory.length > 0) {
+      const mostRecent = sortedHistory[0];
+      if (mostRecent) {
+        const completionDate = new Date(mostRecent.timestamp);
+        const today = new Date();
+        // Check if completed today (for immediate UI update)
+        return completionDate.toDateString() === today.toDateString();
+      }
+    }
+    return false;
+  }, [task.completionHistory, sortedHistory, completionStatus.isCompleted]);
+  
   // Check if group is in solo mode
   const soloMode = isSoloMode(group);
 
@@ -181,14 +202,24 @@ export default function TaskDetailsScreen() {
     }
     
     try {
-      // Trigger confetti animation
-      setConfettiKey(prev => prev + 1);
-      setShowConfetti(true);
       await markTaskDone(group.id, task.id);
-      // Hide confetti after animation completes
-      setTimeout(() => {
-        setShowConfetti(false);
-      }, 4000);
+      // Show success message
+      setShowSuccessMessage(true);
+      Animated.sequence([
+        Animated.timing(successMessageOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2000),
+        Animated.timing(successMessageOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowSuccessMessage(false);
+      });
     } catch (error) {
       console.error('Error marking task as done:', error);
       Alert.alert(
@@ -196,7 +227,6 @@ export default function TaskDetailsScreen() {
         t('errors.unknownError'),
         [{ text: t('common.ok') }]
       );
-      setShowConfetti(false);
     }
   };
 
@@ -281,6 +311,22 @@ export default function TaskDetailsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
+      {/* Success Message Toast */}
+      {showSuccessMessage && (
+        <Animated.View
+          style={[
+            styles.successToast,
+            {
+              backgroundColor: groupColors.start,
+              opacity: successMessageOpacity,
+              paddingTop: insets.top + 8,
+            },
+          ]}>
+          <CheckIcon size={20} color="#FFFFFF" />
+          <ThemedText style={styles.successToastText} i18nKey="task.completedSuccess" />
+        </Animated.View>
+      )}
+
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: borderColor + '30' }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -350,15 +396,21 @@ export default function TaskDetailsScreen() {
         {/* Current Assignee Section */}
         {currentMember && (
           <View style={styles.currentAssigneeSection}>
-            <MemberAvatar member={currentMember} size={56} />
-            <View style={styles.assigneeInfo}>
-              <ThemedText style={styles.assigneeName}>
-                {soloMode ? t('task.yourTurn') : currentMember.name}
-              </ThemedText>
-              {!soloMode && (
-                <ThemedText style={styles.itYourTurn} i18nKey="task.itYourTurn" />
-              )}
-            </View>
+            <LinearGradient
+              colors={[groupColors.start + '15', groupColors.end + '15']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.currentAssigneeGradient}>
+              <MemberAvatar member={currentMember} size={56} />
+              <View style={styles.assigneeInfo}>
+                <ThemedText style={styles.assigneeName}>
+                  {soloMode ? t('task.yourTurn') : currentMember.name}
+                </ThemedText>
+                {!soloMode && (
+                  <ThemedText style={styles.itYourTurn} i18nKey="task.itYourTurn" />
+                )}
+              </View>
+            </LinearGradient>
           </View>
         )}
 
@@ -411,23 +463,24 @@ export default function TaskDetailsScreen() {
 
       {/* Action Buttons */}
       <View style={[styles.actionButtons, { backgroundColor, borderTopColor: borderColor + '30' }]}>
-        <TouchableOpacity
-          style={[
-            styles.markDoneButton,
-            {
-              backgroundColor: completionStatus.isCompleted ? '#6B7280' : buttonBackgroundColor,
-            },
-          ]}
-          onPress={handleMarkDone}
-          disabled={completionStatus.isCompleted}
-          activeOpacity={completionStatus.isCompleted ? 1 : 0.8}>
-          <CheckIcon size={24} color={buttonTextColor} />
-          <ThemedText style={[styles.markDoneText, { color: buttonTextColor }]}>
-            {completionStatus.isCompleted ? completionStatus.message : t('task.markDone')}
-          </ThemedText>
-        </TouchableOpacity>
+        {!hasRecentCompletion && (
+          <TouchableOpacity
+            style={[
+              styles.markDoneButton,
+              {
+                backgroundColor: buttonBackgroundColor,
+              },
+            ]}
+            onPress={handleMarkDone}
+            activeOpacity={0.8}>
+            <CheckIcon size={24} color={buttonTextColor} />
+            <ThemedText style={[styles.markDoneText, { color: buttonTextColor }]}>
+              {t('task.markDone')}
+            </ThemedText>
+          </TouchableOpacity>
+        )}
 
-        {completionStatus.isCompleted && (
+        {hasRecentCompletion && (
           <TouchableOpacity
             style={[styles.resetButton, { backgroundColor: backgroundColor, borderColor: borderColor + '50' }]}
             onPress={handleReset}
@@ -437,7 +490,7 @@ export default function TaskDetailsScreen() {
           </TouchableOpacity>
         )}
 
-        {!completionStatus.isCompleted && !soloMode && assignedMembers.length > 1 && (
+        {!hasRecentCompletion && !soloMode && assignedMembers.length > 1 && (
           <TouchableOpacity
             style={[styles.skipButton, { backgroundColor: backgroundColor, borderColor: borderColor + '50' }]}
             onPress={handleSkipTurn}
@@ -499,19 +552,6 @@ export default function TaskDetailsScreen() {
         onCancel={() => setIsResetConfirmationVisible(false)}
       />
 
-      {/* Confetti Animation */}
-      {showConfetti && (
-        <ConfettiCannon
-          key={confettiKey}
-          count={250}
-          origin={{ x: Dimensions.get('window').width / 2, y: -50 }}
-          fadeOut
-          autoStart
-          explosionSpeed={500}
-          fallSpeed={4000}
-          colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#FFB6C1', '#87CEEB', '#DDA0DD']}
-        />
-      )}
     </SafeAreaView>
   );
 }
@@ -619,10 +659,53 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   currentAssigneeSection: {
+    marginBottom: 24,
+    borderRadius: BORDER_RADIUS.large,
+    overflow: 'hidden',
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 600,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  currentAssigneeGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 4,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    width: '100%',
+  },
+  successToast: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  successToastText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginLeft: 8,
   },
   assigneeInfo: {
     flex: 1,
