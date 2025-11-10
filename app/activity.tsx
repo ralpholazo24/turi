@@ -142,7 +142,8 @@ export default function ActivityScreen() {
           activity.type === 'task_completed' ||
           activity.type === 'task_skipped' ||
           activity.type === 'task_created' ||
-          activity.type === 'task_deleted';
+          activity.type === 'task_deleted' ||
+          activity.type === 'task_undone';
         
         const taskMetadata = hasTaskMetadata && activity.metadata 
           ? activity.metadata as { taskName: string; taskIcon: string }
@@ -177,7 +178,9 @@ export default function ActivityScreen() {
   // Filter items based on selected filter
   const filteredItems = useMemo(() => {
     if (filter === 'all') return activityItems;
-    if (filter === 'completed') return activityItems.filter((item) => item.type === 'task_completed');
+    if (filter === 'completed') return activityItems.filter((item) => 
+      item.type === 'task_completed' || item.type === 'task_undone'
+    );
     if (filter === 'skipped') return activityItems.filter((item) => item.type === 'task_skipped');
     if (filter === 'created')
       return activityItems.filter((item) => 
@@ -220,6 +223,8 @@ export default function ActivityScreen() {
         return t('activity.addedTask', { taskName });
       case 'task_deleted':
         return t('activity.deletedTask', { taskName });
+      case 'task_undone':
+        return t('activity.taskUndone', { name: memberName, taskName });
       case 'member_added':
         return t('activity.addedMember', { name: memberName });
       case 'member_deleted':

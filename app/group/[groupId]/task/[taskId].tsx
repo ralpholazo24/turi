@@ -32,11 +32,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function TaskDetailsScreen() {
   const { t } = useTranslation();
   const { groupId, taskId } = useLocalSearchParams<{ groupId: string; taskId: string }>();
-  const { groups, markTaskDone, skipTurn, deleteTask } = useAppStore();
+  const { groups, markTaskDone, skipTurn, deleteTask, undoTaskCompletion } = useAppStore();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [isSkipConfirmationVisible, setIsSkipConfirmationVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+  const [isResetConfirmationVisible, setIsResetConfirmationVisible] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [confettiKey, setConfettiKey] = useState(0);
 
@@ -53,6 +54,7 @@ export default function TaskDetailsScreen() {
   const BackIcon = APP_ICONS.back;
   const MenuIcon = APP_ICONS.menu;
   const CheckIcon = APP_ICONS.check;
+  const RotateCcwIcon = LucideIcons.RotateCcw;
 
   // Note: initialize() is called at app level, no need to call it here
   // Memoize group and task lookup to avoid re-computation
@@ -248,6 +250,35 @@ export default function TaskDetailsScreen() {
     setIsContextMenuVisible(true);
   };
 
+  const handleReset = () => {
+    setIsResetConfirmationVisible(true);
+  };
+
+  const handleResetConfirm = async () => {
+    setIsResetConfirmationVisible(false);
+    
+    // Check if task has completion history
+    if (!task.completionHistory || task.completionHistory.length === 0) {
+      Alert.alert(
+        t('errors.cannotResetTask'),
+        t('errors.taskNoCompletionHistory'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+    
+    try {
+      await undoTaskCompletion(group.id, task.id);
+    } catch (error) {
+      console.error('Error resetting task:', error);
+      Alert.alert(
+        t('errors.cannotResetTask'),
+        t('errors.unknownError'),
+        [{ text: t('common.ok') }]
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       {/* Header */}
@@ -396,6 +427,16 @@ export default function TaskDetailsScreen() {
           </ThemedText>
         </TouchableOpacity>
 
+        {completionStatus.isCompleted && (
+          <TouchableOpacity
+            style={[styles.resetButton, { backgroundColor: backgroundColor, borderColor: borderColor + '50' }]}
+            onPress={handleReset}
+            activeOpacity={0.8}>
+            <RotateCcwIcon size={20} color={iconColor} />
+            <ThemedText style={[styles.resetText, { color: iconColor }]} i18nKey="task.reset" />
+          </TouchableOpacity>
+        )}
+
         {!completionStatus.isCompleted && !soloMode && assignedMembers.length > 1 && (
           <TouchableOpacity
             style={[styles.skipButton, { backgroundColor: backgroundColor, borderColor: borderColor + '50' }]}
@@ -444,6 +485,18 @@ export default function TaskDetailsScreen() {
         confirmColor="#EF4444"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setIsDeleteConfirmationVisible(false)}
+      />
+
+      {/* Reset Task Confirmation */}
+      <ConfirmationModal
+        visible={isResetConfirmationVisible}
+        title={t('confirmation.resetTaskTitle')}
+        message={t('confirmation.resetTaskMessage')}
+        confirmText={t('task.reset')}
+        cancelText={t('common.cancel')}
+        confirmColor="#3B82F6"
+        onConfirm={handleResetConfirm}
+        onCancel={() => setIsResetConfirmationVisible(false)}
       />
 
       {/* Confetti Animation */}
@@ -683,6 +736,20 @@ const styles = StyleSheet.create({
   skipText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: BORDER_RADIUS.medium,
+    borderWidth: 1,
+    marginTop: 12,
+  },
+  resetText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
 });
 

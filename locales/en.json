@@ -161,7 +161,8 @@
     },
     "doneForToday": "Done for today!",
     "doneForThisWeek": "Done for this week!",
-    "doneForThisMonth": "Done for this month!"
+    "doneForThisMonth": "Done for this month!",
+    "reset": "Reset"
   },
   "member": {
     "name": "Member Name",
@@ -273,6 +274,7 @@
     "taskSkipped": "{{name}} skipped {{taskName}}",
     "taskCreated": "{{taskName}} was created",
     "taskDeleted": "{{taskName}} was deleted",
+    "taskUndone": "{{name}} undid {{taskName}}",
     "memberAdded": "{{name}} was added",
     "memberDeleted": "{{name}} was removed",
     "groupCreated": "{{name}} group was created",
@@ -387,6 +389,8 @@
     "taskNoMembers": "This task has no assigned members. Please edit the task to assign members.",
     "cannotCompleteTask": "Cannot complete task",
     "cannotSkipTurn": "Cannot skip turn",
+    "cannotResetTask": "Cannot reset task",
+    "taskNoCompletionHistory": "This task has no completion history to reset.",
     "storageError": "Failed to save data. Please try again.",
     "storageErrorTitle": "Storage Error",
     "unknownError": "An unexpected error occurred. Please try again.",
@@ -402,6 +406,8 @@
     "deleteGroupMessage": "Are you sure you want to delete \"{{name}}\"? This will permanently delete all members, tasks, and data associated with this group. This cannot be undone.",
     "deleteMemberTitle": "Delete Member",
     "deleteMemberMessage": "Are you sure you want to remove {{name}}? This will remove them from all tasks.",
+    "resetTaskTitle": "Reset Task",
+    "resetTaskMessage": "Are you sure you want to reset this task? This will undo the most recent completion and revert the assignment back to the previous member.",
     "clearDataTitle": "Clear All Data",
     "clearDataMessage": "This will permanently delete all your groups, tasks, members, and preferences. This action cannot be undone.",
     "ok": "OK"

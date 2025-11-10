@@ -159,7 +159,8 @@
     },
     "doneForToday": "¡Hecho por hoy!",
     "doneForThisWeek": "¡Hecho por esta semana!",
-    "doneForThisMonth": "¡Hecho por este mes!"
+    "doneForThisMonth": "¡Hecho por este mes!",
+    "reset": "Restablecer"
   },
   "member": {
     "name": "Nombre del Miembro",
@@ -256,6 +257,7 @@
     "taskSkipped": "{{name}} omitió {{taskName}}",
     "taskCreated": "{{taskName}} fue creada",
     "taskDeleted": "{{taskName}} fue eliminada",
+    "taskUndone": "{{name}} deshizo {{taskName}}",
     "memberAdded": "{{name}} fue agregado",
     "memberDeleted": "{{name}} fue eliminado",
     "groupCreated": "El grupo {{name}} fue creado",
@@ -370,6 +372,8 @@
     "taskNoMembers": "Esta tarea no tiene miembros asignados. Por favor, edita la tarea para asignar miembros.",
     "cannotCompleteTask": "No se puede completar la tarea",
     "cannotSkipTurn": "No se puede saltar el turno",
+    "cannotResetTask": "No se puede restablecer la tarea",
+    "taskNoCompletionHistory": "Esta tarea no tiene historial de completados para restablecer.",
     "storageError": "Error al guardar los datos. Por favor, intenta de nuevo.",
     "storageErrorTitle": "Error de Almacenamiento",
     "unknownError": "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
@@ -385,6 +389,8 @@
     "deleteGroupMessage": "¿Estás seguro de que quieres eliminar \"{{name}}\"? Esto eliminará permanentemente todos los miembros, tareas y datos asociados con este grupo. Esta acción no se puede deshacer.",
     "deleteMemberTitle": "Eliminar Miembro",
     "deleteMemberMessage": "¿Estás seguro de que quieres eliminar a {{name}}? Esto los eliminará de todas las tareas.",
+    "resetTaskTitle": "Restablecer Tarea",
+    "resetTaskMessage": "¿Estás seguro de que quieres restablecer esta tarea? Esto deshará la completación más reciente y revertirá la asignación al miembro anterior.",
     "clearDataTitle": "Borrar Todos los Datos",
     "clearDataMessage": "Esto eliminará permanentemente todos tus grupos, tareas, miembros y preferencias. Esta acción no se puede deshacer.",
     "ok": "OK"

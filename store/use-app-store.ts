@@ -65,6 +65,7 @@ interface AppState {
   ) => Promise<void>;
   markTaskDone: (groupId: string, taskId: string) => Promise<void>;
   skipTurn: (groupId: string, taskId: string) => Promise<void>;
+  undoTaskCompletion: (groupId: string, taskId: string) => Promise<void>;
 
   // Helper to persist data
   persist: () => Promise<void>;
@@ -1016,6 +1017,137 @@ export const useAppStore = create<AppState>((set, get) => ({
     await get().persist();
 
     // Reschedule notification since assignment changed
+    await cancelTaskNotification(taskId);
+    const updatedGroup = get().groups.find((g) => g.id === groupId);
+    const updatedTask = updatedGroup?.tasks.find((t) => t.id === taskId);
+    if (updatedGroup && updatedTask) {
+      const { notificationsEnabled, reminderMinutes } =
+        useNotificationStore.getState();
+      if (notificationsEnabled) {
+        await scheduleTaskNotification(
+          updatedTask,
+          updatedGroup,
+          reminderMinutes
+        );
+      }
+    }
+  },
+
+  undoTaskCompletion: async (groupId: string, taskId: string) => {
+    const group = get().groups.find((g) => g.id === groupId);
+    if (!group) return;
+
+    const task = group.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    // Check if there's any completion history
+    if (!task.completionHistory || task.completionHistory.length === 0) {
+      return; // Nothing to undo
+    }
+
+    // Get assigned members for this task
+    const assignedMembers = group.members.filter((m) =>
+      task.memberIds.includes(m.id)
+    );
+
+    if (assignedMembers.length === 0) return;
+
+    // Find the most recent completion entry
+    const sortedHistory = [...task.completionHistory].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    const mostRecentCompletion = sortedHistory[0];
+
+    if (!mostRecentCompletion) return;
+
+    // Find the member who completed it
+    const completedByMember = assignedMembers.find(
+      (m) => m.id === mostRecentCompletion.memberId
+    );
+
+    if (!completedByMember) {
+      // Member might have been deleted, but we still need to undo
+      // Find the member index in the original member list
+      const memberIndex = assignedMembers.findIndex(
+        (m) => m.id === mostRecentCompletion.memberId
+      );
+      if (memberIndex === -1) {
+        // Member no longer exists, can't undo properly
+        return;
+      }
+    }
+
+    // Calculate the previous index (the one who completed it)
+    // In solo mode, keep the same index
+    const isSolo = isSoloMode(group);
+    let previousIndex: number;
+    
+    if (isSolo) {
+      // In solo mode, keep the same index
+      previousIndex = Math.min(
+        task.assignedIndex,
+        assignedMembers.length - 1
+      );
+    } else {
+      // Find the index of the member who completed it
+      const completedMemberIndex = assignedMembers.findIndex(
+        (m) => m.id === mostRecentCompletion.memberId
+      );
+      
+      if (completedMemberIndex === -1) {
+        // Member was deleted, can't properly undo
+        return;
+      }
+      
+      // Revert to the member who completed it
+      previousIndex = completedMemberIndex;
+    }
+
+    // Remove the most recent completion from history
+    const updatedCompletionHistory = task.completionHistory.filter(
+      (entry) => entry.timestamp !== mostRecentCompletion.timestamp
+    );
+
+    // Create activity entry for undo
+    const now = new Date();
+    const nowISO = now.toISOString();
+
+    const activity: GroupActivity = {
+      id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: "task_undone",
+      timestamp: nowISO,
+      actorId: mostRecentCompletion.memberId,
+      targetId: taskId,
+      metadata: {
+        type: "task_undone",
+        taskName: task.name,
+        taskIcon: task.icon,
+      },
+    };
+
+    set((state) => ({
+      groups: state.groups.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              tasks: g.tasks.map((t) =>
+                t.id === taskId
+                  ? {
+                      ...t,
+                      assignedIndex: previousIndex,
+                      completionHistory: updatedCompletionHistory,
+                    }
+                  : t
+              ),
+              activities: [...(g.activities || []), activity],
+            }
+          : g
+      ),
+    }));
+
+    await get().persist();
+
+    // Reschedule notification since task status changed
     await cancelTaskNotification(taskId);
     const updatedGroup = get().groups.find((g) => g.id === groupId);
     const updatedTask = updatedGroup?.tasks.find((t) => t.id === taskId);

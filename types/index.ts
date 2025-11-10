@@ -25,7 +25,7 @@ export interface TaskSkip extends TaskHistoryEntry {
 
 export type GroupActivityMetadata =
   | {
-      type: "task_completed" | "task_skipped" | "task_created" | "task_deleted";
+      type: "task_completed" | "task_skipped" | "task_created" | "task_deleted" | "task_undone";
       taskName: string;
       taskIcon: string;
     }
@@ -39,6 +39,7 @@ export interface GroupActivity {
     | "task_skipped"
     | "task_created"
     | "task_deleted"
+    | "task_undone"
     | "member_added"
     | "member_deleted"
     | "group_created";
