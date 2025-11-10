@@ -131,7 +131,7 @@ export function MemberModal({ visible, onClose, group, member }: MemberModalProp
               placeholderTextColor={textColor + '80'}
               value={name}
               onChangeText={setName}
-              autoFocus={isEditMode}
+              autoFocus={true}
             />
           </ScrollView>
         </SafeAreaView>
