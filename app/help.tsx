@@ -69,6 +69,30 @@ export default function HelpFAQScreen() {
       question: t('help.faq11.question'),
       answer: t('help.faq11.answer'),
     },
+    {
+      question: t('help.faq12.question'),
+      answer: t('help.faq12.answer'),
+    },
+    {
+      question: t('help.faq13.question'),
+      answer: t('help.faq13.answer'),
+    },
+    {
+      question: t('help.faq14.question'),
+      answer: t('help.faq14.answer'),
+    },
+    {
+      question: t('help.faq15.question'),
+      answer: t('help.faq15.answer'),
+    },
+    {
+      question: t('help.faq16.question'),
+      answer: t('help.faq16.answer'),
+    },
+    {
+      question: t('help.faq17.question'),
+      answer: t('help.faq17.answer'),
+    },
   ];
 
   return (

@@ -343,7 +343,7 @@
     },
     "faq2": {
       "question": "How does task rotation work?",
-      "answer": "When you create a task, you can assign it to specific members. The task starts with the first assigned member. Each time someone marks the task as done, it automatically rotates to the next assigned member in the list. Tasks can only be completed once per period (daily, weekly, monthly, etc.) to prevent duplicate completions."
+      "answer": "When you create a task, you can assign it to specific members. The task starts with the first assigned member. Each time someone marks the task as done, it automatically rotates to the next assigned member in the list. Tasks can only be completed once per period (daily, weekly, monthly, etc.) to prevent duplicate completions. Once completed, the task will be marked as done for that period and cannot be completed again until the next period begins."
     },
     "faq3": {
       "question": "What happens if I skip my turn?",
@@ -351,7 +351,7 @@
     },
     "faq4": {
       "question": "How do I schedule tasks?",
-      "answer": "When creating or editing a task, you can set a repeat frequency (daily, weekdays, weekends, weekly, biweekly, monthly, every 3 months, every 6 months, or yearly). You'll set a start date when the task first becomes due. For weekly or biweekly tasks, the day of the week is automatically set based on your start date. You can optionally add a specific time (e.g., 2:30 PM) for when the task should be completed."
+      "answer": "When creating or editing a task, you can set a repeat frequency (daily, weekdays, weekends, weekly, biweekly, monthly, every 3 months, every 6 months, or yearly). You'll set a start date when the task first becomes due. For weekly or biweekly tasks, the day of the week is automatically set based on your start date. You can optionally add a specific time (e.g., 2:30 PM) for when the task should be completed. If you don't set a time, tasks default to 9:00 AM for notification purposes."
     },
     "faq5": {
       "question": "What is solo mode?",
@@ -359,7 +359,7 @@
     },
     "faq6": {
       "question": "How do notifications work?",
-      "answer": "Enable notifications in Settings, then choose your reminder time (how many minutes or hours before a task is due). Notifications are automatically scheduled when you create or update tasks with schedules. They're only sent for tasks that haven't been completed in the current period, and they're automatically rescheduled when tasks are completed or updated. Notifications include the task name, whose turn it is, and schedule information."
+      "answer": "Enable notifications in Settings → Notifications, then choose your reminder time (5 min, 10 min, 15 min, 30 min, 1 hour, or 2 hours before a task is due). Notifications are automatically scheduled when you create or update tasks with schedules. If a task doesn't have a specific time set, it defaults to 9:00 AM. Notifications are only sent for tasks that haven't been completed in the current period, and they're automatically rescheduled when tasks are completed or updated. Notifications include the task name, whose turn it is, and schedule information."
     },
     "faq7": {
       "question": "Can I change who's assigned to a task?",
@@ -367,7 +367,7 @@
     },
     "faq8": {
       "question": "Where can I see task history?",
-      "answer": "Open any task to see its completion history, which shows who completed it and when. You can also view all activity (completions, skips, task creation, member changes) in the Activity Feed, accessible from Settings. The Activity Feed is filterable by type and shows relative times like \"2h ago\" or \"3d ago\"."
+      "answer": "Open any task to see its completion history, which shows who completed it and when. You can also view all activity (completions, skips, task creation, member changes) in the Activity Feed. To access it, go to Settings → Activity. The Activity Feed is filterable by type (All, Done, Skipped, Created, Members) and shows relative times like \"2h ago\" or \"3d ago\"."
     },
     "faq9": {
       "question": "What if I delete a task by mistake?",
@@ -380,6 +380,30 @@
     "faq11": {
       "question": "How do I reorder groups, tasks, or members?",
       "answer": "You can reorder items by long pressing and dragging them. On the home screen, long press and drag groups to change their order. In a group, you can reorder tasks in the Tasks tab and members in the Members tab. The order of assigned members affects task rotation - tasks rotate through assigned members based on their position in the assigned members list."
+    },
+    "faq12": {
+      "question": "How do I change the app theme or language?",
+      "answer": "Go to Settings → Preferences. You can toggle Dark Mode on or off, and change the app language by tapping \"App Language\". The app supports English and Spanish, with more languages coming soon. Language changes apply immediately without requiring confirmation."
+    },
+    "faq13": {
+      "question": "What are overdue indicators?",
+      "answer": "Overdue indicators appear on task cards when a task is past its due period. For example, if a daily task wasn't completed yesterday, or a weekly task wasn't completed last week, it will show an overdue indicator. This helps you quickly identify which tasks need attention."
+    },
+    "faq14": {
+      "question": "How do I reset or undo a task completion?",
+      "answer": "Open the task details screen and use the context menu (three dots) to access the \"Reset\" option. Resetting a task will undo the most recent completion and revert the assignment back to the previous member. This is useful if someone completed a task by mistake or if you need to adjust the rotation."
+    },
+    "faq15": {
+      "question": "What happens when I delete a member?",
+      "answer": "When you delete a member, they are removed from all tasks they were assigned to. If a task was currently assigned to that member, it will automatically rotate to the next assigned member. If the deleted member was the only one assigned to a task, you'll need to edit the task to assign new members. All notifications for tasks involving that member will be automatically rescheduled."
+    },
+    "faq16": {
+      "question": "How do I clear all app data?",
+      "answer": "Go to Settings → DATA → Clear Data. This will permanently delete all your groups, tasks, members, and preferences (including notification settings, theme preference, and language preference). All scheduled notifications will also be cancelled. A confirmation dialog will appear before clearing. This action cannot be undone."
+    },
+    "faq17": {
+      "question": "How do I edit a task, group, or member?",
+      "answer": "For tasks: Open the task details screen and tap the context menu (three dots) in the top right, then select \"Edit Task\". For groups: On the group screen, tap the context menu (three dots) in the header and select \"Edit Group\". For members: Swipe left on a member in the Members tab to reveal edit and delete options, then tap \"Edit\". All edits are saved immediately."
     }
   },
   "errors": {

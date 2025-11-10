@@ -326,7 +326,7 @@
     },
     "faq2": {
       "question": "¿Cómo funciona la rotación de tareas?",
-      "answer": "Cuando creas una tarea, puedes asignarla a miembros específicos. La tarea comienza con el primer miembro asignado. Cada vez que alguien marca la tarea como hecha, automáticamente rota al siguiente miembro asignado en la lista. Las tareas solo se pueden completar una vez por período (diario, semanal, mensual, etc.) para evitar completados duplicados."
+      "answer": "Cuando creas una tarea, puedes asignarla a miembros específicos. La tarea comienza con el primer miembro asignado. Cada vez que alguien marca la tarea como hecha, automáticamente rota al siguiente miembro asignado en la lista. Las tareas solo se pueden completar una vez por período (diario, semanal, mensual, etc.) para evitar completados duplicados. Una vez completada, la tarea se marcará como hecha para ese período y no se podrá completar nuevamente hasta que comience el siguiente período."
     },
     "faq3": {
       "question": "¿Qué pasa si omito mi turno?",
@@ -334,7 +334,7 @@
     },
     "faq4": {
       "question": "¿Cómo programo tareas?",
-      "answer": "Al crear o editar una tarea, puedes establecer una frecuencia de repetición (diaria, días laborables, fines de semana, semanal, quincenal, mensual, cada 3 meses, cada 6 meses o anual). Establecerás una fecha de inicio cuando la tarea se deba por primera vez. Para tareas semanales o quincenales, el día de la semana se establece automáticamente según tu fecha de inicio. Opcionalmente puedes agregar una hora específica (p. ej., 2:30 PM) para cuándo se debe completar la tarea."
+      "answer": "Al crear o editar una tarea, puedes establecer una frecuencia de repetición (diaria, días laborables, fines de semana, semanal, quincenal, mensual, cada 3 meses, cada 6 meses o anual). Establecerás una fecha de inicio cuando la tarea se deba por primera vez. Para tareas semanales o quincenales, el día de la semana se establece automáticamente según tu fecha de inicio. Opcionalmente puedes agregar una hora específica (p. ej., 2:30 PM) para cuándo se debe completar la tarea. Si no estableces una hora, las tareas usan 9:00 AM por defecto para fines de notificación."
     },
     "faq5": {
       "question": "¿Qué es el modo solo?",
@@ -342,7 +342,7 @@
     },
     "faq6": {
       "question": "¿Cómo funcionan las notificaciones?",
-      "answer": "Activa las notificaciones en Configuración, luego elige tu tiempo de recordatorio (cuántos minutos u horas antes de que venza una tarea). Las notificaciones se programan automáticamente cuando creas o actualizas tareas con horarios. Solo se envían para tareas que no se han completado en el período actual, y se reprograman automáticamente cuando las tareas se completan o actualizan. Las notificaciones incluyen el nombre de la tarea, de quién es el turno e información del horario."
+      "answer": "Activa las notificaciones en Configuración → Notificaciones, luego elige tu tiempo de recordatorio (5 min, 10 min, 15 min, 30 min, 1 hora o 2 horas antes de que venza una tarea). Las notificaciones se programan automáticamente cuando creas o actualizas tareas con horarios. Si una tarea no tiene una hora específica establecida, usa 9:00 AM por defecto. Las notificaciones solo se envían para tareas que no se han completado en el período actual, y se reprograman automáticamente cuando las tareas se completan o actualizan. Las notificaciones incluyen el nombre de la tarea, de quién es el turno e información del horario."
     },
     "faq7": {
       "question": "¿Puedo cambiar quién está asignado a una tarea?",
@@ -350,7 +350,7 @@
     },
     "faq8": {
       "question": "¿Dónde puedo ver el historial de tareas?",
-      "answer": "Abre cualquier tarea para ver su historial de completados, que muestra quién la completó y cuándo. También puedes ver toda la actividad (completados, omisiones, creación de tareas, cambios de miembros) en el Feed de Actividad, accesible desde Configuración. El Feed de Actividad es filtrable por tipo y muestra tiempos relativos como \"hace 2h\" o \"hace 3d\"."
+      "answer": "Abre cualquier tarea para ver su historial de completados, que muestra quién la completó y cuándo. También puedes ver toda la actividad (completados, omisiones, creación de tareas, cambios de miembros) en el Feed de Actividad. Para acceder, ve a Configuración → Actividad. El Feed de Actividad es filtrable por tipo (Todo, Hecho, Omitido, Creado, Miembros) y muestra tiempos relativos como \"hace 2h\" o \"hace 3d\"."
     },
     "faq9": {
       "question": "¿Qué pasa si elimino una tarea por error?",
@@ -363,6 +363,30 @@
     "faq11": {
       "question": "¿Cómo reordeno grupos, tareas o miembros?",
       "answer": "Puedes reordenar elementos manteniendo presionado y arrastrándolos. En la pantalla de inicio, mantén presionado y arrastra los grupos para cambiar su orden. En un grupo, puedes reordenar tareas en la pestaña Tareas y miembros en la pestaña Miembros. El orden de los miembros asignados afecta la rotación de tareas: las tareas rotan a través de los miembros asignados según su posición en la lista de miembros asignados."
+    },
+    "faq12": {
+      "question": "¿Cómo cambio el tema o el idioma de la app?",
+      "answer": "Ve a Configuración → Preferencias. Puedes activar o desactivar el Modo Oscuro, y cambiar el idioma de la app tocando \"Idioma de la App\". La app admite inglés y español, con más idiomas próximamente. Los cambios de idioma se aplican inmediatamente sin requerir confirmación."
+    },
+    "faq13": {
+      "question": "¿Qué son los indicadores de atraso?",
+      "answer": "Los indicadores de atraso aparecen en las tarjetas de tareas cuando una tarea está pasada de su período de vencimiento. Por ejemplo, si una tarea diaria no se completó ayer, o una tarea semanal no se completó la semana pasada, mostrará un indicador de atraso. Esto te ayuda a identificar rápidamente qué tareas necesitan atención."
+    },
+    "faq14": {
+      "question": "¿Cómo restablezco o deshago una completación de tarea?",
+      "answer": "Abre la pantalla de detalles de la tarea y usa el menú contextual (tres puntos) para acceder a la opción \"Restablecer\". Restablecer una tarea deshará la completación más reciente y revertirá la asignación al miembro anterior. Esto es útil si alguien completó una tarea por error o si necesitas ajustar la rotación."
+    },
+    "faq15": {
+      "question": "¿Qué pasa cuando elimino un miembro?",
+      "answer": "Cuando eliminas un miembro, se elimina de todas las tareas a las que estaba asignado. Si una tarea estaba actualmente asignada a ese miembro, automáticamente rotará al siguiente miembro asignado. Si el miembro eliminado era el único asignado a una tarea, necesitarás editar la tarea para asignar nuevos miembros. Todas las notificaciones para tareas que involucran a ese miembro se reprogramarán automáticamente."
+    },
+    "faq16": {
+      "question": "¿Cómo borro todos los datos de la app?",
+      "answer": "Ve a Configuración → DATOS → Borrar Datos. Esto eliminará permanentemente todos tus grupos, tareas, miembros y preferencias (incluyendo configuración de notificaciones, preferencia de tema e idioma). Todas las notificaciones programadas también se cancelarán. Aparecerá un diálogo de confirmación antes de borrar. Esta acción no se puede deshacer."
+    },
+    "faq17": {
+      "question": "¿Cómo edito una tarea, grupo o miembro?",
+      "answer": "Para tareas: Abre la pantalla de detalles de la tarea y toca el menú contextual (tres puntos) en la esquina superior derecha, luego selecciona \"Editar Tarea\". Para grupos: En la pantalla del grupo, toca el menú contextual (tres puntos) en el encabezado y selecciona \"Editar Grupo\". Para miembros: Desliza hacia la izquierda en un miembro en la pestaña Miembros para revelar las opciones de editar y eliminar, luego toca \"Editar\". Todas las ediciones se guardan inmediatamente."
     }
   },
   "errors": {
