@@ -404,32 +404,21 @@ export default function TaskDetailsScreen() {
                       </Text>
                     </View>
                   </View>
+                  
+                  {/* Turn Information */}
+                  {currentMember && (
+                    <View style={styles.turnSection}>
+                      <MemberAvatar member={currentMember} size={40} />
+                      <Text style={styles.turnText}>
+                        {soloMode ? t('task.yourTurn') : t('task.turn', { name: currentMember.name })}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </View>
           </LinearGradient>
         </View>
-
-        {/* Current Assignee Section */}
-        {currentMember && (
-          <View style={styles.currentAssigneeSection}>
-            <LinearGradient
-              colors={[groupColors.start + '15', groupColors.end + '15']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.currentAssigneeGradient}>
-              <MemberAvatar member={currentMember} size={56} />
-              <View style={styles.assigneeInfo}>
-                <ThemedText style={styles.assigneeName}>
-                  {soloMode ? t('task.yourTurn') : currentMember.name}
-                </ThemedText>
-                {!soloMode && (
-                  <ThemedText style={styles.itYourTurn} i18nKey="task.itYourTurn" />
-                )}
-              </View>
-            </LinearGradient>
-          </View>
-        )}
 
         {/* Completion History */}
         {sortedHistory.length > 0 && (
@@ -681,28 +670,19 @@ const styles = StyleSheet.create({
     marginLeft: 0,
     fontWeight: '600',
   },
-  currentAssigneeSection: {
-    marginBottom: 24,
-    borderRadius: BORDER_RADIUS.large,
-    overflow: 'hidden',
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: 600,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  currentAssigneeGradient: {
+  turnSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    width: '100%',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  turnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginLeft: 12,
   },
   successToast: {
     position: 'absolute',
@@ -729,20 +709,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     marginLeft: 8,
-  },
-  assigneeInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  assigneeName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  itYourTurn: {
-    fontSize: 14,
-    fontWeight: '500',
-    opacity: 0.7,
   },
   historySection: {
     marginBottom: 24,
