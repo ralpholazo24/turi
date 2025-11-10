@@ -93,10 +93,6 @@ export default function OnboardingScreen() {
     }).start();
   };
 
-  const handleLearnMore = () => {
-    router.push('/help');
-  };
-
   const handleDismiss = () => {
     router.back();
   };
@@ -129,8 +125,6 @@ export default function OnboardingScreen() {
       headlineKey: 'onboarding.screen4.headline',
       subtextKey: 'onboarding.screen4.subtext',
       ctaKey: 'onboarding.screen4.cta',
-      ctaSecondaryKey: 'onboarding.screen4.ctaSecondary',
-      onCtaSecondaryPress: handleLearnMore,
     },
     {
       id: '5',

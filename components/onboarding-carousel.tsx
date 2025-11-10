@@ -280,7 +280,7 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      {renderProgressBar()}
+      {currentIndex > 0 && renderProgressBar()}
       <FlatList
         ref={flatListRef}
         data={flatListData}

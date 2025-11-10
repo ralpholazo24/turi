@@ -5,7 +5,6 @@ import { APP_ICONS } from '@/constants/icons';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/store/use-user-store';
 import { getRandomAvatarColor } from '@/utils/member-avatar';
-import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -104,14 +103,6 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
     }
   };
 
-  const handleLearnMore = () => {
-    if (viewOnly) {
-      onComplete();
-    } else {
-      router.push('/help');
-    }
-  };
-
   const handleDismiss = () => {
     onComplete();
   };
@@ -144,8 +135,6 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
       headlineKey: 'onboarding.screen4.headline',
       subtextKey: 'onboarding.screen4.subtext',
       ctaKey: 'onboarding.screen4.cta',
-      ctaSecondaryKey: 'onboarding.screen4.ctaSecondary',
-      onCtaSecondaryPress: handleLearnMore,
     },
     {
       id: '5',
