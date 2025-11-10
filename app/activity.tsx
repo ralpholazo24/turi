@@ -7,10 +7,9 @@ import { useAppStore } from '@/store/use-app-store';
 import { GroupActivity } from '@/types';
 import { getColorsFromPreset } from '@/utils/group-colors';
 import { router } from 'expo-router';
-import * as LucideIcons from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ActivityItem {
@@ -88,6 +87,14 @@ export default function ActivityScreen() {
   );
   const iconColor = useThemeColor({}, 'icon');
   const tintColor = useThemeColor({}, 'tint');
+  const cardBackground = useThemeColor(
+    { light: '#FFFFFF', dark: '#1F1F1F' },
+    'background'
+  );
+  const subtleBackground = useThemeColor(
+    { light: '#F8F9FA', dark: '#1A1A1A' },
+    'background'
+  );
   
   // Theme-aware colors for activity types
   const completedColor = useThemeColor(
@@ -112,13 +119,6 @@ export default function ActivityScreen() {
   );
 
   const BackIcon = APP_ICONS.back;
-  const CheckIcon = APP_ICONS.check;
-  const SkipForwardIcon = LucideIcons.SkipForward;
-  const PlusIcon = LucideIcons.Plus;
-  const TrashIcon = LucideIcons.Trash2;
-  const UserPlusIcon = LucideIcons.UserPlus;
-  const UserMinusIcon = LucideIcons.UserMinus;
-  const UsersIcon = LucideIcons.Users;
 
   // Collect all activity items from all groups
   const activityItems = useMemo(() => {
@@ -206,47 +206,6 @@ export default function ActivityScreen() {
     return grouped;
   }, [filteredItems, t]);
 
-  const getActivityIcon = (type: GroupActivity['type']) => {
-    switch (type) {
-      case 'task_completed':
-        return CheckIcon;
-      case 'task_skipped':
-        return SkipForwardIcon;
-      case 'task_created':
-        return PlusIcon;
-      case 'task_deleted':
-        return TrashIcon;
-      case 'member_added':
-        return UserPlusIcon;
-      case 'member_deleted':
-        return UserMinusIcon;
-      case 'group_created':
-        return UsersIcon;
-      default:
-        return CheckIcon;
-    }
-  };
-
-  const getActivityIconColor = (type: GroupActivity['type']) => {
-    switch (type) {
-      case 'task_completed':
-        return completedColor;
-      case 'task_skipped':
-        return skippedColor;
-      case 'task_created':
-        return createdColor;
-      case 'task_deleted':
-        return dangerColor;
-      case 'member_added':
-        return completedColor;
-      case 'member_deleted':
-        return dangerColor;
-      case 'group_created':
-        return purpleColor;
-      default:
-        return iconColor;
-    }
-  };
 
   const getActivityMessage = (item: ActivityItem): string => {
     const memberName = item.memberName || t('activity.someone');
@@ -280,19 +239,25 @@ export default function ActivityScreen() {
     }
   };
 
+  const { width: screenWidth } = useWindowDimensions();
+  const isSmallScreen = screenWidth < 375;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: borderColor + '30' }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <View style={[styles.header, { borderBottomColor: borderColor + '20', backgroundColor }]}>
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          style={styles.backButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <BackIcon size={24} color={textColor} />
         </TouchableOpacity>
         <ThemedText type="title" style={styles.headerTitle} i18nKey="activity.title" />
-        <View style={styles.headerRight} />
+        <View style={styles.headerSpacer} />
       </View>
 
       {/* Filter Tabs */}
-      <View style={[styles.filterContainer, { borderBottomColor: borderColor + '30' }]}>
+      <View style={[styles.filterContainer, { borderBottomColor: borderColor + '20', backgroundColor }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -301,15 +266,17 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'all' && { backgroundColor: iconColor + '20' },
+              { 
+                backgroundColor: filter === 'all' ? iconColor + '15' : 'transparent',
+              },
             ]}
             onPress={() => setFilter('all')}
-            activeOpacity={0.7}>
+            activeOpacity={0.6}>
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'all' && styles.filterTextActive,
-                  filter === 'all' && { color: iconColor },
+                  { color: filter === 'all' ? textColor : iconColor },
                 ]}
                 i18nKey="activity.all"
               />
@@ -317,16 +284,17 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'completed' && { backgroundColor: completedColor + '20' },
+              { 
+                backgroundColor: filter === 'completed' ? completedColor + '15' : 'transparent',
+              },
             ]}
             onPress={() => setFilter('completed')}
-            activeOpacity={0.7}>
-            <CheckIcon size={12} color={filter === 'completed' ? completedColor : iconColor} />
+            activeOpacity={0.6}>
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'completed' && styles.filterTextActive,
-                  filter === 'completed' && { color: completedColor },
+                  { color: filter === 'completed' ? completedColor : iconColor },
                 ]}
                 i18nKey="activity.done"
               />
@@ -334,16 +302,17 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'skipped' && { backgroundColor: skippedColor + '20' },
+              { 
+                backgroundColor: filter === 'skipped' ? skippedColor + '15' : 'transparent',
+              },
             ]}
             onPress={() => setFilter('skipped')}
-            activeOpacity={0.7}>
-            <SkipForwardIcon size={12} color={filter === 'skipped' ? skippedColor : iconColor} />
+            activeOpacity={0.6}>
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'skipped' && styles.filterTextActive,
-                  filter === 'skipped' && { color: skippedColor },
+                  { color: filter === 'skipped' ? skippedColor : iconColor },
                 ]}
                 i18nKey="activity.skipped"
               />
@@ -351,16 +320,17 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'created' && { backgroundColor: createdColor + '20' },
+              { 
+                backgroundColor: filter === 'created' ? createdColor + '15' : 'transparent',
+              },
             ]}
             onPress={() => setFilter('created')}
-            activeOpacity={0.7}>
-            <PlusIcon size={12} color={filter === 'created' ? createdColor : iconColor} />
+            activeOpacity={0.6}>
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'created' && styles.filterTextActive,
-                  filter === 'created' && { color: createdColor },
+                  { color: filter === 'created' ? createdColor : iconColor },
                 ]}
                 i18nKey="activity.created"
               />
@@ -368,16 +338,17 @@ export default function ActivityScreen() {
           <TouchableOpacity
             style={[
               styles.filterButton,
-              filter === 'member' && { backgroundColor: completedColor + '20' },
+              { 
+                backgroundColor: filter === 'member' ? purpleColor + '15' : 'transparent',
+              },
             ]}
             onPress={() => setFilter('member')}
-            activeOpacity={0.7}>
-            <UsersIcon size={12} color={filter === 'member' ? completedColor : iconColor} />
+            activeOpacity={0.6}>
               <ThemedText
                 style={[
                   styles.filterText,
                   filter === 'member' && styles.filterTextActive,
-                  filter === 'member' && { color: completedColor },
+                  { color: filter === 'member' ? purpleColor : iconColor },
                 ]}
                 i18nKey="activity.members"
               />
@@ -390,7 +361,7 @@ export default function ActivityScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         {filteredItems.length === 0 ? (
-          <View style={styles.emptyContainer}>
+          <View style={[styles.emptyContainer, { backgroundColor: subtleBackground }]}>
             <ThemedText type="subtitle" style={styles.emptyTitle} i18nKey="activity.noActivity" />
             <ThemedText style={styles.emptyText}>
               {filter === 'all'
@@ -407,73 +378,47 @@ export default function ActivityScreen() {
         ) : (
           Object.entries(groupedByDate).map(([dateKey, items]) => (
             <View key={dateKey} style={styles.dateSection}>
-              <ThemedText style={styles.dateHeader}>{dateKey}</ThemedText>
+              <ThemedText style={[styles.dateHeader, { color: iconColor }]}>{dateKey}</ThemedText>
               {items.map((item) => {
-                const ActivityIcon = getActivityIcon(item.type);
-                const iconColor = getActivityIconColor(item.type);
-                // eslint-disable-next-line import/namespace
-                const TaskIconComponent =
-                  item.taskIcon && LucideIcons[item.taskIcon as keyof typeof LucideIcons]
-                    ? (LucideIcons[item.taskIcon as keyof typeof LucideIcons] as React.ComponentType<{
-                        size?: number;
-                        color?: string;
-                      }>)
-                    : undefined;
-                // eslint-disable-next-line import/namespace
-                const GroupIconComponent = LucideIcons[
-                  item.groupIcon as keyof typeof LucideIcons
-                ] as React.ComponentType<{ size?: number; color?: string }> | undefined;
-
                 return (
                   <TouchableOpacity
                     key={item.id}
                     style={[
                       styles.activityItem,
-                      { backgroundColor, borderColor: borderColor + '30' },
+                      { 
+                        backgroundColor: cardBackground, 
+                        borderColor: borderColor + '20',
+                      },
                       !item.taskId && item.type !== 'group_created' && styles.activityItemNoPress,
                     ]}
                     onPress={() => handleItemPress(item)}
                     activeOpacity={item.taskId || item.type === 'group_created' ? 0.7 : 1}>
-                    <View style={styles.activityLeft}>
-                      <View
-                        style={[
-                          styles.iconContainer,
-                          {
-                            backgroundColor: iconColor + '20',
-                          },
-                        ]}>
-                        <ActivityIcon size={20} color={iconColor} />
+                    <View style={styles.activityContent}>
+                      <View style={styles.activityHeader}>
+                        <ThemedText style={[styles.activityTitle, { color: textColor }]}>
+                          {getActivityMessage(item)}
+                        </ThemedText>
                       </View>
-                      <View style={styles.activityContent}>
-                        <View style={styles.activityHeader}>
-                          <ThemedText style={styles.activityTitle}>
-                            {getActivityMessage(item)}
-                          </ThemedText>
-                        </View>
-                        <View style={styles.activityMeta}>
-                          <View style={styles.groupBadge}>
-                            {item.taskId && TaskIconComponent ? (
-                              <TaskIconComponent size={12} color={item.groupColorStart} />
-                            ) : GroupIconComponent ? (
-                              <GroupIconComponent size={12} color={item.groupColorStart} />
-                            ) : null}
-                            <ThemedText style={[styles.groupName, { color: item.groupColorStart }]}>
-                              {item.groupName}
-                            </ThemedText>
-                          </View>
-                          <ThemedText style={styles.timeText}>{formatTimeAgo(item.date, t)}</ThemedText>
-                        </View>
+                      <View style={styles.activityMeta}>
+                        <ThemedText style={[styles.groupName, { color: item.groupColorStart }]}>
+                          {item.groupName}
+                        </ThemedText>
+                        <ThemedText style={[styles.timeText, { color: iconColor }]}>
+                          {formatTimeAgo(item.date, t)}
+                        </ThemedText>
                       </View>
                     </View>
                     {item.memberId && item.memberAvatarColor && (
-                      <MemberAvatar
-                        member={{
-                          id: item.memberId,
-                          name: item.memberName || 'Unknown',
-                          avatarColor: item.memberAvatarColor,
-                        }}
-                        size={40}
-                      />
+                      <View style={styles.avatarContainer}>
+                        <MemberAvatar
+                          member={{
+                            id: item.memberId,
+                            name: item.memberName || 'Unknown',
+                            avatarColor: item.memberAvatarColor,
+                          }}
+                          size={isSmallScreen ? 36 : 40}
+                        />
+                      </View>
                     )}
                   </TouchableOpacity>
                 );
@@ -498,42 +443,37 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backButton: {
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    marginRight: 16,
     padding: 4,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     flex: 1,
-    textAlign: 'center',
   },
-  headerRight: {
+  headerSpacer: {
     width: 32,
   },
   filterContainer: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
+    paddingVertical: 12,
   },
   filterContent: {
     paddingHorizontal: 20,
-    paddingVertical: 4,
-    gap: 6,
+    gap: 8,
   },
   filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: BORDER_RADIUS.large,
-    gap: 4,
-    marginRight: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: BORDER_RADIUS.medium,
+    marginRight: 8,
+    minHeight: 36,
   },
   filterText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
+    letterSpacing: -0.2,
   },
   filterTextActive: {
     fontWeight: '600',
@@ -542,27 +482,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 24,
     paddingBottom: 40,
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: 80,
+    paddingHorizontal: 32,
+    borderRadius: BORDER_RADIUS.xlarge,
+    marginTop: 20,
   },
   emptyTitle: {
-    marginBottom: 8,
+    marginBottom: 12,
+    fontSize: 20,
   },
   emptyText: {
     textAlign: 'center',
-    opacity: 0.7,
+    opacity: 0.65,
+    fontSize: 15,
+    lineHeight: 22,
   },
   dateSection: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   dateHeader: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     marginBottom: 12,
     opacity: 0.6,
   },
@@ -571,52 +520,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    borderRadius: BORDER_RADIUS.large,
+    borderRadius: BORDER_RADIUS.medium,
     borderWidth: StyleSheet.hairlineWidth,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   activityItemNoPress: {
-    opacity: 0.9,
-  },
-  activityLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: BORDER_RADIUS.medium,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    opacity: 0.85,
   },
   activityContent: {
     flex: 1,
+    minWidth: 0,
+    marginRight: 12,
   },
   activityHeader: {
-    marginBottom: 6,
+    marginBottom: 4,
   },
   activityTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '500',
+    lineHeight: 20,
   },
   activityMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  groupBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    gap: 8,
+    flexWrap: 'wrap',
   },
   groupName: {
     fontSize: 13,
     fontWeight: '500',
   },
   timeText: {
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: '400',
     opacity: 0.6,
+  },
+  avatarContainer: {
+    marginLeft: 8,
   },
 });
