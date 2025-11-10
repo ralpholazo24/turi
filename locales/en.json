@@ -404,6 +404,10 @@
     "faq17": {
       "question": "How do I edit a task, group, or member?",
       "answer": "For tasks: Open the task details screen and tap the context menu (three dots) in the top right, then select \"Edit Task\". For groups: On the group screen, tap the context menu (three dots) in the header and select \"Edit Group\". For members: Swipe left on a member in the Members tab to reveal edit and delete options, then tap \"Edit\". All edits are saved immediately."
+    },
+    "faq18": {
+      "question": "Where is my data saved?",
+      "answer": "All your data (groups, tasks, members, preferences) is stored locally on your device using AsyncStorage. This means your data is private and stays on your device - it's not synced to the cloud or backed up to any external servers. If you delete the app or clear app data, your information will be permanently removed. For data backup, you can use your device's built-in backup features (like iCloud Backup on iOS or Google Backup on Android) which will include your app data."
     }
   },
   "errors": {

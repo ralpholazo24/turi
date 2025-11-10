@@ -387,6 +387,10 @@
     "faq17": {
       "question": "¿Cómo edito una tarea, grupo o miembro?",
       "answer": "Para tareas: Abre la pantalla de detalles de la tarea y toca el menú contextual (tres puntos) en la esquina superior derecha, luego selecciona \"Editar Tarea\". Para grupos: En la pantalla del grupo, toca el menú contextual (tres puntos) en el encabezado y selecciona \"Editar Grupo\". Para miembros: Desliza hacia la izquierda en un miembro en la pestaña Miembros para revelar las opciones de editar y eliminar, luego toca \"Editar\". Todas las ediciones se guardan inmediatamente."
+    },
+    "faq18": {
+      "question": "¿Dónde se guardan mis datos?",
+      "answer": "Todos tus datos (grupos, tareas, miembros, preferencias) se almacenan localmente en tu dispositivo usando AsyncStorage. Esto significa que tus datos son privados y permanecen en tu dispositivo: no se sincronizan a la nube ni se respaldan en servidores externos. Si eliminas la app o borras los datos de la app, tu información se eliminará permanentemente. Para respaldar datos, puedes usar las funciones de respaldo integradas de tu dispositivo (como iCloud Backup en iOS o Google Backup en Android) que incluirán los datos de tu app."
     }
   },
   "errors": {
