@@ -25,7 +25,7 @@ type TabType = 'tasks' | 'members';
 export default function GroupScreen() {
   const { t } = useTranslation();
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
-  const { groups, deleteGroup, reorderTasks, deleteTask } = useAppStore();
+  const { groups, isLoading, deleteGroup, reorderTasks, deleteTask } = useAppStore();
   const [activeTab, setActiveTab] = useState<TabType>('tasks');
   const [isAddTaskModalVisible, setIsAddTaskModalVisible] = useState(false);
   const [isAddMemberModalVisible, setIsAddMemberModalVisible] = useState(false);
@@ -113,6 +113,23 @@ export default function GroupScreen() {
     setSelectedTask(null);
   };
 
+  // Show loading state while data is being loaded
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <BackIcon size={24} color={textColor} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ThemedText i18nKey="common.loading" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Only show "not found" when loading is complete and group doesn't exist
   if (!group) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
@@ -343,6 +360,14 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
   },
   scrollView: {
     flex: 1,

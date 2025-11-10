@@ -31,7 +31,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 export default function TaskDetailsScreen() {
   const { t } = useTranslation();
   const { groupId, taskId } = useLocalSearchParams<{ groupId: string; taskId: string }>();
-  const { groups, markTaskDone, skipTurn, deleteTask, undoTaskCompletion } = useAppStore();
+  const { groups, isLoading, markTaskDone, skipTurn, deleteTask, undoTaskCompletion } = useAppStore();
   const insets = useSafeAreaInsets();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
@@ -66,6 +66,23 @@ export default function TaskDetailsScreen() {
     return group?.tasks.find((t) => t.id === taskId);
   }, [group, taskId]);
 
+  // Show loading state while data is being loaded
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <BackIcon size={24} color={textColor} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ThemedText i18nKey="common.loading" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Only show "not found" when loading is complete and group/task doesn't exist
   if (!group || !task) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
@@ -588,6 +605,12 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
   },
   taskCardContainer: {
     marginBottom: 24,

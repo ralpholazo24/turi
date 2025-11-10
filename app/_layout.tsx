@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 
 import { CustomSplashScreen } from '@/components/splash-screen';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAppStore } from '@/store/use-app-store';
 import { useLanguageStore } from '@/store/use-language-store';
 import { useThemeStore } from '@/store/use-theme-store';
 import { useUserStore } from '@/store/use-user-store';
@@ -26,6 +27,7 @@ export default function RootLayout() {
   const initializeTheme = useThemeStore((state) => state.initializeTheme);
   const initializeLanguage = useLanguageStore((state) => state.initializeLanguage);
   const initializeUser = useUserStore((state) => state.initialize);
+  const initializeApp = useAppStore((state) => state.initialize);
   const { onboardingCompleted, isLoading: userLoading } = useUserStore();
   const [isReady, setIsReady] = useState(false);
 
@@ -35,11 +37,12 @@ export default function RootLayout() {
       const MIN_SPLASH_DURATION = 1500; // Minimum 1.5 seconds for smooth transition
 
       try {
-        // Initialize theme, language, and user
+        // Initialize theme, language, user, and app data
         await Promise.all([
           initializeTheme(),
           initializeLanguage(),
           initializeUser(),
+          initializeApp(),
         ]);
       } catch (e) {
         console.warn(e);
@@ -74,7 +77,7 @@ export default function RootLayout() {
     }
 
     prepare();
-  }, [initializeTheme, initializeLanguage, initializeUser]);
+  }, [initializeTheme, initializeLanguage, initializeUser, initializeApp]);
 
   // Navigate to onboarding if needed after user store is initialized
   useEffect(() => {
