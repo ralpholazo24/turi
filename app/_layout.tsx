@@ -52,12 +52,18 @@ export default function RootLayout() {
           await new Promise((resolve) => setTimeout(resolve, remainingTime));
         }
         
+        // Wait a small amount to ensure native view controller is registered
+        // This helps prevent "No native splash screen registered" errors on iOS
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        
         // Hide native splash screen only after everything is ready
         // This ensures the native splash is properly registered before hiding
         try {
           await SplashScreen.hideAsync();
         } catch (error) {
           // Ignore errors - this can happen in some edge cases
+          // The error "No native splash screen registered" can occur if the
+          // native view controller isn't ready yet, but it's safe to ignore
           if (__DEV__) {
             console.warn('Splash screen hide error (can be ignored):', error);
           }
