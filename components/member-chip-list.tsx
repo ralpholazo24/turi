@@ -11,7 +11,7 @@ import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
 import { ConfirmationModal } from './confirmation-modal';
-import { EditMemberModal } from './edit-member-modal';
+import { MemberModal } from './member-modal';
 import { MemberAvatar } from './member-avatar';
 import { SwipeableCard } from './swipeable-card';
 import { ThemedText } from './themed-text';
@@ -189,7 +189,7 @@ export function MemberChipList({ group }: MemberChipListProps) {
 
       {/* Edit Member Modal */}
       {selectedMember && (
-        <EditMemberModal
+        <MemberModal
           visible={isEditModalVisible}
           onClose={handleCloseEditModal}
           group={group}
