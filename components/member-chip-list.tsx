@@ -38,17 +38,11 @@ export function MemberChipList({ group }: MemberChipListProps) {
   );
 
   const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
   );
-  const chipBackgroundColor = useThemeColor(
-    { light: '#F5F5F5', dark: '#2A2A2A' },
-    'background'
-  );
-  const chipTextColor = useThemeColor({}, 'text');
 
   const handleEdit = useCallback((member: Member) => {
     setSelectedMember(member);
@@ -115,46 +109,25 @@ export function MemberChipList({ group }: MemberChipListProps) {
         <SwipeableCard
           onEdit={() => handleEdit(item)}
           onDelete={() => handleDelete(item)}
-          hideEditButton={memberIsOwner}
+          hideEditButton={false}
           drag={drag}
           isActive={isActive}
           isOpen={isCardOpen}
           onSwipeStart={() => handleSwipeStart(item.id)}
           onSwipeClose={() => setOpenCardId(null)}
           containerStyle={styles.swipeableContainer}>
-          <View
-            style={[
-              styles.memberCard,
-              { backgroundColor, borderColor: borderColor + '80' },
-            ]}>
-            <View style={styles.memberContent}>
-              {/* Avatar */}
-              <MemberAvatar member={item} size={56} />
-
-              {/* Member Info */}
-              <View style={styles.memberInfo}>
-                <ThemedText style={styles.memberName}>
-                  {memberIsOwner ? t('member.you') : item.name}
-                </ThemedText>
-              </View>
-
-              {/* Owner Chip - Right side */}
-              {memberIsOwner && (
-                <View style={[styles.ownerChip, { 
-                  backgroundColor: chipBackgroundColor, 
-                  borderColor: borderColor 
-                }]}>
-                  <ThemedText style={[styles.ownerChipText, { color: chipTextColor }]}>
-                    {t('member.owner')}
-                  </ThemedText>
-                </View>
-              )}
+          <View style={[styles.memberCard, { backgroundColor, borderColor }]}>
+            <MemberAvatar member={item} size={40} />
+            <View style={styles.memberInfo}>
+              <ThemedText style={styles.memberName}>
+                {memberIsOwner ? t('member.you') : item.name}
+              </ThemedText>
             </View>
           </View>
         </SwipeableCard>
       );
     },
-    [group, backgroundColor, textColor, borderColor, chipBackgroundColor, chipTextColor, handleEdit, handleDelete, isOwner, openCardId, handleSwipeStart, t]
+    [backgroundColor, borderColor, handleEdit, handleDelete, isOwner, openCardId, handleSwipeStart, t]
   );
 
   if (group.members.length === 0) {
@@ -241,37 +214,22 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   swipeableContainer: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
   memberCard: {
-    borderRadius: BORDER_RADIUS.large,
-    padding: 18,
-    borderWidth: 2,
-  },
-  memberContent: {
+    borderRadius: BORDER_RADIUS.xlarge,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     minHeight: 56,
+    borderWidth: 1,
   },
   memberInfo: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: 12,
   },
   memberName: {
-    fontSize: 18,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-  },
-  ownerChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.medium,
-    marginLeft: 12,
-    borderWidth: 1.5,
-  },
-  ownerChipText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
