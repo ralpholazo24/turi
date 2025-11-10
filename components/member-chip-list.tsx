@@ -11,8 +11,8 @@ import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
 import { ConfirmationModal } from './confirmation-modal';
-import { MemberModal } from './member-modal';
 import { MemberAvatar } from './member-avatar';
+import { MemberModal } from './member-modal';
 import { SwipeableCard } from './swipeable-card';
 import { ThemedText } from './themed-text';
 
@@ -42,6 +42,10 @@ export function MemberChipList({ group }: MemberChipListProps) {
   const borderColor = useThemeColor(
     { light: '#E0E0E0', dark: '#404040' },
     'icon'
+  );
+  const ownerBadgeColor = useThemeColor(
+    { light: '#3B82F6', dark: '#2563EB' },
+    'tint'
   );
 
   const handleEdit = useCallback((member: Member) => {
@@ -109,7 +113,8 @@ export function MemberChipList({ group }: MemberChipListProps) {
         <SwipeableCard
           onEdit={() => handleEdit(item)}
           onDelete={() => handleDelete(item)}
-          hideEditButton={false}
+          hideEditButton={memberIsOwner}
+          hideDeleteButton={memberIsOwner}
           drag={drag}
           isActive={isActive}
           isOpen={isCardOpen}
@@ -123,11 +128,21 @@ export function MemberChipList({ group }: MemberChipListProps) {
                 {memberIsOwner ? t('member.you') : item.name}
               </ThemedText>
             </View>
+            {memberIsOwner && (
+              <View style={[styles.ownerBadge, { backgroundColor: ownerBadgeColor }]}>
+                <ThemedText 
+                  style={styles.ownerBadgeText} 
+                  i18nKey="member.owner"
+                  lightColor="#FFFFFF"
+                  darkColor="#FFFFFF"
+                />
+              </View>
+            )}
           </View>
         </SwipeableCard>
       );
     },
-    [backgroundColor, borderColor, handleEdit, handleDelete, isOwner, openCardId, handleSwipeStart, t]
+    [backgroundColor, borderColor, ownerBadgeColor, handleEdit, handleDelete, isOwner, openCardId, handleSwipeStart, t]
   );
 
   if (group.members.length === 0) {
@@ -231,5 +246,17 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  ownerBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  ownerBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });

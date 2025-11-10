@@ -15,6 +15,7 @@ interface SwipeableCardProps {
   onEdit?: () => void;
   onDelete: () => void;
   hideEditButton?: boolean;
+  hideDeleteButton?: boolean; // Add this line
   drag?: () => void;
   isActive?: boolean;
   containerStyle?: object;
@@ -32,6 +33,7 @@ export function SwipeableCard({
   onEdit,
   onDelete,
   hideEditButton = false,
+  hideDeleteButton = false, // Add this line
   drag,
   isActive,
   containerStyle,
@@ -52,10 +54,20 @@ export function SwipeableCard({
   // Second swipe: show both buttons
   // Use animated style for dynamic width
   const actionButtonsWidthStyle = useAnimatedStyle(() => {
+    // If both buttons are hidden, no swipe width
+    if (hideEditButton && hideDeleteButton) {
+      return { width: 0 };
+    }
+    
     let width = EDIT_BUTTON_WIDTH;
     if (hideEditButton) {
-      width = DELETE_BUTTON_WIDTH;
+      // Only delete button visible
+      width = hideDeleteButton ? 0 : DELETE_BUTTON_WIDTH;
+    } else if (hideDeleteButton) {
+      // Only edit button visible
+      width = EDIT_BUTTON_WIDTH;
     } else if (showDeleteButton.value) {
+      // Both buttons visible
       width = ACTION_WIDTH;
     }
     return { width };
@@ -114,33 +126,40 @@ export function SwipeableCard({
     })
     .onUpdate((e) => {
       // Don't process swipe if dragging is active
-      // isActive comes from DraggableFlatList and indicates active drag
       if (isActive || isDragging.value) {
         return;
       }
 
+      // Don't allow swiping if both buttons are hidden
+      if (hideEditButton && hideDeleteButton) {
+        return;
+      }
+
       // Only allow swiping left (negative values) and require clear horizontal intent
-      // Apple guideline: horizontal movement should be at least 1.5x vertical movement
       const horizontalMovement = Math.abs(e.translationX);
       const verticalMovement = Math.abs(e.translationY);
       
       // Early fail: if vertical movement is clearly dominant, don't process
-      // This allows taps to pass through immediately
       if (verticalMovement > horizontalMovement * 1.2 && horizontalMovement < 20) {
         return;
       }
       
       if (horizontalMovement > verticalMovement * 1.5) {
         if (e.translationX < 0) {
-          // Show delete button when swiped past edit button
-          if (!hideEditButton && !showDeleteButton.value && Math.abs(e.translationX) > EDIT_BUTTON_WIDTH * 0.8) {
+          // Show delete button when swiped past edit button (only if delete button is not hidden)
+          if (!hideEditButton && !hideDeleteButton && !showDeleteButton.value && Math.abs(e.translationX) > EDIT_BUTTON_WIDTH * 0.8) {
             showDeleteButton.value = true;
           }
           
           // Calculate max swipe distance based on current state
-          const maxWidth = hideEditButton 
-            ? DELETE_BUTTON_WIDTH 
-            : (showDeleteButton.value ? ACTION_WIDTH : EDIT_BUTTON_WIDTH);
+          let maxWidth = 0;
+          if (hideEditButton && !hideDeleteButton) {
+            maxWidth = DELETE_BUTTON_WIDTH;
+          } else if (!hideEditButton && hideDeleteButton) {
+            maxWidth = EDIT_BUTTON_WIDTH;
+          } else if (!hideEditButton && !hideDeleteButton) {
+            maxWidth = showDeleteButton.value ? ACTION_WIDTH : EDIT_BUTTON_WIDTH;
+          }
           translateX.value = Math.max(e.translationX, -maxWidth);
         } else if (translateX.value < 0) {
           // Allow swiping back to close
@@ -163,10 +182,25 @@ export function SwipeableCard({
         return;
       }
 
+      // Don't allow swipe if both buttons are hidden
+      if (hideEditButton && hideDeleteButton) {
+        translateX.value = withSpring(0, {
+          damping: 20,
+          stiffness: 300,
+        });
+        return;
+      }
+
       // Calculate current action width
-      const currentActionWidth = hideEditButton 
-        ? DELETE_BUTTON_WIDTH 
-        : (showDeleteButton.value ? ACTION_WIDTH : EDIT_BUTTON_WIDTH);
+      let currentActionWidth = 0;
+      if (hideEditButton && !hideDeleteButton) {
+        currentActionWidth = DELETE_BUTTON_WIDTH;
+      } else if (!hideEditButton && hideDeleteButton) {
+        currentActionWidth = EDIT_BUTTON_WIDTH;
+      } else if (!hideEditButton && !hideDeleteButton) {
+        currentActionWidth = showDeleteButton.value ? ACTION_WIDTH : EDIT_BUTTON_WIDTH;
+      }
+      
       const threshold = currentActionWidth / 2;
 
       // If swiped more than half the current action width, open
@@ -270,8 +304,13 @@ export function SwipeableCard({
       return { opacity: 0 };
     }
     
-    // Show delete button when showDeleteButton is true and swiping left
-    const opacity = showDeleteButton.value && !hideEditButton ? 1 : 0;
+    // Hide delete button if hideDeleteButton is true
+    if (hideDeleteButton) {
+      return { opacity: 0 };
+    }
+    
+    // Show delete button immediately if edit button is hidden, otherwise show after swiping past edit button
+    const opacity = hideEditButton || showDeleteButton.value ? 1 : 0;
     return {
       opacity: translateX.value < 0 ? opacity : 0,
     };
@@ -289,14 +328,16 @@ export function SwipeableCard({
             <EditIcon size={24} color="#FFFFFF" />
           </TouchableOpacity>
         )}
-        <Animated.View style={deleteButtonStyle}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.deleteButton]}
-            onPress={handleDelete}
-            activeOpacity={0.8}>
-            <DeleteIcon size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        </Animated.View>
+        {!hideDeleteButton && ( // Wrap delete button with this condition
+          <Animated.View style={deleteButtonStyle}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.deleteButton]}
+              onPress={handleDelete}
+              activeOpacity={0.8}>
+              <DeleteIcon size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </Animated.View>
 
       {/* Card Content (on top) */}
