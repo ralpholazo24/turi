@@ -307,7 +307,7 @@ export function TaskModal({ visible, onClose, group, task, onOpenAddMember }: Ta
                         color?: string;
                       }>;
                       return IconComponent ? (
-                        <IconComponent size={48} color={textColor} />
+                        <IconComponent size={48} color={iconColor}/>
                       ) : null;
                     })()}
                   </View>
