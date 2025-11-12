@@ -86,24 +86,91 @@ export default function RootLayout() {
     }
   }, [userLoading, isReady, onboardingCompleted]);
 
-
   // Handle notification taps - navigate to task details
   useEffect(() => {
     if (!isReady) {
       return;
     }
 
+    // Helper function to handle notification navigation with error handling
+    // Defined inside effect to access latest appLoading and groups via closure
+    // without causing the effect to re-run when they change
+    const handleNotificationNavigation = async (
+      groupId: string,
+      taskId: string,
+      isInitialNotification: boolean = false
+    ) => {
+      try {
+        // Get latest values from store (will be current when function is called)
+        const currentAppLoading = useAppStore.getState().isLoading;
+        const currentGroups = useAppStore.getState().groups;
+
+        // Wait for app store to finish loading
+        let retries = 0;
+        const maxRetries = 20; // Wait up to 2 seconds (20 * 100ms)
+        while (currentAppLoading && retries < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          retries++;
+          // Re-check loading state in case it changed
+          const updatedState = useAppStore.getState();
+          if (!updatedState.isLoading) break;
+        }
+
+        // Verify group and task exist before navigating
+        const latestGroups = useAppStore.getState().groups;
+        const group = latestGroups.find((g) => g.id === groupId);
+        if (!group) {
+          console.warn(`Group ${groupId} not found when handling notification`);
+          return;
+        }
+
+        const task = group.tasks.find((t) => t.id === taskId);
+        if (!task) {
+          console.warn(`Task ${taskId} not found in group ${groupId} when handling notification`);
+          return;
+        }
+
+        // Add a small delay to ensure router is fully initialized
+        await new Promise((resolve) => setTimeout(resolve, 150));
+
+        // Navigate to task details screen
+        const route = `/group/${groupId}/task/${taskId}` as const;
+        if (isInitialNotification) {
+          // Use replace for initial notification (when app was closed)
+          router.replace(route as any);
+        } else {
+          // Use push for notifications when app is running
+          router.push(route as any);
+        }
+      } catch (error) {
+        console.error('Error navigating to task from notification:', error);
+        // Don't crash the app, just log the error
+      }
+    };
+
     // Check if app was opened from a notification (when app was closed)
     const checkInitialNotification = async () => {
-      const response = await Notifications.getLastNotificationResponseAsync();
-      if (response) {
-        const data = response.notification.request.content.data;
-        
-        // Check if this is a task reminder notification
-        if (data?.type === 'task_reminder' && data?.taskId && data?.groupId) {
-          // Navigate to task details screen
-          router.push(`/group/${data.groupId}/task/${data.taskId}`);
+      try {
+        const response = await Notifications.getLastNotificationResponseAsync();
+        if (response) {
+          const data = response.notification.request.content.data;
+          
+          // Check if this is a task reminder notification
+          if (data?.type === 'task_reminder' && data?.taskId && data?.groupId) {
+            // Ensure taskId and groupId are strings
+            const groupId = String(data.groupId);
+            const taskId = String(data.taskId);
+            
+            // Wait for app store to finish loading before navigating
+            await handleNotificationNavigation(
+              groupId,
+              taskId,
+              true // isInitialNotification = true
+            );
+          }
         }
+      } catch (error) {
+        console.error('Error checking initial notification:', error);
       }
     };
 
@@ -121,12 +188,24 @@ export default function RootLayout() {
     // Handle notification tap/interaction (when app is running)
     const notificationResponseSubscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
-        const data = response.notification.request.content.data;
-        
-        // Check if this is a task reminder notification
-        if (data?.type === 'task_reminder' && data?.taskId && data?.groupId) {
-          // Navigate to task details screen
-          router.push(`/group/${data.groupId}/task/${data.taskId}`);
+        try {
+          const data = response.notification.request.content.data;
+          
+          // Check if this is a task reminder notification
+          if (data?.type === 'task_reminder' && data?.taskId && data?.groupId) {
+            // Ensure taskId and groupId are strings
+            const groupId = String(data.groupId);
+            const taskId = String(data.taskId);
+            
+            // Navigate to task details screen
+            handleNotificationNavigation(
+              groupId,
+              taskId,
+              false // isInitialNotification = false
+            );
+          }
+        } catch (error) {
+          console.error('Error handling notification response:', error);
         }
       }
     );
