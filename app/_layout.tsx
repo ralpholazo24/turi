@@ -37,17 +37,20 @@ export default function RootLayout() {
       const MIN_SPLASH_DURATION = 1500; // Minimum 1.5 seconds for smooth transition
 
       try {
-        // Initialize theme, language, user, and app data
+        // Initialize theme FIRST to ensure colors are ready for CustomSplashScreen
+        await initializeTheme();
+        
+        // Wait a small amount to ensure theme state is propagated
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        
+        // Initialize other stores in parallel (theme is already done)
         await Promise.all([
-          initializeTheme(),
           initializeLanguage(),
           initializeUser(),
           initializeApp(),
         ]);
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        // Ensure splash screen shows for at least MIN_SPLASH_DURATION
+        
+        // Ensure native splash screen shows for at least MIN_SPLASH_DURATION
         const elapsedTime = Date.now() - startTime;
         const remainingTime = Math.max(0, MIN_SPLASH_DURATION - elapsedTime);
         
@@ -55,23 +58,19 @@ export default function RootLayout() {
           await new Promise((resolve) => setTimeout(resolve, remainingTime));
         }
         
-        // Wait a small amount to ensure native view controller is registered
-        // This helps prevent "No native splash screen registered" errors on iOS
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        
-        // Hide native splash screen only after everything is ready
-        // This ensures the native splash is properly registered before hiding
+        // Now hide native splash screen - CustomSplashScreen can render with proper colors
+        // This happens after minimum duration is enforced
         try {
           await SplashScreen.hideAsync();
         } catch (error) {
           // Ignore errors - this can happen in some edge cases
-          // The error "No native splash screen registered" can occur if the
-          // native view controller isn't ready yet, but it's safe to ignore
           if (__DEV__) {
             console.warn('Splash screen hide error (can be ignored):', error);
           }
         }
-        
+      } catch (e) {
+        console.warn(e);
+      } finally {
         setIsReady(true);
       }
     }
@@ -102,18 +101,17 @@ export default function RootLayout() {
     ) => {
       try {
         // Get latest values from store (will be current when function is called)
-        const currentAppLoading = useAppStore.getState().isLoading;
         const currentGroups = useAppStore.getState().groups;
 
         // Wait for app store to finish loading
         let retries = 0;
         const maxRetries = 20; // Wait up to 2 seconds (20 * 100ms)
-        while (currentAppLoading && retries < maxRetries) {
+        while (retries < maxRetries) {
+          const currentState = useAppStore.getState();
+          if (!currentState.isLoading) break;
+          
           await new Promise((resolve) => setTimeout(resolve, 100));
           retries++;
-          // Re-check loading state in case it changed
-          const updatedState = useAppStore.getState();
-          if (!updatedState.isLoading) break;
         }
 
         // Verify group and task exist before navigating
