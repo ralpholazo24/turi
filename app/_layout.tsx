@@ -5,6 +5,7 @@ import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { PostHogProvider } from 'posthog-react-native';
 import 'react-native-reanimated';
 
 import { CustomSplashScreen } from '@/components/splash-screen';
@@ -13,6 +14,7 @@ import { useAppStore } from '@/store/use-app-store';
 import { useLanguageStore } from '@/store/use-language-store';
 import { useThemeStore } from '@/store/use-theme-store';
 import { useUserStore } from '@/store/use-user-store';
+import { posthog } from '@/utils/posthog';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Keep the splash screen visible while we fetch resources
@@ -220,28 +222,55 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'default',
-            animationDuration: 250,
-            gestureEnabled: true,
-            gestureDirection: 'horizontal',
-          }}>
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="settings" />
-          <Stack.Screen name="activity" />
-          <Stack.Screen name="notifications" />
-          <Stack.Screen name="about" />
-          <Stack.Screen name="feature-requests" />
-          <Stack.Screen name="help" />
-          <Stack.Screen name="language" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      {posthog ? (
+        <PostHogProvider client={posthog}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                animation: 'default',
+                animationDuration: 250,
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+              }}>
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="settings" />
+              <Stack.Screen name="activity" />
+              <Stack.Screen name="notifications" />
+              <Stack.Screen name="about" />
+              <Stack.Screen name="feature-requests" />
+              <Stack.Screen name="help" />
+              <Stack.Screen name="language" />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </PostHogProvider>
+      ) : (
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: 'default',
+              animationDuration: 250,
+              gestureEnabled: true,
+              gestureDirection: 'horizontal',
+            }}>
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="settings" />
+            <Stack.Screen name="activity" />
+            <Stack.Screen name="notifications" />
+            <Stack.Screen name="about" />
+            <Stack.Screen name="feature-requests" />
+            <Stack.Screen name="help" />
+            <Stack.Screen name="language" />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      )}
     </GestureHandlerRootView>
   );
 }

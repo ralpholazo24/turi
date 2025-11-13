@@ -7,6 +7,7 @@ import {
   rescheduleGroupNotifications,
   scheduleTaskNotification,
 } from "@/utils/notification-service";
+import { captureEvent } from "@/utils/posthog";
 import { isSoloMode } from "@/utils/solo-mode";
 import { loadData, saveData } from "@/utils/storage";
 import { getTaskCompletionStatus } from "@/utils/task-completion";
@@ -236,6 +237,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     await get().persist();
+
+    // Track group creation event
+    captureEvent('group_created', {
+      group_id: newGroup.id,
+      group_name: name,
+      group_icon: icon,
+      color_preset: colorPreset,
+      member_count: 1,
+    });
   },
 
   updateGroup: async (groupId: string, updates: Partial<Group>) => {
@@ -318,6 +328,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     await get().persist();
+
+    // Track member addition event
+    captureEvent('member_added', {
+      group_id: groupId,
+      member_id: newMember.id,
+      member_name: name,
+      total_members: group.members.length + 1,
+    });
   },
 
   updateMember: async (
@@ -428,6 +446,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
 
     await get().persist();
+
+    // Track member deletion event
+    captureEvent('member_deleted', {
+      group_id: groupId,
+      member_id: memberId,
+      member_name: member?.name || 'Unknown',
+      remaining_members: remainingMembers.length,
+    });
 
     // Reschedule notifications for all tasks in the group (in case assignments changed)
     if (updatedGroup) {
@@ -599,6 +625,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
 
     await get().persist();
+
+    // Track task creation event
+    captureEvent('task_created', {
+      group_id: groupId,
+      task_id: newTask.id,
+      task_name: newTask.name,
+      task_icon: newTask.icon,
+      frequency: newTask.schedule?.repeat || 'none',
+      assigned_members_count: finalTaskData.memberIds.length,
+      is_solo_mode: isSoloMode(group),
+    });
 
     // Schedule notification if enabled
     if (updatedGroup) {
@@ -925,6 +962,17 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     await get().persist();
 
+    // Track task completion event
+    captureEvent('task_completed', {
+      group_id: groupId,
+      task_id: taskId,
+      task_name: task.name,
+      member_id: currentMember.id,
+      member_name: currentMember.name,
+      is_solo_mode: isSolo,
+      frequency: task.schedule?.repeat || 'none',
+    });
+
     // Cancel old notification and reschedule for next occurrence
     await cancelTaskNotification(taskId);
     const updatedGroup = get().groups.find((g) => g.id === groupId);
@@ -1015,6 +1063,16 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     await get().persist();
+
+    // Track task skip event
+    captureEvent('task_skipped', {
+      group_id: groupId,
+      task_id: taskId,
+      task_name: task.name,
+      member_id: currentMember.id,
+      member_name: currentMember.name,
+      frequency: task.schedule?.repeat || 'none',
+    });
 
     // Reschedule notification since assignment changed
     await cancelTaskNotification(taskId);

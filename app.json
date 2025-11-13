@@ -60,7 +60,8 @@
       "router": {},
       "eas": {
         "projectId": "7369ae6c-6fdf-482d-b691-65270ced146a"
-      }
+      },
+      "posthogApiKey": "phc_feheoufxZtKo5STeqRtVuPbjT9HyGixbGssKfbIjVFR"
     },
     "owner": "ralpholazo"
   }
