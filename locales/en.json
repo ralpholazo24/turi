@@ -491,25 +491,24 @@
     "avatarPreview": "This is how you'll appear in groups",
     "continue": "Continue",
     "screen1": {
-      "headline": "Tired of turn-taking arguments?",
-      "subtext": "Whether it's chores, cooking, or paying bills, Turi keeps things fair and peaceful for everyone.",
+      "headline": "Welcome to Turi",
+      "subtext": "Turi helps you keep track of turns for chores, meetings, or anything shared. Let's set you up in seconds.",
       "cta": "Get Started"
     },
     "screen2": {
-      "headline": "Fair turn tracking, automatically",
-      "subtext": "Turi tracks everyone's turns automatically with no cheating, no forgetting, and no confusion.",
+      "headline": "Create a group",
+      "subtext": "Groups are where you organize shared tasks. Add members like teammates, friends, or family.",
       "cta": "Continue"
     },
     "screen3": {
-      "headline": "Perfect for solo users too",
-      "subtext": "Manage your recurring chores, workouts, and habits all in one organized place.",
+      "headline": "Add tasks and assign turns",
+      "subtext": "Each task has a rotating turn list. Turi keeps track automatically so you don't have to remember.",
       "cta": "Continue"
     },
     "screen4": {
-      "headline": "Organize your recurring tasks",
-      "subtext": "Track turns, keep everyone accountable, and make shared responsibilities easier to manage.",
-      "cta": "Continue",
-      "ctaSecondary": "Learn how it works"
+      "headline": "Use it solo or with others",
+      "subtext": "Plan workouts, habits, or routines even if it's just you. Turi keeps you consistent.",
+      "cta": "Continue"
     },
     "screen5": {
       "headline": "Never miss a turn",
@@ -521,6 +520,45 @@
     "notificationPermissionTitle": "\"Turi\" Would Like to Send You Notifications",
     "notificationPermissionText": "Providing \"Turi\" access to notifications allows it to send you reminders when tasks are due, so you never miss your turn.",
     "dontAllow": "Don't Allow"
+  },
+  "mockup": {
+    "groups": "Groups",
+    "tasks": "Tasks",
+    "members": "Members",
+    "nextTask": "Next Task",
+    "assignedTo": "Assigned to",
+    "tasksCount": "{{count}} tasks",
+    "tasksCount_one": "{{count}} task",
+    "tasksCount_other": "{{count}} tasks",
+    "membersCount": "{{count}} members",
+    "membersCount_one": "{{count}} member",
+    "membersCount_other": "{{count}} members",
+    "turn": "{{name}}'s turn",
+    "pending": "Pending",
+    "groupNames": {
+      "home": "Home",
+      "work": "Work",
+      "fitness": "Fitness"
+    },
+    "taskNames": {
+      "washDishes": "Wash Dishes",
+      "teamMeeting": "Team Meeting",
+      "takeOutTrash": "Take Out Trash",
+      "morningRun": "Morning Run",
+      "gymWorkout": "Gym Workout"
+    },
+    "memberNames": {
+      "alice": "Alice",
+      "bob": "Bob",
+      "charlie": "Charlie"
+    },
+    "you": "You",
+    "schedule": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "weeklyMon": "Weekly • Mon",
+      "dailyTime": "Daily • 6:00 AM"
+    }
   },
   "profile": {
     "title": "Profile",

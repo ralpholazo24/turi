@@ -486,25 +486,24 @@
     "avatarPreview": "Así aparecerás en los grupos",
     "continue": "Continuar",
     "screen1": {
-      "headline": "¿Cansado de discutir sobre los turnos?",
-      "subtext": "Ya sea tareas domésticas, cocinar o pagar facturas, Turi mantiene las cosas justas y pacíficas para todos.",
+      "headline": "Bienvenido a Turi",
+      "subtext": "Turi te ayuda a llevar el control de los turnos para tareas, reuniones o cualquier cosa compartida. Te configuramos en segundos.",
       "cta": "Comenzar"
     },
     "screen2": {
-      "headline": "Rastrea turnos de forma justa y automática",
-      "subtext": "Turi rastrea los turnos de todos automáticamente sin trampas, sin olvidos y sin confusiones.",
+      "headline": "Crea un grupo",
+      "subtext": "Los grupos son donde organizas tareas compartidas. Añade miembros como compañeros de equipo, amigos o familia.",
       "cta": "Continuar"
     },
     "screen3": {
-      "headline": "Perfecto para usuarios solos también",
-      "subtext": "Gestiona tus tareas recurrentes, entrenamientos y hábitos todo en un solo lugar organizado.",
+      "headline": "Añade tareas y asigna turnos",
+      "subtext": "Cada tarea tiene una lista de turnos rotativos. Turi lleva el control automáticamente para que no tengas que recordarlo.",
       "cta": "Continuar"
     },
     "screen4": {
-      "headline": "Organiza tus tareas recurrentes",
-      "subtext": "Rastrea turnos, mantén a todos responsables y haz que las responsabilidades compartidas sean más fáciles de gestionar.",
-      "cta": "Continuar",
-      "ctaSecondary": "Aprende cómo funciona"
+      "headline": "Úsalo solo o con otros",
+      "subtext": "Planifica entrenamientos, hábitos o rutinas incluso si eres solo tú. Turi te mantiene constante.",
+      "cta": "Continuar"
     },
     "screen5": {
       "headline": "Nunca pierdas tu turno",
@@ -516,6 +515,45 @@
     "notificationPermissionTitle": "\"Turi\" Quiere Enviarte Notificaciones",
     "notificationPermissionText": "Proporcionar a \"Turi\" acceso a las notificaciones le permite enviarte recordatorios cuando las tareas estén próximas, para que nunca pierdas tu turno.",
     "dontAllow": "No Permitir"
+  },
+  "mockup": {
+    "groups": "Grupos",
+    "tasks": "Tareas",
+    "members": "Miembros",
+    "nextTask": "Próxima Tarea",
+    "assignedTo": "Asignado a",
+    "tasksCount": "{{count}} tareas",
+    "tasksCount_one": "{{count}} tarea",
+    "tasksCount_other": "{{count}} tareas",
+    "membersCount": "{{count}} miembros",
+    "membersCount_one": "{{count}} miembro",
+    "membersCount_other": "{{count}} miembros",
+    "turn": "Turno de {{name}}",
+    "pending": "Pendiente",
+    "groupNames": {
+      "home": "Hogar",
+      "work": "Trabajo",
+      "fitness": "Fitness"
+    },
+    "taskNames": {
+      "washDishes": "Lavar Platos",
+      "teamMeeting": "Reunión de Equipo",
+      "takeOutTrash": "Sacar Basura",
+      "morningRun": "Corrida Matutina",
+      "gymWorkout": "Entrenamiento"
+    },
+    "memberNames": {
+      "alice": "Alicia",
+      "bob": "Roberto",
+      "charlie": "Carlos"
+    },
+    "you": "Tú",
+    "schedule": {
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "weeklyMon": "Semanal • Lun",
+      "dailyTime": "Diario • 6:00 AM"
+    }
   },
   "profile": {
     "title": "Perfil",

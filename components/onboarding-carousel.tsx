@@ -1,5 +1,5 @@
+import { AppMockup } from '@/components/app-mockup';
 import { ThemedText } from '@/components/themed-text';
-import { TypingText } from '@/components/typing-text';
 import { BORDER_RADIUS } from '@/constants/border-radius';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -24,7 +24,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface OnboardingScreen {
   id: string;
-  illustration: any;
+  illustration?: any; // Optional for screens with mockups
+  mockupType?: 'home' | 'group' | 'tasks' | 'solo'; // Type of app mockup to show
   headlineKey: string;
   subtextKey: string;
   ctaKey: string;
@@ -41,12 +42,8 @@ interface OnboardingCarouselProps {
 
 export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [animatedScreens, setAnimatedScreens] = useState<Set<number>>(new Set());
-  const [headlineCompleteScreens, setHeadlineCompleteScreens] = useState<Set<number>>(new Set());
-  const [subtextCompleteScreens, setSubtextCompleteScreens] = useState<Set<number>>(new Set());
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
-  const subtextAnimations = useRef<Map<number, Animated.Value>>(new Map()).current;
   const { toggleNotifications } = useNotifications();
   const insets = useSafeAreaInsets();
 
@@ -137,42 +134,6 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
       item.onCtaSecondaryPress?.();
     };
 
-    const handleHeadlineComplete = () => {
-      setHeadlineCompleteScreens((prev) => new Set(prev).add(index));
-      
-      // Trigger popup animation for subtext when headline completes (with delay)
-      if (!subtextAnimations.has(index)) {
-        subtextAnimations.set(index, new Animated.Value(0));
-      }
-      const animValue = subtextAnimations.get(index)!;
-      
-      // Add delay before showing subtext
-      setTimeout(() => {
-        Animated.spring(animValue, {
-          toValue: 1,
-          tension: 50,
-          friction: 7,
-          useNativeDriver: true,
-        }).start(() => {
-          setSubtextCompleteScreens((prev) => new Set(prev).add(index));
-          setAnimatedScreens((prev) => new Set(prev).add(index));
-        });
-      }, 400); // 400ms delay
-    };
-
-    const handleSubtextComplete = () => {
-      setSubtextCompleteScreens((prev) => new Set(prev).add(index));
-      setAnimatedScreens((prev) => new Set(prev).add(index));
-    };
-
-    // Once a screen is fully animated (both headline and subtext complete), never animate again
-    const isFullyAnimated = animatedScreens.has(index);
-    const headlineComplete = headlineCompleteScreens.has(index);
-    const subtextComplete = subtextCompleteScreens.has(index);
-    
-    // Only animate headline if screen is current, not fully animated, and headline hasn't completed yet
-    const shouldAnimateHeadline = index === currentIndex && !isFullyAnimated && !headlineComplete;
-
     // Special rendering for notification screen
     if (item.isNotificationScreen) {
       return (
@@ -227,65 +188,24 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}>
-          {/* Illustration */}
+          {/* Mockup or Illustration */}
           <View style={styles.illustrationSection}>
-            <Image
-              source={item.illustration}
-              style={styles.illustration}
-              contentFit="contain"
-              tintColor={iconColor}
-            />
+            {item.mockupType ? (
+              <AppMockup type={item.mockupType} isVisible={index === currentIndex} />
+            ) : item.illustration ? (
+              <Image
+                source={item.illustration}
+                style={styles.illustration}
+                contentFit="contain"
+                tintColor={iconColor}
+              />
+            ) : null}
           </View>
 
           {/* Content */}
           <View style={styles.contentSection}>
-            {shouldAnimateHeadline ? (
-              <TypingText
-                type="title"
-                style={styles.headline}
-                i18nKey={item.headlineKey}
-                speed={70}
-                onComplete={handleHeadlineComplete}
-                enableHaptics={true}
-              />
-            ) : (
-              <ThemedText type="title" style={styles.headline} i18nKey={item.headlineKey} />
-            )}
-            {(() => {
-              // Initialize animation value if not exists
-              if (!subtextAnimations.has(index)) {
-                // If already fully animated, start at 1, otherwise start at 0
-                subtextAnimations.set(index, new Animated.Value(isFullyAnimated || subtextComplete ? 1 : 0));
-              }
-              const animValue = subtextAnimations.get(index)!;
-              
-              // If headline is complete or screen is fully animated, show subtext
-              if (headlineComplete || isFullyAnimated || subtextComplete) {
-                // If already fully animated, show immediately without animation
-                if (isFullyAnimated || subtextComplete) {
-                  return <ThemedText style={styles.subtext} i18nKey={item.subtextKey} />;
-                }
-                
-                // Otherwise, show with popup animation
-                const opacity = animValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, 1],
-                });
-                const scale = animValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.9, 1],
-                });
-                
-                return (
-                  <Animated.View style={{ opacity, transform: [{ scale }] }}>
-                    <ThemedText style={styles.subtext} i18nKey={item.subtextKey} />
-                  </Animated.View>
-                );
-              }
-              
-              // If headline is not complete yet, hide subtext
-              return <ThemedText style={[styles.subtext, { opacity: 0 }]} i18nKey={item.subtextKey} />;
-            })()}
+            <ThemedText type="title" style={styles.headline} i18nKey={item.headlineKey} />
+            <ThemedText style={styles.subtext} i18nKey={item.subtextKey} />
           </View>
         </ScrollView>
 

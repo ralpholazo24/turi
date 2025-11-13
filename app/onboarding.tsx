@@ -6,6 +6,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/store/use-user-store';
 import { getRandomAvatarColor } from '@/utils/member-avatar';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Image } from 'expo-image';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -100,28 +101,28 @@ export default function OnboardingScreen() {
   const onboardingScreens = [
     {
       id: '1',
-      illustration: require('@/assets/illustrations/screen1.svg'),
+      mockupType: 'home' as const,
       headlineKey: 'onboarding.screen1.headline',
       subtextKey: 'onboarding.screen1.subtext',
       ctaKey: 'onboarding.screen1.cta',
     },
     {
       id: '2',
-      illustration: require('@/assets/illustrations/screen2.svg'),
+      mockupType: 'group' as const,
       headlineKey: 'onboarding.screen2.headline',
       subtextKey: 'onboarding.screen2.subtext',
       ctaKey: 'onboarding.screen2.cta',
     },
     {
       id: '3',
-      illustration: require('@/assets/illustrations/screen3.svg'),
+      mockupType: 'tasks' as const,
       headlineKey: 'onboarding.screen3.headline',
       subtextKey: 'onboarding.screen3.subtext',
       ctaKey: 'onboarding.screen3.cta',
     },
     {
       id: '4',
-      illustration: require('@/assets/illustrations/screen4.svg'),
+      mockupType: 'solo' as const,
       headlineKey: 'onboarding.screen4.headline',
       subtextKey: 'onboarding.screen4.subtext',
       ctaKey: 'onboarding.screen4.cta',
@@ -159,6 +160,16 @@ export default function OnboardingScreen() {
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled">
+              {/* Illustration */}
+              <View style={styles.illustrationSection}>
+                <Image
+                  source={require('@/assets/illustrations/icon.svg')}
+                  style={styles.illustration}
+                  contentFit="contain"
+                  tintColor={textColor}
+                />
+              </View>
+
               {/* Hello Message */}
               <View style={styles.headerSection}>
                 <ThemedText type="title" style={styles.helloMessage} i18nKey="onboarding.welcome" />
@@ -217,12 +228,23 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 48,
-    paddingBottom: 32,
+    paddingTop: 40,
+    paddingBottom: 40,
     justifyContent: 'center',
   },
+  illustrationSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+    width: '100%',
+  },
+  illustration: {
+    width: 160,
+    height: 160,
+    opacity: 1,
+  },
   headerSection: {
-    marginBottom: 36,
+    marginBottom: 32,
     alignItems: 'center',
   },
   helloMessage: {
