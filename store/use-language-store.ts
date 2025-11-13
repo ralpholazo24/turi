@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Localization from 'expo-localization';
 import { create } from 'zustand';
 import i18n from '@/i18n';
 import { useAppStore } from './use-app-store';
@@ -6,6 +7,9 @@ import { useNotificationStore } from './use-notification-store';
 import { rescheduleGroupNotifications } from '@/utils/notification-service';
 
 const LANGUAGE_STORAGE_KEY = '@turi:language';
+
+// Supported languages in the app
+const SUPPORTED_LANGUAGES = ['en', 'es'];
 
 interface LanguageState {
   language: string;
@@ -34,10 +38,20 @@ export const useLanguageStore = create<LanguageState>((set, get) => ({
       }
 
       if (savedLanguage) {
+        // Use saved preference (user's manual choice)
         await i18n.changeLanguage(savedLanguage);
         set({ language: savedLanguage, isLoading: false });
       } else {
-        set({ language: 'en', isLoading: false });
+        // No saved preference - detect device language
+        const deviceLocale = Localization.getLocales()[0]?.languageCode;
+        const detectedLanguage = deviceLocale && SUPPORTED_LANGUAGES.includes(deviceLocale)
+          ? deviceLocale
+          : 'en'; // Fall back to English if device language is not supported
+        
+        // Save the detected/fallback language to AsyncStorage
+        await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, detectedLanguage);
+        await i18n.changeLanguage(detectedLanguage);
+        set({ language: detectedLanguage, isLoading: false });
       }
     } catch (error) {
       console.error('Error loading language preference:', error);
