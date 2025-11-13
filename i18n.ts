@@ -13,11 +13,22 @@ const resources = {
   },
 };
 
+// Get initial language from device (will be overridden by language store if saved preference exists)
+const getInitialLanguage = () => {
+  try {
+    const deviceLocale = Localization.getLocales()[0]?.languageCode;
+    const supportedLanguages = ['en', 'es'];
+    return deviceLocale && supportedLanguages.includes(deviceLocale) ? deviceLocale : 'en';
+  } catch (error) {
+    return 'en';
+  }
+};
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: Localization.getLocales()[0]?.languageCode || 'en',
+    lng: getInitialLanguage(),
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
