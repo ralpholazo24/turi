@@ -15,7 +15,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -281,6 +281,10 @@ export default function TaskDetailsScreen() {
     setIsDeleteConfirmationVisible(true);
   };
 
+  const handleBackButton = useCallback((groupId: string) => {
+    router.push(`/group/${groupId}`);
+  }, []);
+  
   const handleDeleteConfirm = async () => {
     setIsDeleteConfirmationVisible(false);
     // Navigate immediately to avoid showing "not found" page

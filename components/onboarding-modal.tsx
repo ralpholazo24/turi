@@ -17,6 +17,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -36,6 +37,15 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
   const [showNameInput, setShowNameInput] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const { height: screenHeight } = useWindowDimensions();
+
+  // Calculate responsive values for small screens
+  const isSmallScreen = screenHeight < 700;
+  const illustrationSize = isSmallScreen ? 120 : 160;
+  const headlineFontSize = isSmallScreen ? 24 : 32;
+  const padding = isSmallScreen ? 16 : 24;
+  const paddingTop = isSmallScreen ? 24 : 40;
+  const sectionMargin = isSmallScreen ? 20 : 32;
 
   const CloseIcon = APP_ICONS.back;
 
@@ -172,27 +182,38 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
           {showNameInput || isCompleting ? (
             <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
               <ScrollView
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[
+                  styles.scrollContent,
+                  {
+                    paddingHorizontal: padding,
+                    paddingTop: paddingTop,
+                    paddingBottom: padding,
+                  }
+                ]}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled">
                 {/* Illustration */}
-                <View style={styles.illustrationSection}>
+                <View style={[styles.illustrationSection, { marginBottom: sectionMargin }]}>
                   <Image
                     source={require('@/assets/illustrations/icon.svg')}
-                    style={styles.illustration}
+                    style={[styles.illustration, { width: illustrationSize, height: illustrationSize }]}
                     contentFit="contain"
                     tintColor={textColor}
                   />
                 </View>
 
                 {/* Hello Message */}
-                <View style={styles.headerSection}>
-                  <ThemedText type="title" style={styles.helloMessage} i18nKey="onboarding.welcome" />
+                <View style={[styles.headerSection, { marginBottom: sectionMargin }]}>
+                  <ThemedText
+                    type="title"
+                    style={[styles.helloMessage, { fontSize: headlineFontSize }]}
+                    i18nKey="onboarding.welcome"
+                  />
                   <ThemedText style={styles.subtitle} i18nKey="onboarding.subtitle" />
                 </View>
 
                 {/* Name Input */}
-                <View style={styles.inputSection}>
+                <View style={[styles.inputSection, { marginBottom: sectionMargin }]}>
                   <TextInput
                     style={[
                       styles.input,
@@ -243,28 +264,19 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 40,
-    justifyContent: 'center',
   },
   illustrationSection: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 32,
     width: '100%',
   },
   illustration: {
-    width: 160,
-    height: 160,
     opacity: 1,
   },
   headerSection: {
-    marginBottom: 32,
     alignItems: 'center',
   },
   helloMessage: {
-    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',

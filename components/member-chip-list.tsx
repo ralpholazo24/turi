@@ -10,6 +10,7 @@ import { StyleSheet, View } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ConfirmationModal } from './confirmation-modal';
 import { MemberAvatar } from './member-avatar';
 import { MemberModal } from './member-modal';
@@ -22,6 +23,7 @@ interface MemberChipListProps {
 
 export function MemberChipList({ group }: MemberChipListProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { deleteMember, reorderMembers } = useAppStore();
   const { user } = useUserStore();
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -168,10 +170,12 @@ export function MemberChipList({ group }: MemberChipListProps) {
           onDragEnd={handleDragEnd}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: 120 + insets.bottom }, // FAB height (56) + bottom spacing (20) + extra padding (44) + safe area
+          ]}
           showsVerticalScrollIndicator={false}
           activationDistance={10}
-          scrollEnabled={false}
         />
       </View>
 

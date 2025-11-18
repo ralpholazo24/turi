@@ -149,7 +149,10 @@ export default function HomeScreen() {
           onDragEnd={handleDragEnd}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: 120 + insets.bottom }, // FAB height (56) + bottom spacing (20) + extra padding (44) + safe area
+          ]}
           showsVerticalScrollIndicator={false}
           activationDistance={10}
         />
@@ -243,7 +246,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
-    paddingBottom: 100, // Space for FAB
   },
   fab: {
     position: 'absolute',

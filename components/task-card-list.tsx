@@ -10,6 +10,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DraggableFlatList, {
     RenderItemParams,
 } from 'react-native-draggable-flatlist';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SwipeableCard } from './swipeable-card';
 import { TaskCard } from './task-card';
 import { ThemedText } from './themed-text';
@@ -30,6 +31,7 @@ export function TaskCardList({
   onReorderTasks,
 }: TaskCardListProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const iconColor = useThemeColor({}, 'icon');
   const buttonBackgroundColor = useThemeColor({}, 'text');
   const buttonTextColor = useThemeColor({}, 'background');
@@ -143,7 +145,10 @@ export function TaskCardList({
         onDragEnd={handleDragEnd}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: 120 + insets.bottom }, // FAB height (56) + bottom spacing (20) + extra padding (44) + safe area
+        ]}
         showsVerticalScrollIndicator={false}
         activationDistance={10}
       />
@@ -157,7 +162,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingTop: 12,
+    // paddingBottom is set dynamically based on safe area insets
   },
   emptyContainer: {
     alignItems: 'center',

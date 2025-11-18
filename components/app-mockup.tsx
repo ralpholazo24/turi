@@ -506,8 +506,8 @@ function MockupTaskCard({
 
 const styles = StyleSheet.create({
   mockupContainer: {
-    width: 280,
-    height: 500,
+    width: 280, // Default width, can be overridden by style prop
+    minHeight: 350,
     borderRadius: BORDER_RADIUS.large,
     borderWidth: 1,
     overflow: 'hidden',

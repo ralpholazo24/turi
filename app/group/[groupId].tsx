@@ -218,12 +218,7 @@ export default function GroupScreen() {
           onReorderTasks={handleReorderTasks}
         />
       ) : (
-        <ScrollView 
-          style={styles.scrollView} 
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled">
-          <MemberChipList group={group} />
-        </ScrollView>
+        <MemberChipList group={group} />
       )}
 
       {/* Floating Action Button - Only show on Tasks tab and when group has members */}
@@ -393,7 +388,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100, // Space for FAB
+    // paddingBottom is set dynamically based on safe area insets
   },
   tabContent: {
     padding: 20,

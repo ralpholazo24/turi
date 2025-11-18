@@ -7,16 +7,17 @@ import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { useMemo, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -46,6 +47,26 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
   const scrollX = useRef(new Animated.Value(0)).current;
   const { toggleNotifications } = useNotifications();
   const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
+
+  // Calculate responsive values for small screens
+  const isSmallScreen = screenHeight < 700;
+  // Always reserve space for progress bar to ensure consistent layouts across all screens
+  // Progress bar is shown when currentIndex > 0, but we reserve space always to prevent layout shifts
+  const progressBarHeight = 32; // Fixed height to ensure consistent layout across all screens
+  const stickyButtonHeight = 88 + insets.bottom; // Button height + padding + safe area
+  const availableHeight = screenHeight - insets.top - insets.bottom - progressBarHeight - stickyButtonHeight;
+  
+  // Better balanced sizing for small screens
+  const mockupHeight = isSmallScreen ? Math.min(280, availableHeight * 0.45) : 500;
+  const mockupWidth = isSmallScreen ? Math.min(240, SCREEN_WIDTH * 0.75) : 280;
+  const illustrationSize = isSmallScreen ? 180 : 280;
+  const headlineFontSize = isSmallScreen ? 24 : 32;
+  const padding = isSmallScreen ? 16 : 24;
+  const marginBottom = isSmallScreen ? 8 : 24; // Reduced margin between mockup and text
+  const contentMarginTop = isSmallScreen ? 4 : 0; // Reduced margin
+  const buttonPaddingVertical = isSmallScreen ? 14 : 18;
+  const buttonFontSize = isSmallScreen ? 16 : 18;
 
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -135,20 +156,33 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
     };
 
     // Special rendering for notification screen
+    // Note: Notification screen has buttons inside the modal, so no separate sticky button container needed
     if (item.isNotificationScreen) {
       return (
         <View style={[styles.screen, { width: SCREEN_WIDTH }]}>
           <ScrollView
             style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              { paddingHorizontal: padding, paddingTop: padding, paddingBottom: padding }
+            ]}
             showsVerticalScrollIndicator={false}>
             {/* Title */}
-            <View style={styles.notificationTitleSection}>
-              <ThemedText type="title" style={styles.notificationTitle} i18nKey={item.headlineKey} />
+            <View style={[styles.notificationTitleSection, { marginBottom: marginBottom, paddingHorizontal: padding }]}>
+              <ThemedText type="title" style={[styles.notificationTitle, { fontSize: headlineFontSize }]} i18nKey={item.headlineKey} />
             </View>
 
             {/* Permission Explanation Modal */}
-            <View style={[styles.permissionModal, { backgroundColor: backgroundColor, borderColor: borderColor + '40' }]}>
+            <View style={[
+              styles.permissionModal,
+              {
+                backgroundColor: backgroundColor,
+                borderColor: borderColor + '40',
+                padding: isSmallScreen ? 16 : 20,
+                marginHorizontal: padding,
+                marginBottom: isSmallScreen ? 24 : 32
+              }
+            ]}>
               <ThemedText style={styles.permissionModalTitle} i18nKey="onboarding.notificationPermissionTitle" />
               <ThemedText style={styles.permissionModalText} i18nKey="onboarding.notificationPermissionText" />
               <View style={[styles.permissionModalButtons, { borderTopColor: borderColor + '30' }]}>
@@ -168,10 +202,10 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
             </View>
 
             {/* Illustration */}
-            <View style={styles.notificationIllustration}>
+            <View style={[styles.notificationIllustration, { marginBottom: padding }]}>
               <Image
                 source={item.illustration}
-                style={styles.notificationIllustrationImage}
+                style={[styles.notificationIllustrationImage, { width: illustrationSize, height: illustrationSize }]}
                 contentFit="contain"
                 tintColor={iconColor}
               />
@@ -181,21 +215,38 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
       );
     }
 
+    // Calculate button container height for proper spacing
+    const buttonHeight = buttonPaddingVertical * 2 + (isSmallScreen ? 50 : 56);
+    const secondaryButtonHeight = item.onCtaSecondaryPress ? 44 : 0;
+    const buttonContainerPadding = padding / 2;
+    const buttonContainerHeight = buttonHeight + secondaryButtonHeight + buttonContainerPadding + insets.bottom;
+    
     // Regular screen rendering
     return (
       <View style={[styles.screen, { width: SCREEN_WIDTH }]}>
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingHorizontal: padding,
+              paddingTop: isSmallScreen ? padding : padding * 1.5,
+              paddingBottom: isSmallScreen ? padding : padding * 1.5, // Reduced padding, just enough spacing
+            }
+          ]}
           showsVerticalScrollIndicator={false}>
           {/* Mockup or Illustration */}
-          <View style={styles.illustrationSection}>
+          <View style={[styles.illustrationSection, { marginBottom: marginBottom }]}>
             {item.mockupType ? (
-              <AppMockup type={item.mockupType} isVisible={index === currentIndex} />
+              <AppMockup
+                type={item.mockupType}
+                isVisible={index === currentIndex}
+                style={{ height: mockupHeight, width: mockupWidth }}
+              />
             ) : item.illustration ? (
               <Image
                 source={item.illustration}
-                style={styles.illustration}
+                style={[styles.illustration, { width: illustrationSize, height: illustrationSize }]}
                 contentFit="contain"
                 tintColor={iconColor}
               />
@@ -203,20 +254,42 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
           </View>
 
           {/* Content */}
-          <View style={styles.contentSection}>
-            <ThemedText type="title" style={styles.headline} i18nKey={item.headlineKey} />
-            <ThemedText style={styles.subtext} i18nKey={item.subtextKey} />
+          <View style={[styles.contentSection, { marginTop: contentMarginTop }]}>
+            <ThemedText
+              type="title"
+              style={[styles.headline, { fontSize: headlineFontSize, marginBottom: isSmallScreen ? 8 : 16, paddingHorizontal: padding }]}
+              i18nKey={item.headlineKey}
+            />
+            <ThemedText
+              style={[styles.subtext, { paddingHorizontal: padding, marginBottom: 0 }]}
+              i18nKey={item.subtextKey}
+            />
           </View>
         </ScrollView>
 
         {/* Sticky Buttons at Bottom */}
-        <View style={[styles.stickyButtonContainer, { paddingBottom: insets.bottom, backgroundColor, borderTopColor: borderColor + '30' }]}>
+        <View style={[
+          styles.stickyButtonContainer,
+          {
+            paddingBottom: Math.max(insets.bottom, isSmallScreen ? 8 : 16),
+            backgroundColor,
+            borderTopColor: borderColor + '30',
+            paddingHorizontal: padding,
+            paddingTop: isSmallScreen ? 12 : 16,
+          }
+        ]}>
           <TouchableOpacity
-            style={[styles.stickyButton, { backgroundColor: buttonBackgroundColor }]}
+            style={[
+              styles.stickyButton,
+              {
+                backgroundColor: buttonBackgroundColor,
+                paddingVertical: buttonPaddingVertical,
+              }
+            ]}
             onPress={handleCtaPress}
             activeOpacity={0.8}>
             <ThemedText
-              style={[styles.stickyButtonText, { color: buttonTextColor }]}
+              style={[styles.stickyButtonText, { color: buttonTextColor, fontSize: buttonFontSize }]}
               i18nKey={item.ctaKey}
             />
           </TouchableOpacity>
@@ -283,10 +356,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 16,
-    justifyContent: 'center',
     alignItems: 'center',
   },
   illustrationSection: {
@@ -327,6 +396,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
+    position: 'relative',
   },
   stickyButton: {
     borderRadius: 16,
