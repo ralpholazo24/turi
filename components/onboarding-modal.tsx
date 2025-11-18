@@ -184,6 +184,7 @@ export function OnboardingModal({ visible, onComplete, viewOnly = false }: Onboa
               <ScrollView
                 contentContainerStyle={[
                   styles.scrollContent,
+                  styles.scrollContentCentered,
                   {
                     paddingHorizontal: padding,
                     paddingTop: paddingTop,
@@ -264,6 +265,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    alignItems: 'center',
+  },
+  scrollContentCentered: {
+    justifyContent: 'center',
   },
   illustrationSection: {
     alignItems: 'center',
@@ -290,6 +295,7 @@ const styles = StyleSheet.create({
   },
   inputSection: {
     marginBottom: 32,
+    width: '100%',
   },
   input: {
     borderWidth: 1,
@@ -297,6 +303,7 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 18,
     minHeight: 56,
+    width: '100%',
   },
   continueButton: {
     borderRadius: BORDER_RADIUS.large,
@@ -305,6 +312,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: 56,
     justifyContent: 'center',
+    width: '100%',
   },
   continueButtonDisabled: {
     opacity: 0.4,

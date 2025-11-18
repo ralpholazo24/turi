@@ -164,6 +164,7 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
             style={styles.scrollView}
             contentContainerStyle={[
               styles.scrollContent,
+              styles.scrollContentCentered,
               { paddingHorizontal: padding, paddingTop: padding, paddingBottom: padding }
             ]}
             showsVerticalScrollIndicator={false}>
@@ -357,6 +358,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     alignItems: 'center',
+  },
+  scrollContentCentered: {
+    justifyContent: 'center',
   },
   illustrationSection: {
     alignItems: 'center',
