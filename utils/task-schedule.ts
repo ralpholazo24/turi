@@ -104,8 +104,10 @@ export function formatScheduleInfo(
 
     // Handle negative daysDiff (due date in past - should be rare but handle gracefully)
     if (daysDiff < 0) {
-      // Due date is in the past, format normally (this shouldn't happen but handle it)
-      dateText = formatDateAppleStyle(nextDueDate);
+      // Due date is in the past, format with day name (this shouldn't happen but handle it)
+      const dayName = getDayName(nextDueDate.getDay());
+      const formattedDate = formatDateAppleStyle(nextDueDate);
+      dateText = `${dayName}, ${formattedDate}`;
     } else if (daysDiff === 0) {
       // Due date is today - show "Today"
       dateText = i18n.t("common.today");
@@ -113,8 +115,10 @@ export function formatScheduleInfo(
       // Due date is tomorrow - show "Tomorrow"
       dateText = i18n.t("common.tomorrow");
     } else {
-      // Format the date normally
-      dateText = formatDateAppleStyle(nextDueDate);
+      // Format the date with day name: "Monday, Dec 1, 2025"
+      const dayName = getDayName(nextDueDate.getDay());
+      const formattedDate = formatDateAppleStyle(nextDueDate);
+      dateText = `${dayName}, ${formattedDate}`;
     }
   }
 

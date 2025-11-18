@@ -6,11 +6,13 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DraggableFlatList, {
     RenderItemParams,
 } from 'react-native-draggable-flatlist';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppStore } from '@/store/use-app-store';
+import { ConfirmationModal } from './confirmation-modal';
 import { SwipeableCard } from './swipeable-card';
 import { TaskCard } from './task-card';
 import { ThemedText } from './themed-text';
@@ -36,6 +38,8 @@ export function TaskCardList({
   const buttonBackgroundColor = useThemeColor({}, 'text');
   const buttonTextColor = useThemeColor({}, 'background');
   const [openCardId, setOpenCardId] = useState<string | null>(null);
+  const [skipTaskId, setSkipTaskId] = useState<string | null>(null);
+  const { markTaskDone, skipTurn } = useAppStore();
 
   const handleTaskPress = useCallback((taskId: string) => {
     router.push(`/group/${group.id}/task/${taskId}`);
@@ -59,6 +63,79 @@ export function TaskCardList({
     },
     [onReorderTasks]
   );
+
+  const handleMarkDone = useCallback(
+    async (taskId: string) => {
+      const task = group.tasks.find((t) => t.id === taskId);
+      if (!task) return;
+
+      // Check if task has assigned members
+      const assignedMembers = group.members.filter((m) =>
+        task.memberIds.includes(m.id)
+      );
+      if (assignedMembers.length === 0) {
+        Alert.alert(
+          t('errors.cannotCompleteTask'),
+          t('errors.taskNoMembers'),
+          [{ text: t('common.ok') }]
+        );
+        return;
+      }
+
+      try {
+        await markTaskDone(group.id, taskId);
+      } catch (error) {
+        console.error('Error marking task as done:', error);
+        Alert.alert(
+          t('errors.cannotCompleteTask'),
+          t('errors.unknownError'),
+          [{ text: t('common.ok') }]
+        );
+      }
+    },
+    [group, markTaskDone, t]
+  );
+
+  const handleSkip = useCallback((taskId: string) => {
+    setSkipTaskId(taskId);
+  }, []);
+
+  const handleSkipConfirm = useCallback(async () => {
+    if (!skipTaskId) return;
+
+    const task = group.tasks.find((t) => t.id === skipTaskId);
+    if (!task) {
+      setSkipTaskId(null);
+      return;
+    }
+
+    // Check if task has assigned members
+    const assignedMembers = group.members.filter((m) =>
+      task.memberIds.includes(m.id)
+    );
+    if (assignedMembers.length === 0) {
+      Alert.alert(
+        t('errors.cannotSkipTurn'),
+        t('errors.taskNoMembers'),
+        [{ text: t('common.ok') }]
+      );
+      setSkipTaskId(null);
+      return;
+    }
+
+    try {
+      await skipTurn(group.id, skipTaskId);
+    } catch (error) {
+      console.error('Error skipping turn:', error);
+      Alert.alert(
+        t('errors.cannotSkipTurn'),
+        t('errors.unknownError'),
+        [{ text: t('common.ok') }]
+      );
+    } finally {
+      setSkipTaskId(null);
+    }
+  }, [skipTaskId, group, skipTurn, t]);
 
   const renderItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<Task>) => {
@@ -85,6 +162,8 @@ export function TaskCardList({
             task={item}
             assignedMember={assignedMember || null}
             onPress={() => handleTaskPress(item.id)}
+            onMarkDone={() => handleMarkDone(item.id)}
+            onSkip={() => handleSkip(item.id)}
             groupColorStart={colors.start}
             groupColorEnd={colors.end}
             groupId={group.id}
@@ -94,7 +173,7 @@ export function TaskCardList({
         </SwipeableCard>
       );
     },
-    [group, handleTaskPress, onEditTask, onDeleteTask, openCardId, handleSwipeStart]
+    [group, handleTaskPress, handleMarkDone, handleSkip, onEditTask, onDeleteTask, openCardId, handleSwipeStart]
   );
 
   // Check if group has no tasks
@@ -151,6 +230,16 @@ export function TaskCardList({
         ]}
         showsVerticalScrollIndicator={false}
         activationDistance={10}
+      />
+      <ConfirmationModal
+        visible={skipTaskId !== null}
+        title={t('confirmation.skipTitle')}
+        message={t('confirmation.skipMessage')}
+        confirmText={t('common.skip')}
+        cancelText={t('common.cancel')}
+        confirmColor="#F97316"
+        onConfirm={handleSkipConfirm}
+        onCancel={() => setSkipTaskId(null)}
       />
     </View>
   );

@@ -55,7 +55,7 @@ export function OnboardingCarousel({ screens, onComplete }: OnboardingCarouselPr
   // Progress bar is shown when currentIndex > 0, but we reserve space always to prevent layout shifts
   const progressBarHeight = 32; // Fixed height to ensure consistent layout across all screens
   const stickyButtonHeight = 88 + insets.bottom; // Button height + padding + safe area
-  const availableHeight = screenHeight - insets.top - insets.bottom - progressBarHeight - stickyButtonHeight;
+  const availableHeight = screenHeight - insets.top - progressBarHeight - stickyButtonHeight;
   
   // Better balanced sizing for small screens
   const mockupHeight = isSmallScreen ? Math.min(280, availableHeight * 0.45) : 500;

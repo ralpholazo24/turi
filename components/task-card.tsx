@@ -14,7 +14,8 @@ import { MemberAvatar } from './member-avatar';
 interface TaskCardProps {
   task: Task;
   assignedMember: Member | null;
-  onMarkDone?: () => void; // Optional - kept for compatibility but not used
+  onMarkDone?: () => void;
+  onSkip?: () => void;
   onPress?: () => void;
   groupColorStart: string;
   groupColorEnd: string;
@@ -26,6 +27,8 @@ interface TaskCardProps {
 export function TaskCard({
   task,
   assignedMember,
+  onMarkDone,
+  onSkip,
   onPress,
   groupColorStart,
   groupColorEnd,
@@ -45,6 +48,33 @@ export function TaskCard({
   const scheduleInfo = formatScheduleInfo(task, isOverdue);
   
   const CheckIcon = APP_ICONS.check;
+
+  // Calculate assigned members count for skip button visibility
+  const assignedMembersCount = group.members.filter((m) =>
+    task.memberIds.includes(m.id)
+  ).length;
+
+  // Determine if buttons should be shown
+  const showMarkDoneButton =
+    !completionStatus.isCompleted &&
+    assignedMember !== null &&
+    assignedMembersCount > 0 &&
+    onMarkDone !== undefined;
+
+  const showSkipButton =
+    !completionStatus.isCompleted &&
+    !soloMode &&
+    assignedMembersCount > 1 &&
+    onSkip !== undefined;
+
+  // Handle button press - React Native naturally prevents parent onPress when child is pressed
+  const handleMarkDonePress = () => {
+    onMarkDone?.();
+  };
+
+  const handleSkipPress = () => {
+    onSkip?.();
+  };
 
   // Memoize icon component lookup to avoid re-computation
   const IconComponent = useMemo(() => {
@@ -128,13 +158,36 @@ export function TaskCard({
                 <View style={styles.overdueBadge}>
                   <Text style={styles.overdueBadgeText}>{t('common.overdue')}</Text>
                 </View>
-              ) : (
+              ) : !showMarkDoneButton && !showSkipButton ? (
                 <View style={styles.pendingBadge}>
                   <Text style={styles.pendingBadgeText}>{t('common.pending')}</Text>
                 </View>
-              )}
+              ) : null}
             </View>
           </View>
+
+          {/* Action Buttons Section */}
+          {(showMarkDoneButton || showSkipButton) && (
+            <View style={styles.actionButtonsSection}>
+              {showSkipButton && (
+                <TouchableOpacity
+                  style={styles.skipButton}
+                  onPress={handleSkipPress}
+                  activeOpacity={0.8}>
+                  <Text style={styles.skipButtonText}>{t('common.skip')}</Text>
+                </TouchableOpacity>
+              )}
+              {showMarkDoneButton && (
+                <TouchableOpacity
+                  style={styles.markDoneButton}
+                  onPress={handleMarkDonePress}
+                  activeOpacity={0.8}>
+                  <CheckIcon size={18} color="#FFFFFF" />
+                  <Text style={styles.markDoneButtonText}>{t('task.markDone')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -262,5 +315,48 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#EF4444',
+  },
+  actionButtonsSection: {
+    flexDirection: 'row',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  markDoneButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginLeft: 6,
+  },
+  skipButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: BORDER_RADIUS.medium,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  skipButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  markDoneButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: BORDER_RADIUS.medium,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    marginLeft: 8,
   },
 });

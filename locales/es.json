@@ -93,7 +93,7 @@
     "notFound": "Grupo no encontrado"
   },
   "task": {
-    "markDone": "Marcar como Hecho",
+    "markDone": "Completar",
     "alreadyCompleted": "Ya completado",
     "dueToday": "Hoy",
     "dueTomorrow": "Mañana",

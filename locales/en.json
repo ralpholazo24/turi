@@ -93,7 +93,7 @@
     "notFound": "Group not found"
   },
   "task": {
-    "markDone": "Mark Done",
+    "markDone": "Complete",
     "alreadyCompleted": "Already completed",
     "dueToday": "Today",
     "dueTomorrow": "Tomorrow",
