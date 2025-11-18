@@ -12,7 +12,7 @@ alwaysApply: true
 
 ## 🧭 Overview
 
-**Turi** is a fun, lightweight app that helps groups (families, roommates, teams) manage **recurring shared tasks** — like chores, cooking, or cleaning — by showing **whose turn it is** in a friendly, Duolingo-style interface.
+**Turi** is a fun, lightweight app that helps groups (families, roommates, teams) manage **recurring shared tasks** — like chores, cooking, or cleaning — by showing **whose turn it is** in a friendly interface.
 
 Version 1 (MVP) focuses on **local-only functionality** with **no accounts or cloud sync**, just fast and delightful task rotation.
 
@@ -35,78 +35,160 @@ Version 1 (MVP) focuses on **local-only functionality** with **no accounts or cl
 
 ## 🧩 Core Features
 
-### 1. **Groups**
+### 1. **User & Onboarding**
+
+- **User Identity**: App requires user to provide their name during onboarding
+- **User Store**: Stores user with `id`, `name`, and `avatarColor` (randomly assigned)
+- **Onboarding Flow**:
+  - First-time users see onboarding carousel
+  - Then prompted to enter their name
+  - Name is required to create groups
+  - Onboarding completion status is tracked
+- **Group Ownership**: When a group is created, the user is automatically:
+  - Added as the first member
+  - Set as the group owner (`ownerId` field)
+
+### 2. **Groups**
 
 - Create, view, edit, and delete groups.
 - Each group has:
 
   - Name
   - Icon (Lucide icon)
-  - Color theme (gradient start/end colors)
+  - Color preset (name of predefined gradient, e.g., 'Red-Orange')
+  - Owner ID (user who created the group)
   - Member list
   - Task list
 
-### 2. **Members**
+- **Color System**: Uses `colorPreset` (not `colorStart`/`colorEnd`)
+  - 11 predefined color gradient presets available
+  - Migration support from old `colorStart`/`colorEnd` format
+  - Default: "Red-Light Red" preset
+- **Group Reordering**: Groups can be reordered (drag-and-drop)
+
+### 3. **Members**
 
 - Add members by name (initials-based avatar with random color).
 - Order defines task rotation sequence.
 - Delete or edit member (swipe-to-reveal actions).
 - Avatars display member initials with Microsoft Teams-style color palette.
 
-### 3. **Tasks**
+### 4. **Tasks**
 
 - Add tasks within a group.
 - Each task has:
 
   - Task name
   - Icon (Lucide icon)
-  - Frequency (daily / weekly / monthly)
-  - Scheduling options (optional):
-    - **For weekly tasks:** Day of week (Sun-Sat), Time (optional)
-    - **For monthly tasks:** Week of month (1st-4th), Day of week (Sun-Sat), Time (optional)
-    - **For daily tasks:** Time (optional)
+  - Schedule (required, not optional):
+    - `repeat`: Task frequency (see supported frequencies below)
+    - `startDate`: ISO date string - when task first becomes due
+    - `time`: Optional HH:MM format (24-hour, e.g., "14:30")
+    - `dayOfWeek`: Optional 0-6 (Sunday = 0) - Only for 'weekly' and 'biweekly'
   - Assigned members (rotation follows member list)
   - Completion history (tracking who completed when)
   - Skip history (tracking who skipped when)
+  - Created timestamp
+
+**Task Frequencies Supported**:
+
+- `daily` - Every day
+- `weekdays` - Monday through Friday
+- `weekends` - Saturday and Sunday
+- `weekly` - Every week on a specific day (requires `dayOfWeek`)
+- `biweekly` - Every 2 weeks on a specific day (requires `dayOfWeek`)
+- `monthly` - Every month on the same day of month (from `startDate`)
+- `every3months` - Every 3 months on the same day
+- `every6months` - Every 6 months on the same day
+- `yearly` - Every year on the same date
+
+**Scheduling Rules**:
+
+- All tasks require a `startDate` (when task first becomes due)
+- Weekly/biweekly tasks automatically set `dayOfWeek` based on `startDate` if not provided
+- Time is optional (HH:MM format, 24-hour)
+- Default time for notifications: **9:00 AM** (if no time specified)
 
 - "Mark Done" button rotates to the next member.
-- Tasks can only be completed once per period (daily/weekly/monthly).
+- Tasks can only be completed once per period (prevents duplicate completions).
 - Task cards display schedule information prominently.
 - Visual overdue indicators when tasks are past their due period.
+- **Undo Completion**: Can undo most recent task completion (restores previous assignment)
 
-### 4. **Rotation Logic**
+### 5. **Rotation Logic**
 
-- Tasks start with the first member in the group list.
-- When “Mark Done” is pressed:
+- Tasks start with the first member in the assigned members list.
+- When "Mark Done" is pressed:
 
   - Assigned index increases by 1.
   - If at the end, wraps to the first member.
+  - In solo mode: No rotation (stays with same member)
+
+**Completion Rules**:
+
+- Tasks can only be completed **once per period** (prevents duplicate completions)
+- Period determination:
+  - `daily`: Same day
+  - `weekdays`/`weekends`/`weekly`/`biweekly`: Same ISO week
+  - `monthly`/`every3months`/`every6months`: Same month
+  - `yearly`: Same year
+- When completed: Added to `completionHistory`, activity logged as `task_completed`
+
+**Skip Turn Logic**:
+
+- Moves task to next member without marking as completed
+- Skip recorded in `skipHistory`
+- Activity logged as `task_skipped`
+- Not available in solo mode
+
+**Undo Completion**:
+
+- Reverts most recent completion
+- Restores `assignedIndex` to previous member
+- Removes completion from `completionHistory`
+- Activity logged as `task_undone`
+- Reschedules notifications
 
 Example:
 
 ```
 Members = [Alice, Bob, Charlie]
-Task: “Wash Dishes”
-CurrentTurn = Alice
-→ Mark Done → NextTurn = Bob
-→ Mark Done → NextTurn = Charlie
-→ Mark Done → NextTurn = Alice
+Task: "Wash Dishes" (assigned to all members)
+CurrentTurn = Alice (assignedIndex = 0)
+→ Mark Done → NextTurn = Bob (assignedIndex = 1)
+→ Mark Done → NextTurn = Charlie (assignedIndex = 2)
+→ Mark Done → NextTurn = Alice (assignedIndex = 0)
 ```
 
-### 5. **Local Storage**
+### 6. **Local Storage**
 
 - All data stored using **AsyncStorage** (Expo).
 - Data structure:
 
   ```ts
+  AppData {
+    version: string; // "1.0.0"
+    groups: Group[];
+    user?: User; // Current user identity
+    onboardingCompleted?: boolean;
+  }
+
+  User {
+    id: string;
+    name: string;
+    avatarColor: string; // Color for initials avatar
+  }
+
   Group {
     id: string;
     name: string;
     icon: string; // Lucide icon name
-    colorStart: string; // Gradient start color
-    colorEnd: string; // Gradient end color
+    colorPreset: string; // Color preset name (e.g., 'Red-Orange')
+    ownerId: string; // User ID of group creator
     members: Member[];
     tasks: Task[];
+    createdAt: string; // ISO date string - when group was created
+    activities: GroupActivity[]; // Activity feed for this group
   }
 
   Member {
@@ -115,26 +197,40 @@ CurrentTurn = Alice
     avatarColor: string; // Random color assigned for avatar
   }
 
+  TaskSchedule {
+    repeat: 'daily' | 'weekdays' | 'weekends' | 'weekly' | 'biweekly' | 'monthly' | 'every3months' | 'every6months' | 'yearly';
+    startDate: string; // ISO date string - when task first becomes due
+    time?: string; // HH:MM format (optional)
+    dayOfWeek?: number; // 0-6 (Sunday = 0) - Only for 'weekly' and 'biweekly'
+  }
+
   TaskCompletion {
+    type: "completed";
     memberId: string;
-    completedAt: string; // ISO date string
+    timestamp: string; // ISO date string
   }
 
   TaskSkip {
+    type: "skipped";
     memberId: string;
-    skippedAt: string; // ISO date string
+    timestamp: string; // ISO date string
   }
 
   GroupActivity {
     id: string;
-    type: 'task_completed' | 'task_skipped' | 'task_created' | 'task_deleted' | 'member_added' | 'member_deleted' | 'group_created';
+    type: 'task_completed' | 'task_skipped' | 'task_created' | 'task_deleted' | 'task_undone' | 'member_added' | 'member_deleted' | 'group_created';
     timestamp: string; // ISO date string
     actorId?: string; // Member ID who performed the action (optional)
     targetId?: string; // Task ID or Member ID that was affected
     metadata?: {
+      type: 'task_completed' | 'task_skipped' | 'task_created' | 'task_deleted' | 'task_undone';
       taskName?: string;
       taskIcon?: string;
+    } | {
+      type: 'member_added' | 'member_deleted';
       memberName?: string;
+    } | {
+      type: 'group_created';
     };
   }
 
@@ -142,39 +238,39 @@ CurrentTurn = Alice
     id: string;
     name: string;
     icon: string; // Lucide icon name
-    frequency: 'daily' | 'weekly' | 'monthly';
     assignedIndex: number;
     memberIds: string[];
-    lastCompletedAt: string | null; // ISO date string for completion tracking
     completionHistory: TaskCompletion[]; // History of completions
     skipHistory: TaskSkip[]; // History of skips
-    // Scheduling options (optional, only used when frequency is weekly or monthly)
-    scheduleWeek?: number; // For monthly: 1-4 (first, second, third, fourth week)
-    scheduleDay?: number; // 0-6 (Sunday = 0, Monday = 1, ..., Saturday = 6)
-    scheduleTime?: string; // HH:MM format (24-hour), e.g., "14:30" for 2:30 PM
-  }
-
-  Group {
-    id: string;
-    name: string;
-    icon: string; // Lucide icon name
-    colorStart: string; // Gradient start color
-    colorEnd: string; // Gradient end color
-    members: Member[];
-    tasks: Task[];
-    createdAt: string; // ISO date string - when group was created
-    activities: GroupActivity[]; // Activity feed for this group
+    schedule: TaskSchedule; // Required, not optional
+    createdAt: string; // ISO date string - when task was created
   }
   ```
 
+**Storage Keys**:
+
+- `@turi_app_data` - Main app data (groups, tasks, members)
+- `@turi_notification_enabled` - Notification toggle
+- `@turi_notification_reminder_minutes` - Reminder time
+- `@turi:language` - Language preference
+- `@turi_theme_preference` - Theme preference
+- `@turi_user` - User data
+- `@turi_onboarding_completed` - Onboarding status
+
+**Data Migration**:
+
+- Automatic migration from old format (`colorStart`/`colorEnd` → `colorPreset`)
+- Migration from old task structure (`frequency` → `schedule.repeat`)
+- Migration from `lastCompletedAt` → `completionHistory`
+- Backward compatibility for missing `ownerId`, `avatarColor`, `createdAt`
 - Storage includes version field for future migrations.
 
-### 6. **Gamification**
+### 7. **Gamification**
 
 - Confetti or celebration animation on completion.
 - Motivational messages like "Nice job!" or "Keep it going!"
 
-### 7. **Solo Mode**
+### 8. **Solo Mode**
 
 - Automatically enabled when a group has only one member.
 - Tasks are automatically assigned to the single member.
@@ -186,7 +282,7 @@ CurrentTurn = Alice
   - Solo mode badge appears: "Solo mode — all tasks are yours 👤"
 - When another member is added, automatically switches to normal rotation mode.
 
-### 8. **Activity Feed**
+### 9. **Activity Feed**
 
 - Chronological feed of all activities across all groups.
 - Activity types tracked:
@@ -194,6 +290,7 @@ CurrentTurn = Alice
   - Task skipped (who + when)
   - Task created
   - Task deleted
+  - Task undone (who + when) - NEW
   - Member added
   - Member deleted
   - Group created
@@ -203,7 +300,7 @@ CurrentTurn = Alice
 - Clickable items navigate to task details or group pages.
 - Accessible from Settings → Activity.
 
-### 9. **Settings**
+### 10. **Settings**
 
 - Dark mode toggle (persists across app restarts).
 - Activity link (navigates to Activity Feed).
@@ -232,7 +329,40 @@ CurrentTurn = Alice
   - Clean design without border lines between setting items
   - Organized into sections: ACCOUNT, PREFERENCES, SUPPORT, DATA
 
-### 11. **Internationalization (i18n)**
+### 11. **Member Management**
+
+**Member Operations**:
+
+- **Add**: Creates member with random `avatarColor`
+- **Edit**: Update member name
+- **Delete**:
+  - Removes member from group
+  - Removes member from all task assignments
+  - If task has 0 members after deletion, auto-assigns to first available member
+  - Adjusts `assignedIndex` to stay within bounds
+  - Reschedules notifications
+- **Reorder**: Members can be reordered (drag-and-drop)
+  - Task `memberIds` are reordered to match new member order
+  - `assignedIndex` is recalculated to preserve current assignment
+  - Reschedules notifications
+
+**Task Member Assignment**:
+
+- Tasks can have subset of members assigned (via `memberIds`)
+- `reorderTaskMembers`: Reorder assigned members for a specific task
+  - Preserves current assignment when reordering
+  - Reschedules notifications
+
+**Task Assignment Bounds Checking**:
+
+- `assignedIndex` is always validated to be within bounds of `memberIds.length`
+- If member is deleted and `assignedIndex` becomes invalid:
+  - If current assigned member was deleted: Reset to index 0
+  - Otherwise: Find new index for current member in updated list
+- If task has 0 members after deletion: Auto-assign to first available member
+- Tasks cannot be created without at least one member assigned
+
+### 12. **Internationalization (i18n)**
 
 - All user-facing text must be translatable
 - Translation files stored in `locales/` directory (JSON format)
@@ -249,7 +379,26 @@ CurrentTurn = Alice
 - Translation keys follow namespace pattern: `section.item` (e.g., `settings.title`, `task.markDone`)
 - New languages can be added by creating new translation files in `locales/` directory
 
-### 13. **Empty States with Illustrations**
+### 13. **Overdue Detection Logic**
+
+**Apple Reminders-style logic**:
+
+**Time-based tasks** (has `schedule.time`):
+
+- Overdue after the scheduled time passes on the due date
+
+**Day-based tasks** (no `schedule.time`):
+
+- Overdue after the day ends (23:59:59)
+
+**Special Cases**:
+
+- Tasks cannot be overdue before their `startDate`
+- Newly created tasks are not marked overdue if due date is before creation date
+- For completed tasks: Checks if next due date has passed
+- For never-completed tasks: Checks if any due date has passed
+
+### 14. **Empty States with Illustrations**
 
 - Empty states display theme-aware SVG illustrations:
   - **No groups:** `chill-girl.svg` illustration on home screen
@@ -259,7 +408,7 @@ CurrentTurn = Alice
 - Illustrations displayed at 280x280px with 0.8 opacity for visual consistency
 - Empty state messages are translated and use i18n keys
 
-### 12. **Notifications**
+### 15. **Notifications**
 
 - Local notifications scheduled automatically for tasks with due dates/times.
 - Notifications sent X minutes before task is due (configurable reminder time).
@@ -267,23 +416,38 @@ CurrentTurn = Alice
   - Title: Task name with bell emoji
   - Body: Assigned member's name + schedule information
   - Includes task and group IDs for navigation
+  - Translated based on current language preference
 - Smart scheduling:
   - Only schedules for tasks that haven't been completed in the current period
   - Skips tasks with no assigned members
-  - Automatically reschedules after task completion
-  - Cancels notifications when tasks/groups are deleted
+  - Calculates notification date: `dueDate - reminderMinutes`
+  - Doesn't schedule notifications in the past
 - Notification management:
-  - Automatically scheduled when tasks are created/updated
+  - Automatically scheduled when tasks are created (if enabled)
   - Automatically cancelled when tasks are deleted
   - Rescheduled when tasks are completed (for next occurrence)
-  - Rescheduled when member assignments change (skip turn, member deletion)
+  - Rescheduled when tasks are updated
+  - Rescheduled when member assignments change (skip turn, member deletion, member reorder)
+  - Rescheduled when task members are reordered
+  - Rescheduled when task completion is undone
   - All notifications rescheduled on app initialization
   - Respects notification toggle preference
 - Default behavior:
-  - Tasks without scheduled time default to 9:00 AM
-  - Daily tasks: Notification at scheduled time (or 9 AM) minus reminder minutes
-  - Weekly tasks: Notification on scheduled day at scheduled time minus reminder minutes
-  - Monthly tasks: Notification on scheduled week/day at scheduled time minus reminder minutes
+  - Tasks without scheduled time default to **9:00 AM** for notification purposes
+  - Notification calculated as: `dueDate - reminderMinutes`
+- **Next Due Date Calculation**:
+  - If task was completed: Calculate from completion date (ensures next occurrence)
+  - If task not completed: Calculate from now or `startDate` (whichever is later)
+  - Special handling for `startDate` being today (shows today as due date if time hasn't passed)
+  - For biweekly: Only valid occurrences (even number of weeks from start)
+  - For monthly: Handles months with fewer days (e.g., Feb 31 → Feb 28/29)
+  - For yearly: Handles leap years (Feb 29)
+- **Schedule Display Format**:
+  - Format: "Repeat Type - Date Text"
+  - Examples: "Daily - Today", "Weekly - Monday - Tomorrow", "Monthly - Dec 1, 2025"
+  - Date Text: "Today", "Tomorrow", or "Monday, Dec 1, 2025" (Apple Reminders style)
+  - Time displayed separately in 12-hour format (e.g., "2:30 PM")
+  - Shows overdue indicator when task is past due
 
 ---
 
@@ -340,12 +504,13 @@ CurrentTurn = Alice
 - **Components:**
 
   - Task icon + name (gradient card matching group colors)
-  - Full schedule information display (e.g., "Every Mon at 2:30 PM", "Monthly: First Fri")
+  - Full schedule information display (e.g., "Weekly - Monday - Tomorrow", "Monthly - Dec 1, 2025")
   - Overdue indicator when task is past due
   - Current member responsible (with avatar, shows "You" in solo mode)
   - Completion history (with member avatars)
   - Mark done button (disabled when already completed, triggers confetti)
   - Skip button (hidden when completed or in solo mode)
+  - Undo completion button (if task was recently completed)
   - Edit/Delete options (context menu)
   - Screen remains open after marking task as done
 
@@ -353,10 +518,10 @@ CurrentTurn = Alice
 
 - Task name input
 - Icon picker (Lucide icons)
-- Frequency selector (daily/weekly/monthly)
+- Repeat frequency selector (daily, weekdays, weekends, weekly, biweekly, monthly, every3months, every6months, yearly)
+- Start date picker (when task first becomes due)
 - Scheduling options (conditional based on frequency):
-  - **Weekly/Monthly:** Day selector (Sun-Sat)
-  - **Monthly:** Week selector (1st-4th week)
+  - **Weekly/Biweekly:** Day selector (Sun-Sat) - auto-set from start date
   - **All frequencies:** Time picker (optional, native iOS/Android picker)
 - Member selector (multi-select or default all)
 - Save button
@@ -392,11 +557,6 @@ CurrentTurn = Alice
   - Chronological activity list grouped by date
   - Activity items with icons, member avatars, group badges
   - Clickable items navigate to task details or group pages
-
-### 8. **Gamification Layer**
-
-- Confetti animation component
-- Motivational message component
 
 ---
 
@@ -460,11 +620,21 @@ CurrentTurn = Alice
 - [ ] Notifications are cancelled when groups are deleted.
 - [ ] Notifications are rescheduled when members are deleted.
 - [ ] Notifications are rescheduled when turn is skipped.
+- [ ] Notifications are rescheduled when task completion is undone.
+- [ ] Notifications are rescheduled when members are reordered.
+- [ ] Notifications are rescheduled when task members are reordered.
 - [ ] Notifications are not sent for completed tasks.
 - [ ] Notifications are not sent for tasks with no assigned members.
+- [ ] Notifications are not scheduled in the past.
 - [ ] Notifications are rescheduled on app initialization.
 - [ ] Notification content displays correct member name and schedule.
+- [ ] Notification content is translated based on language preference.
 - [ ] Default time (9 AM) is used for tasks without scheduled time.
+- [ ] Task undo functionality works correctly.
+- [ ] Member reordering preserves task assignments correctly.
+- [ ] Task member reordering preserves current assignment.
+- [ ] Overdue detection works correctly for all frequency types.
+- [ ] Schedule display format matches Apple Reminders style.
 - [ ] Language preference persists across app restarts.
 - [ ] Language selector displays available languages correctly.
 - [ ] All user-facing text uses translation keys (no hardcoded strings).
@@ -499,10 +669,14 @@ CurrentTurn = Alice
 
 ### Frequency Tracking
 
-- Track minimal completion dates (last completed timestamp per task).
-- Use frequency (daily/weekly/monthly) for display.
+- Track completion history via `completionHistory` array (not `lastCompletedAt`).
+- Use schedule `repeat` field with 9 frequency options (daily, weekdays, weekends, weekly, biweekly, monthly, every3months, every6months, yearly).
 - Tasks can only be completed once per period (prevents duplicate completions).
-- Schedule information (week, day, time) stored for weekly and monthly tasks.
+- Schedule information stored in `TaskSchedule` object:
+  - `repeat`: Frequency type
+  - `startDate`: When task first becomes due
+  - `time`: Optional scheduled time (HH:MM)
+  - `dayOfWeek`: Optional day of week (0-6) for weekly/biweekly
 
 ### Gamification
 
@@ -513,16 +687,22 @@ CurrentTurn = Alice
 ### Data Structure
 
 - Use PRD structure with **versioning** for future migrations.
-- Add `lastCompletedAt` timestamp to Task for completion tracking.
-- Add `completionHistory` array to Task for tracking completion history.
-- Add `skipHistory` array to Task for tracking skip history.
-- Add `scheduleWeek`, `scheduleDay`, `scheduleTime` to Task for scheduling (weekly/monthly).
-- Add `createdAt` timestamp to Group for creation date.
-- Add `activities` array to Group for activity feed tracking.
-- Groups use Lucide icons and color themes (gradient start/end).
+- **Current Structure**:
+  - `Task.schedule`: Required `TaskSchedule` object (not optional fields)
+  - `Task.completionHistory`: Array of `TaskCompletion` objects (not `lastCompletedAt`)
+  - `Task.skipHistory`: Array of `TaskSkip` objects
+  - `Task.createdAt`: Timestamp when task was created
+  - `Group.colorPreset`: String name of color preset (not `colorStart`/`colorEnd`)
+  - `Group.ownerId`: User ID of group creator
+  - `Group.createdAt`: Timestamp when group was created
+  - `Group.activities`: Array of `GroupActivity` objects
+  - `AppData.user`: Optional user identity
+  - `AppData.onboardingCompleted`: Boolean flag
+- Groups use Lucide icons and color presets (11 predefined gradients).
 - Members use initials-based avatars with random color assignment.
 - Tasks use Lucide icons.
 - Activity tracking includes metadata for task names, icons, and member names.
+- Activity type `task_undone` added for undo completion feature.
 
 ### UI Build Priority
 
@@ -572,9 +752,10 @@ CurrentTurn = Alice
 
 - **Clear Data Utility:** `utils/clear-data.ts` provides `clearAllData()` function
 - **Data Cleared:**
-  - All AsyncStorage keys (`@turi_app_data`, `@turi_notification_enabled`, `@turi_notification_reminder_minutes`, `@turi:language`, `@turi_theme_preference`)
+  - All AsyncStorage keys (`@turi_app_data`, `@turi_notification_enabled`, `@turi_notification_reminder_minutes`, `@turi:language`, `@turi_theme_preference`, `@turi_user`, `@turi_onboarding_completed`)
   - All scheduled notifications (cancelled)
   - All Zustand stores reset to initial state
+  - Language preference cleared (allows device language detection on next launch)
 - **User Flow:**
   - User taps "Clear Data" in Settings → DATA section
   - Confirmation modal shown with warning message
@@ -583,3 +764,36 @@ CurrentTurn = Alice
 - **Error Handling:**
   - Errors logged to console
   - Error alert shown to user if clearing fails
+
+### Notification Implementation Details
+
+- **Notification Store:** Zustand store for notification preferences (enabled/disabled, reminder minutes).
+- **Notification Service:** Utility functions for scheduling, cancelling, and rescheduling notifications.
+- **Notification Scheduling Logic:**
+  - Calculates next due date based on task schedule
+  - Schedules notification X minutes before due date (configurable)
+  - Defaults to 9:00 AM for tasks without scheduled time
+  - Skips scheduling if task is already completed for the period
+  - Skips scheduling if task has no assigned members
+  - Checks if notification date would be in the past (skips if so)
+- **Notification Lifecycle:**
+  - Created: Scheduled when task is created (if notifications enabled)
+  - Updated: Cancelled and rescheduled when task is updated
+  - Completed: Cancelled and rescheduled for next occurrence
+  - Deleted: Cancelled when task is deleted
+  - Group Deleted: All group notifications cancelled
+  - Member Deleted: All group notifications rescheduled
+  - Member Reordered: All group notifications rescheduled
+  - Task Member Reordered: Notification rescheduled for that task
+  - Skip Turn: Notification rescheduled with new assignee
+  - Undo Completion: Notification rescheduled
+  - App Init: All notifications rescheduled on app start
+- **Notification Preferences:**
+  - Stored in AsyncStorage
+  - Default reminder time: 15 minutes
+  - Reminder time options: 5, 10, 15, 30, 60, 120 minutes
+  - Changing reminder time reschedules all notifications
+- **Permission Handling:**
+  - Requests permission when enabling notifications
+  - Shows permission status in settings
+  - Gracefully handles permission denial
